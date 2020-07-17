@@ -1,5 +1,7 @@
 # @ps/website
 
+![CD](https://github.com/MartinKanera/projects-storage/workflows/CD/badge.svg?branch=dev)
+
 ## Build Setup
 
 ```bash
