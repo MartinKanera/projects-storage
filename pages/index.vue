@@ -3,7 +3,7 @@
     <div>
       <Logo />
       <h1 class="title">
-        UwU testík
+        Sujsajd
       </h1>
       <div class="links">
         <a href="https://nuxtjs.org/" target="_blank" rel="noopener noreferrer" class="button--green">
@@ -18,17 +18,12 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'nuxt-composition-api';
 
-export default Vue.extend({});
+export default defineComponent({});
 </script>
 
 <style>
-/* Sample `apply` at-rules with Tailwind CSS
-.container {
-@apply min-h-screen flex justify-center items-center text-center mx-auto;
-}
-*/
 .container {
   margin: 0 auto;
   min-height: 100vh;
