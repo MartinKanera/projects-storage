@@ -1,14 +1,59 @@
 .navbar
-  @apply h-20 w-full bg-ps-linear-gradient shadow
-  @apply flex justify-start items-center
-  @apply px-6
+  @apply h-20 w-full bg-ps-linear-gradient shadow flex items-center text-ps-primary
+  @apply px-3
 
-  .user-info
-    @apply flex text-lg font-bold justify-center items-center
+  .menu-btn
+    @apply relative flex justify-center items-center
+    @apply w-24 h-24
+    @apply ml-4
 
-    .avatar-wrap
-      @apply rounded-full justify-center items-center content-center bg-ps-secondary
-      @apply mr-2 flex min-w-52 min-h-52
+    cursor: pointer
 
-      .avatar
-        @apply h-48 w-48 rounded-full bg-ps-white
+    .burger
+      @apply w-24 absolute
+      @apply border-solid border-2 border-ps-primary
+
+      height: 2px
+      border-radius: 15px
+      transition: all 0.5s ease-in-out
+
+      &::before, &::after
+        @apply w-24 absolute
+        @apply border-solid border-2 border-ps-primary
+
+        content: ''
+        right: -2px
+        height: 2px
+        border-radius: 15px
+        transition: all 0.5s ease-in-out
+
+      &::before
+        transform: translateY(-9px)
+
+      &::after
+        transform: translateY(6px)
+
+    .burger.active
+      @apply border-transparent
+
+      transition: all 0.5s ease-in-out
+
+      &::before
+        transform: rotate(45deg) translate(-1px, -1px)
+
+      &::after
+        transform: rotate(-45deg) translate(1px, -1px)
+
+  .user
+    @apply flex justify-between flex-grow items-center
+
+    .user-info
+      @apply flex font-bold items-center text-ps-primary
+
+      .avatar-wrap
+        @apply bg-ps-primary relative rounded-full
+        @apply w-54 h-54 mr-2
+
+        .avatar
+          @apply absolute rounded-full
+          @apply w-48 h-48 ps-center-absolute

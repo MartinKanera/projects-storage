@@ -6,6 +6,7 @@ const colors = {
   'ps-green': '#26D789',
   'ps-mint': '#3BBA9C',
   'ps-white': '#FFFFFF',
+  transparent: 'transparent',
 };
 
 module.exports = {
@@ -22,8 +23,9 @@ module.exports = {
         sm: '480px',
       },
       spacing: {
+        '24': '24px',
         '48': '48px',
-        '52': '52px',
+        '54': '54px',
       },
     },
     borderRadius: {
@@ -35,15 +37,23 @@ module.exports = {
     minWidth: {
       '52': '52px',
     },
+    inset: {
+      '1/2': '50%',
+    },
   },
   variants: {},
   plugins: [
     plugin(({ addBase, addUtilities, config }) => {
       addUtilities({
         '.bg-ps-linear-gradient': { background: `linear-gradient(90deg, ${config('theme.colors.ps-green')} 11.98%, ${config('theme.colors.ps-mint')} 100%)` },
+        '.ps-center-absolute': {
+          top: `${config('theme.inset.1/2')}`,
+          left: `${config('theme.inset.1/2')}`,
+          transform: `translate(-${config('theme.inset.1/2')}, -${config('theme.inset.1/2')})`,
+        },
       });
       addBase({
-        body: { backgroundColor: config('theme.colors.ps-primary') },
+        body: { backgroundColor: config('theme.colors.ps-primary'), overflowX: 'hidden' },
       });
     }),
   ],
