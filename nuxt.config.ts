@@ -37,7 +37,7 @@ const config: Configuration = {
    ** Auto import components
    ** See https://nuxtjs.org/api/configuration-components
    */
-  components: true,
+  components: [{ path: '@/components', prefix: 'ps' }],
   /*
    ** Nuxt.js dev-modules
    */

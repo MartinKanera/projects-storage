@@ -1,22 +1,54 @@
-/*
-** TailwindCSS Configuration File
-**
-** Docs: https://tailwindcss.com/docs/configuration
-** Default: https://github.com/tailwindcss/tailwindcss/blob/master/stubs/defaultConfig.stub.js
-*/
+const plugin = require('tailwindcss/plugin');
+
+const colors = {
+  'ps-primary': '#202020',
+  'ps-secondary': '#303030',
+  'ps-green': '#26D789',
+  'ps-mint': '#3BBA9C',
+  'ps-white': '#FFFFFF',
+};
+
 module.exports = {
-  theme: {},
+  theme: {
+    colors,
+    boxShadow: {
+      default: '8px 8px 16px rgba(0, 0, 0, 0.25)',
+    },
+    fontFamily: {
+      sans: ['"Exo 2"'],
+    },
+    extend: {
+      screens: {
+        sm: '480px',
+      },
+      spacing: {
+        '48': '48px',
+        '52': '52px',
+      },
+    },
+    borderRadius: {
+      full: '50%',
+    },
+    minHeight: {
+      '52': '52px',
+    },
+    minWidth: {
+      '52': '52px',
+    },
+  },
   variants: {},
-  plugins: [],
+  plugins: [
+    plugin(({ addBase, addUtilities, config }) => {
+      addUtilities({
+        '.bg-ps-linear-gradient': { background: `linear-gradient(90deg, ${config('theme.colors.ps-green')} 11.98%, ${config('theme.colors.ps-mint')} 100%)` },
+      });
+      addBase({
+        body: { backgroundColor: config('theme.colors.ps-primary') },
+      });
+    }),
+  ],
   purge: {
-    // Learn more on https://tailwindcss.com/docs/controlling-file-size/#removing-unused-css
     enabled: process.env.NODE_ENV === 'production',
-    content: [
-      'components/**/*.vue',
-      'layouts/**/*.vue',
-      'pages/**/*.vue',
-      'plugins/**/*.js',
-      'nuxt.config.js'
-    ]
-  }
-}
+    content: ['components/**/*.vue', 'layouts/**/*.vue', 'pages/**/*.vue', 'plugins/**/*.js', 'nuxt.config.js'],
+  },
+};
