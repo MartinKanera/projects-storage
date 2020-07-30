@@ -19,8 +19,8 @@
     "vue-material-design-icons": "4.7.1"
   },
   "devDependencies": {
-    "@babel/core": "7.10.5",
-    "@babel/preset-env": "7.10.4",
+    "@babel/core": "7.11.0",
+    "@babel/preset-env": "7.11.0",
     "@nuxt/typescript-build": "2.0.2",
     "@nuxtjs/eslint-config-typescript": "2.0.0",
     "@nuxtjs/tailwindcss": "2.1.0",
