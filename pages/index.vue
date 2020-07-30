@@ -1,21 +1,4 @@
-<template>
-  <div class="container">
-    <div>
-      <Logo />
-      <h1 class="title">
-        Sujsajd
-      </h1>
-      <div class="links">
-        <a href="https://nuxtjs.org/" target="_blank" rel="noopener noreferrer" class="button--green">
-          Documentation
-        </a>
-        <a href="https://github.com/nuxt/nuxt.js" target="_blank" rel="noopener noreferrer" class="button--grey">
-          GitHub
-        </a>
-      </div>
-    </div>
-  </div>
-</template>
+<template lang="pug"> </template>
 
 <script lang="ts">
 import { defineComponent } from 'nuxt-composition-api';
