@@ -39,6 +39,11 @@ module.exports = {
     },
     inset: {
       '1/2': '50%',
+      '20': '5rem',
+    },
+    zIndex: {
+      '100': 100,
+      '999': 999,
     },
   },
   variants: {},
