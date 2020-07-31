@@ -1,7 +1,14 @@
 <template lang="pug">
-  //- .drawer(:class="{ 'open': drawerState }")
   transition(name="drawer")
     .drawer(v-if="drawerState")
+      transition(name="drawer-content")
+        .content.pt-20
+          ul
+            li test
+            li test
+            li test
+            li test
+            li test
 </template>
 
 <script lang="ts">
