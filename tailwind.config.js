@@ -40,6 +40,9 @@ module.exports = {
     inset: {
       '1/2': '50%',
     },
+    zIndex: {
+      '999': 999,
+    },
   },
   variants: {},
   plugins: [
