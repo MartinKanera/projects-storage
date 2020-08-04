@@ -2,6 +2,13 @@
   @apply h-20 w-full bg-ps-linear-gradient shadow flex items-center text-ps-primary
   @apply absolute z-999 px-3
 
+  .drop
+    @apply ml-1
+    transition: all .3s ease-in-out
+
+    &.active-drop
+      transform: rotate(180deg)
+
   .menu-btn
     @apply relative flex justify-center items-center
     @apply w-24 h-24
