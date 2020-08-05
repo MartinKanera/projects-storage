@@ -1,4 +1,5 @@
 <template lang="pug">
+  .idk
 </template>
 
 <script lang="ts">

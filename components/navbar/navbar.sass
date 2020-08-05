@@ -1,6 +1,13 @@
 .navbar
   @apply h-20 w-full bg-ps-linear-gradient shadow flex items-center text-ps-primary
-  @apply absolute z-999 px-3
+  @apply fixed z-999 px-3
+
+  .drop
+    @apply ml-1 cursor-pointer
+    transition: all .3s ease-in-out
+
+    &.active-drop
+      transform: rotate(180deg)
 
   .menu-btn
     @apply relative flex justify-center items-center
@@ -47,7 +54,7 @@
     @apply flex justify-between flex-grow items-center
 
     .user-info
-      @apply flex font-bold items-center text-ps-primary
+      @apply flex items-center text-ps-primary
 
       .avatar-wrap
         @apply bg-ps-primary relative rounded-full
