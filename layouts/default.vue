@@ -1,7 +1,7 @@
 <template lang="pug">
   .min-h-screen
-    ps-navbar(v-model="isOpen")
-    ps-drawer(v-model="isOpen")
+    ps-navbar(v-model="isOpen")/
+    ps-drawer(v-model="isOpen")/
     nuxt.pt-20/
 </template>
 

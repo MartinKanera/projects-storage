@@ -1,0 +1,17 @@
+.dropdown
+  @apply absolute bg-ps-secondary text-ps-white rounded-lg shadow min-w-48
+
+  .dropdown-content
+    @apply text-sm font-normal flex flex-col
+
+  top: 25px
+
+  &.dropdown-enter-active, &.dropdown-leave-active
+    transition: all .25s ease-in-out
+
+  &.dropdown-enter, &.dropdown-leave-to
+    @apply opacity-100
+
+    top: 15px
+    opacity: 0
+
