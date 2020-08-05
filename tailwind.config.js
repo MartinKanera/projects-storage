@@ -6,6 +6,7 @@ const colors = {
   'ps-green': '#26D789',
   'ps-mint': '#3BBA9C',
   'ps-white': '#FFFFFF',
+  'ps-red': '#DC143C',
   transparent: 'transparent',
 };
 
@@ -37,6 +38,7 @@ module.exports = {
     },
     minWidth: {
       '52': '52px',
+      '48': '12rem',
     },
     inset: {
       0: '0',
@@ -61,6 +63,10 @@ module.exports = {
       });
       addBase({
         body: { backgroundColor: config('theme.colors.ps-primary'), overflowX: 'hidden' },
+        'button:focus': {
+          outline: 'none',
+          '-webkit-tap-highlight-color': 'transparent',
+        },
       });
     }),
   ],
