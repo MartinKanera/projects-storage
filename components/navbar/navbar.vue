@@ -14,7 +14,7 @@
                   user/
             ps-btn.text-ps-red(block text) Odhlásit
               template(#icon-left)
-                log-out/
+                logout/
         .flex.justify-center.items-center.relative(v-on-clickaway="closeNotifications")
           bell.cursor-pointer.ml-1(@click="toggleNotifications")/
           ps-dropdown(:value="displayNotifications")
@@ -28,7 +28,7 @@ import { defineComponent, ref } from 'nuxt-composition-api';
 import dropDown from 'vue-material-design-icons/ChevronDown.vue';
 import bell from 'vue-material-design-icons/BellOutline.vue';
 import user from 'vue-material-design-icons/Account.vue';
-import logOut from 'vue-material-design-icons/LogOut.vue';
+import logout from 'vue-material-design-icons/Logout.vue';
 import { directive as onClickaway } from 'vue-clickaway';
 
 export default defineComponent({
@@ -36,7 +36,7 @@ export default defineComponent({
     dropDown,
     bell,
     user,
-    logOut,
+    logout,
   },
   directives: { onClickaway },
   setup(_, { emit }) {
