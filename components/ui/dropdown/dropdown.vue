@@ -1,7 +1,8 @@
 <template lang="pug">
   transition(name="dropdown")
     .dropdown(v-if="display")
-      slot
+      .dropdown-content
+        slot
 </template>
 
 <script lang="ts">

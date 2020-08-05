@@ -1,10 +1,17 @@
 .dropdown
-  @apply absolute w-20 h-20 bg-ps-white
+  @apply absolute w-40 bg-ps-secondary text-ps-white rounded-lg shadow
+
+  .dropdown-content
+    @apply p-2 text-base font-normal
 
   top: 25px
 
-  &.right
-    left: calc(50% - 5px)
+  &.dropdown-enter-active, &.dropdown-leave-active
+    transition: all .25s ease-in-out
 
-  &.left
-    right: calc(50% - 5px)
+  &.dropdown-enter, &.dropdown-leave-to
+    @apply opacity-100
+
+    top: 15px
+    opacity: 0
+

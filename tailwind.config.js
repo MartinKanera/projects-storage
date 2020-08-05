@@ -30,6 +30,7 @@ module.exports = {
     },
     borderRadius: {
       full: '50%',
+      lg: '0.5rem',
     },
     minHeight: {
       '52': '52px',
