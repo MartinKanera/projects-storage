@@ -1,5 +1,44 @@
 .drawer
-  @apply fixed h-full w-full bg-ps-secondary z-100
+  @apply fixed h-full w-full bg-ps-secondary z-100 text-ps-white
+
+  @screen md
+    @apply left-0 w-32 shadow
+
+    border-bottom-right-radius: 2rem
+
+.content
+  @apply pt-20 flex flex-col
+
+  @screen md
+    @apply pt-32
+
+  .menu-item
+    @apply flex justify-start items-center
+    @apply w-full h-32
+
+    transition: background-color .2s ease-in-out
+
+    @screen md
+      @apply justify-center
+
+    &:hover
+      @apply bg-ps-primary
+
+    .wrap
+      @apply flex items-center
+      @apply ml-12 text-xl
+
+      @screen md
+        @apply flex flex-col justify-center items-center w-4/5
+        @apply leading-none
+        @apply m-0 text-base
+
+      .item-title
+        @apply ml-6 text-center
+
+        @screen md
+          @apply m-0
+
 
 .drawer-enter-active, .drawer-leave-active
   transition: all .25s ease-in-out

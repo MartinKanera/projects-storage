@@ -21,12 +21,14 @@ module.exports = {
     },
     extend: {
       screens: {
-        sm: '480px',
+        md: '768px',
       },
       spacing: {
         '24': '24px',
         '48': '48px',
         '54': '54px',
+        '66': '66px',
+        '72': '72px',
       },
     },
     borderRadius: {
@@ -44,6 +46,7 @@ module.exports = {
       0: '0',
       '1/2': '50%',
       '20': '5rem',
+      '32': '8rem',
     },
     zIndex: {
       '100': 100,
