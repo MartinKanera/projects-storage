@@ -1,18 +1,17 @@
 <template lang="pug">
   transition(name="drawer")
-    .drawer(v-if="drawerState")
+    .drawer(v-if="drawerState || isDesktop" @mouseover="drawerState = true")
       transition(name="drawer-content")
-        .content.pt-20
-          ul
-            li test
-            li test
-            li test
-            li test
-            li test
+        .content
+          .menu-item
+            .wrap
+              presentation-icon(:size="36")
+              span.item-title Veřejné projekty
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'nuxt-composition-api';
+import { defineComponent, ref, watchEffect, computed, onMounted } from 'nuxt-composition-api';
+import presentationIcon from 'vue-material-design-icons/Presentation.vue';
 
 export default defineComponent({
   props: {
@@ -21,14 +20,28 @@ export default defineComponent({
       default: false,
     },
   },
-  setup(props) {
+  components: {
+    presentationIcon,
+  },
+  setup(props, { root }) {
     const drawerState = ref(false);
 
     watchEffect(() => {
       drawerState.value = props.value;
     });
 
-    return { drawerState };
+    const width = ref(0);
+
+    const isDesktop = computed(() => width.value >= 768);
+
+    const onResize = () => (width.value = window.innerWidth);
+
+    onMounted(() => {
+      root.$nextTick(onResize);
+      window.addEventListener('resize', onResize, { passive: true });
+    });
+
+    return { drawerState, isDesktop };
   },
 });
 </script>
