@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from 'nuxt-composition-api';
+import { defineComponent, ref, onMounted, computed, watchEffect } from 'nuxt-composition-api';
 import dropDown from 'vue-material-design-icons/ChevronDown.vue';
 import bell from 'vue-material-design-icons/BellOutline.vue';
 import user from 'vue-material-design-icons/Account.vue';
@@ -40,9 +40,19 @@ export default defineComponent({
     user,
     logout,
   },
+  props: {
+    value: {
+      type: Boolean,
+      default: false,
+    },
+  },
   directives: { onClickaway },
-  setup(_, { emit, root }) {
+  setup(props, { emit, root }) {
     const burger = ref(false);
+
+    watchEffect(() => {
+      burger.value = props.value;
+    });
 
     const toggleBurger = () => {
       burger.value = !burger.value;

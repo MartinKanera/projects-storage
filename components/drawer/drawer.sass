@@ -2,7 +2,7 @@
   @apply fixed h-full w-full bg-ps-secondary z-100 text-ps-white
 
   @screen md
-    @apply left-0 w-32 shadow
+    @apply left-0 shadow w-28
 
     border-bottom-right-radius: 2rem
 
@@ -14,19 +14,19 @@
 
   .menu-item
     @apply flex justify-start items-center
-    @apply w-full h-32
+    @apply w-full h-20
 
     transition: background-color .2s ease-in-out
 
     @screen md
-      @apply justify-center
+      @apply justify-center h-28
 
     &:hover
       @apply bg-ps-primary
 
     .wrap
       @apply flex items-center
-      @apply ml-12 text-xl
+      @apply ml-12
 
       @screen md
         @apply flex flex-col justify-center items-center w-4/5
@@ -34,10 +34,10 @@
         @apply m-0 text-base
 
       .item-title
-        @apply ml-6 text-center
+        @apply m-0 ml-6 text-center capitalize
 
         @screen md
-          @apply m-0
+          @apply m-0 mt-2
 
 
 .drawer-enter-active, .drawer-leave-active

@@ -3,9 +3,10 @@
   @apply fixed z-999 px-3
 
   @screen md
-    @apply w-1/2 h-32 px-6
+    @apply w-1/2 h-32
 
     border-bottom-right-radius: 2rem
+    padding: 0 1.75rem 0 1.75rem
 
   .drop
     @apply ml-2 cursor-pointer
@@ -82,6 +83,9 @@
 
       .user-text
         @apply flex flex-col
+
+        @screen md
+          @apply pl-5
 
         .user-name
           @apply text-sm font-extrabold text-base
