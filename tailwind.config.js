@@ -29,6 +29,7 @@ module.exports = {
         '54': '54px',
         '66': '66px',
         '72': '72px',
+        '28': '7rem',
       },
     },
     borderRadius: {
