@@ -24,7 +24,7 @@
   "devDependencies": {
     "@babel/core": "7.11.5",
     "@babel/preset-env": "7.11.5",
-    "@nuxt/typescript-build": "2.0.2",
+    "@nuxt/typescript-build": "2.0.3",
     "@nuxtjs/eslint-config-typescript": "3.0.0",
     "@nuxtjs/tailwindcss": "3.0.2",
     "@prettier/plugin-pug": "1.5.1",
