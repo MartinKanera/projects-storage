@@ -11,7 +11,7 @@
     "serve": "nuxt-ts serve"
   },
   "dependencies": {
-    "@nuxt/typescript-runtime": "1.0.0",
+    "@nuxt/typescript-runtime": "2.0.0",
     "@nuxtjs/axios": "5.12.2",
     "@nuxtjs/pwa": "3.0.2",
     "@types/vue-clickaway": "2.2.0",
