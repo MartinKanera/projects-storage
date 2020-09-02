@@ -16,7 +16,7 @@ const config: Configuration = {
    ** See https://nuxtjs.org/api/configuration-head
    */
   head: {
-    title: process.env.npm_package_name || '',
+    title: 'DELTA - Úložiště maturitních projektů',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -32,7 +32,10 @@ const config: Configuration = {
    ** Plugins to load before mounting the App
    ** https://nuxtjs.org/guide/plugins
    */
-  plugins: [],
+  plugins: ['@/plugins/firebase.ts'],
+  env: {
+    FIREBASE_CONFIG: process.env.FIREBASE_CONFIG,
+  },
   /*
    ** Auto import components
    ** See https://nuxtjs.org/api/configuration-components
@@ -41,7 +44,7 @@ const config: Configuration = {
   /*
    ** Nuxt.js dev-modules
    */
-  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api'],
+  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api', 'pinia/nuxt'],
   /*
    ** Nuxt.js modules
    */

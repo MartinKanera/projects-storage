@@ -15,5 +15,5 @@
     },
     "types": ["@types/node", "@nuxt/types", "./shims"]
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".nuxt"]
 }
