@@ -1,23 +1,30 @@
 <template lang="pug">
 .navbar
   .user
-    .user-info
-      .avatar-wrap
+    .user-wrap
+      .avatar-wrap(v-if='loggedIn')
         img.avatar(src='https://i0.wp.com/www.hadviser.com/wp-content/uploads/2019/04/24-shaggy-bob-for-square-face-BcKy3nOnaAm.jpg?fit=995%2C995&ssl=1')/
-      .user-text
-        span.user-name Martin Kaněra
-        span.user-role admin
-      .flex.justify-center.items-center.relative(v-on-clickaway='closeSettings')
+      .user-info
+        .user-text(v-if='loggedIn')
+          span.user-name Martin Kaněra
+          span.user-role admin
+        div(v-else)
+          ps-btn(text, @click='loginWithMicrosoft')
+            template(#default)
+              span.microsoft-btn microsoft login
+            template(#icon-left)
+              microsoft-logo(mr-1)/
+      .flex.justify-center.items-center.relative(v-if='loggedIn', v-on-clickaway='closeSettings')
         drop-down.drop(:class='{ "active-drop": displaySettings }', @click='toggleSettings')/
         ps-dropdown(:value='displaySettings')
           nuxt-link(to='/idk')
             ps-btn(block, text) nastavení účtu
               template(#icon-left)
                 user/
-          ps-btn.text-ps-red(block, text) Odhlásit
+          ps-btn.text-ps-red(block, text, @click='logOut') Odhlásit
             template(#icon-left)
               logout/
-      .flex.justify-center.items-center.relative(v-on-clickaway='closeNotifications')
+      .flex.justify-center.items-center.relative(v-if='loggedIn', v-on-clickaway='closeNotifications')
         bell.cursor-pointer.ml-1(@click='toggleNotifications')/
         ps-dropdown(:value='displayNotifications')
           span.mx-auto.p-2 Nothing here :-O
@@ -31,7 +38,11 @@ import dropDown from 'vue-material-design-icons/ChevronDown.vue';
 import bell from 'vue-material-design-icons/BellOutline.vue';
 import user from 'vue-material-design-icons/Account.vue';
 import logout from 'vue-material-design-icons/Logout.vue';
+import microsoftLogo from 'vue-material-design-icons/Microsoft.vue';
 import { directive as onClickaway } from 'vue-clickaway';
+import { useMainStore } from '@/store';
+import * as firebase from 'firebase/app';
+// import 'firebase/auth';
 
 type Props = {
   value: boolean;
@@ -43,6 +54,7 @@ export default defineComponent({
     bell,
     user,
     logout,
+    microsoftLogo,
   },
   props: {
     value: {
@@ -50,8 +62,11 @@ export default defineComponent({
       default: false,
     },
   },
+  // @ts-ignore
   directives: { onClickaway },
   setup(props: Props, { emit, root }) {
+    const mainStore = useMainStore();
+
     const burger = ref(false);
 
     watchEffect(() => {
@@ -86,6 +101,26 @@ export default defineComponent({
 
     const closeNotifications = () => (displayNotifications.value = false);
 
+    const loginWithMicrosoft = async () => {
+      await require('firebase/auth');
+
+      try {
+        const provider = new firebase.auth.OAuthProvider('microsoft.com');
+
+        const idk = await firebase.auth().signInWithPopup(provider);
+
+        console.log(idk.user?.uid);
+      } catch (e) {}
+    };
+
+    const logOut = async () => {
+      await require('firebase/auth');
+
+      try {
+        await firebase.auth().signOut();
+      } catch (e) {}
+    };
+
     return {
       burger,
       toggleBurger,
@@ -96,6 +131,9 @@ export default defineComponent({
       toggleNotifications,
       closeNotifications,
       isDesktop,
+      loggedIn: mainStore.isLoggedIn,
+      loginWithMicrosoft,
+      logOut,
     };
   },
 });

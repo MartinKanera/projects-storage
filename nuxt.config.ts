@@ -1,4 +1,5 @@
 import { Configuration } from '@nuxt/types';
+import { env } from './env';
 
 const config: Configuration = {
   /*
@@ -24,6 +25,8 @@ const config: Configuration = {
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
+
+  serverMiddleware: ['~/api/index.ts'],
   /*
    ** Global CSS
    */
@@ -36,6 +39,9 @@ const config: Configuration = {
   env: {
     FIREBASE_CONFIG: process.env.FIREBASE_CONFIG,
   },
+  firebase: {
+    config: env.firebaseConfig,
+  },
   /*
    ** Auto import components
    ** See https://nuxtjs.org/api/configuration-components
@@ -44,7 +50,7 @@ const config: Configuration = {
   /*
    ** Nuxt.js dev-modules
    */
-  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api', 'pinia/nuxt'],
+  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api', 'pinia/nuxt', '@/modules/firebase'],
   /*
    ** Nuxt.js modules
    */
@@ -53,6 +59,12 @@ const config: Configuration = {
     '@nuxtjs/axios',
     '@nuxtjs/pwa',
   ],
+  pwa: {
+    workbox: {
+      importScripts: ['/firebase.sw.js'],
+      dev: process.env.NODE_ENV === 'development',
+    },
+  },
   /*
    ** Axios module configuration
    ** See https://axios.nuxtjs.org/options
