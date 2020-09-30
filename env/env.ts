@@ -4,6 +4,13 @@ const parseFirebaseConfig = () => {
   console.error('Missing FIREBASE_CONFIG environment variable');
 };
 
+const parseServiceAccount = () => {
+  if (process.env.SERVICE_ACCOUNT) return JSON.parse(process.env.SERVICE_ACCOUNT);
+
+  console.error('Missing SERVICE_ACCOUNT environment variable');
+};
+
 export const env = {
   firebaseConfig: parseFirebaseConfig(),
+  serviceAccount: parseServiceAccount(),
 };

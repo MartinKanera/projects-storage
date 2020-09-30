@@ -34,6 +34,8 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed, watchEffect } from 'nuxt-composition-api';
+import axios from 'axios';
+
 import dropDown from 'vue-material-design-icons/ChevronDown.vue';
 import bell from 'vue-material-design-icons/BellOutline.vue';
 import user from 'vue-material-design-icons/Account.vue';
@@ -107,9 +109,17 @@ export default defineComponent({
       try {
         const provider = new firebase.auth.OAuthProvider('microsoft.com');
 
-        const idk = await firebase.auth().signInWithPopup(provider);
+        const authUser = await firebase.auth().signInWithPopup(provider);
 
-        console.log(idk.user?.uid);
+        await axios.request({
+          url: '/api/user/create',
+          method: 'POST',
+          headers: {
+            authorization: `Bearer ${await authUser.user?.getIdToken()}`,
+          },
+        });
+
+        // console.log(idk.user?.uid);
       } catch (e) {}
     };
 

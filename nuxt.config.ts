@@ -26,7 +26,7 @@ const config: Configuration = {
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
 
-  serverMiddleware: ['~/api/index.ts'],
+  serverMiddleware: ['~/server/middleware/index.ts', { path: '/api', handler: '~/server/api/index.ts' }],
   /*
    ** Global CSS
    */
@@ -38,9 +38,11 @@ const config: Configuration = {
   plugins: ['@/plugins/firebase.ts'],
   env: {
     FIREBASE_CONFIG: process.env.FIREBASE_CONFIG,
+    SERVICE_ACCOUNT: process.env.SERVICE_ACCOUNT,
   },
   firebase: {
     config: env.firebaseConfig,
+    serviceAccount: env.serviceAccount,
   },
   /*
    ** Auto import components
