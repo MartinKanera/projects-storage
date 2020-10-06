@@ -14,7 +14,14 @@ const plugin: Plugin = (context: Context) => {
     const mainStore = useMainStore();
 
     // @ts-ignore
-    if (process.server) console.log(context.res.locals);
+    if (process.server) {
+      // @ts-ignore
+      let userData = context.res.locals.user;
+      if (userData) {
+        userData = { userData, ...{ loggedIn: true } };
+      }
+      mainStore.patch(userData);
+    }
 
     // if (!process.server) {
     //   mainStore.state.loggedIn = !!firebase.auth().currentUser;

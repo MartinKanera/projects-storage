@@ -35,6 +35,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed, watchEffect } from 'nuxt-composition-api';
 import axios from 'axios';
+import { useMainStore } from '@/store';
 
 import dropDown from 'vue-material-design-icons/ChevronDown.vue';
 import bell from 'vue-material-design-icons/BellOutline.vue';
@@ -42,9 +43,8 @@ import user from 'vue-material-design-icons/Account.vue';
 import logout from 'vue-material-design-icons/Logout.vue';
 import microsoftLogo from 'vue-material-design-icons/Microsoft.vue';
 import { directive as onClickaway } from 'vue-clickaway';
-import { useMainStore } from '@/store';
+
 import * as firebase from 'firebase/app';
-// import 'firebase/auth';
 
 type Props = {
   value: boolean;
@@ -119,10 +119,14 @@ export default defineComponent({
           },
         });
 
-        await userData.data();
+        let userDataAlt = userData.data.user;
 
-        // console.log(idk.user?.uid);
-      } catch (e) {}
+        userDataAlt = { userDataAlt, ...{ loggedIn: true } };
+
+        mainStore.patch(userDataAlt);
+      } catch (e) {
+        // TODO Error handling
+      }
     };
 
     const logOut = async () => {
@@ -130,6 +134,7 @@ export default defineComponent({
 
       try {
         await firebase.auth().signOut();
+        mainStore.reset();
       } catch (e) {}
     };
 
