@@ -1,8 +1,24 @@
-import { Request, Response } from 'express';
+import { ServerMiddleware } from '@nuxt/types';
 
-export default async (req: Request, res: Response, next: Function): Promise<void> => {
-  res.locals = {
-    id: req.headers.authorization,
-  };
+import admin from 'firebase-admin';
+
+const serverMiddleware: ServerMiddleware = async (req, res, next): Promise<void> => {
+  const idToken = req.headers.authorization?.split(' ')[1] ?? '';
+
+  const userAuth = await (async () => {
+    try {
+      return await admin.auth().verifyIdToken(idToken);
+    } catch (e) {}
+  })();
+
+  if (userAuth) {
+    // @ts-ignore
+    res.locals = {
+      user: (await admin.firestore().collection('users').doc(userAuth.uid).get()).data(),
+    };
+  }
+
   next();
 };
+
+export default serverMiddleware;

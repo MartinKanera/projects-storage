@@ -111,13 +111,15 @@ export default defineComponent({
 
         const authUser = await firebase.auth().signInWithPopup(provider);
 
-        await axios.request({
+        const userData = await axios.request({
           url: '/api/user/create',
           method: 'POST',
           headers: {
             authorization: `Bearer ${await authUser.user?.getIdToken()}`,
           },
         });
+
+        await userData.data();
 
         // console.log(idk.user?.uid);
       } catch (e) {}
