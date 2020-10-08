@@ -117,6 +117,10 @@ export default defineComponent({
           headers: {
             authorization: `Bearer ${await authUser.user?.getIdToken()}`,
           },
+          data: {
+            // @ts-ignore
+            accessToken: authUser.credential?.toJSON()['oauthAccessToken'],
+          },
         });
 
         let userDataAlt = userData.data.user;
