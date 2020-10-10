@@ -56,6 +56,7 @@ const config: NuxtConfig = {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
     '@nuxtjs/pwa',
+    ['@nuxtjs/dotenv', { systemvars: true }],
   ],
   pwa: {
     workbox: {
