@@ -1,5 +1,5 @@
 <template lang="pug">
-  .idk
+.idk
 </template>
 
 <script lang="ts">

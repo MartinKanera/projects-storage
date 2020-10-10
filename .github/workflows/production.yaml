@@ -2,7 +2,7 @@ name: CD
 on:
   push:
     branches:
-      - "dev"
+      - 'dev'
 
 jobs:
   deploy:
@@ -23,11 +23,11 @@ jobs:
           service_account_key: ${{ secrets.GCLOUD_AUTH }}
 
       - name: Configure Docker to use GCP
-        run: "gcloud auth configure-docker --quiet"
+        run: 'gcloud auth configure-docker --quiet'
 
       - name: Push image to Google Cloud Container Registry
         run: docker push gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }}
 
       - name: Deploy to Google Cloud Run
         run: |
-          gcloud run deploy ${{ secrets.GCLOUD_PROJECT }} --quiet --image gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region europe-west1 --platform managed --allow-unauthenticated --max-instances 2
+          gcloud run deploy ${{ secrets.GCLOUD_PROJECT }} --quiet --image gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region europe-west1 --platform managed --allow-unauthenticated --max-instances 2 --update-env-vars FIREBASE_CONFIG={{ secrets.FIREBASE_CONFIG }}, SERVICE_ACCOUNT={{ secrets.SERVICE_ACCOUNT }}, STORAGE_SERVICE_ACCOUNT={{ secrets.STORAGE_SERVICE_ACCOUNT }}
