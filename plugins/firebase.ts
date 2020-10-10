@@ -12,10 +12,9 @@ const plugin: Plugin = (context: Context) => {
     if (!process.server && !firebase.apps.length) firebase.initializeApp(env.firebaseConfig);
     const mainStore = useMainStore();
 
-    // @ts-ignore
     if (process.server) {
       // @ts-ignore
-      const userData = context.res.locals.user;
+      const userData = context.res?.locals?.user;
 
       if (userData) {
         mainStore.patch({ loggedIn: true });

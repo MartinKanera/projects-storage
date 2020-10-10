@@ -1,12 +1,7 @@
-import { Configuration } from '@nuxt/types';
+import { NuxtConfig } from '@nuxt/types';
 import { env } from './env';
 
-const config: Configuration = {
-  /*
-   ** Nuxt rendering mode
-   ** See https://nuxtjs.org/api/configuration-mode
-   */
-  mode: 'universal',
+const config: NuxtConfig = {
   /*
    ** Nuxt target
    ** See https://nuxtjs.org/api/configuration-target
@@ -37,9 +32,9 @@ const config: Configuration = {
    */
   plugins: ['@/plugins/firebase.ts'],
   env: {
-    FIREBASE_CONFIG: process.env.FIREBASE_CONFIG,
-    SERVICE_ACCOUNT: process.env.SERVICE_ACCOUNT,
-    STORAGE_SERVICE_ACCOUNT: process.env.STORAGE_SERVICE_ACCOUNT,
+    FIREBASE_CONFIG: process.env.FIREBASE_CONFIG!,
+    SERVICE_ACCOUNT: process.env.SERVICE_ACCOUNT!,
+    STORAGE_SERVICE_ACCOUNT: process.env.STORAGE_SERVICE_ACCOUNT!,
   },
   firebase: {
     config: env.firebaseConfig,
