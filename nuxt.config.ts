@@ -35,11 +35,6 @@ const config: NuxtConfig = {
     FIREBASE_CONFIG: process.env.FIREBASE_CONFIG!,
     SERVICE_ACCOUNT: process.env.SERVICE_ACCOUNT!,
     STORAGE_SERVICE_ACCOUNT: process.env.STORAGE_SERVICE_ACCOUNT!,
-    PORT: '8080',
-  },
-  firebase: {
-    config: env.firebaseConfig,
-    serviceAccount: env.serviceAccount,
   },
   /*
    ** Auto import components
