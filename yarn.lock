@@ -9705,10 +9705,10 @@ pify@^4.0.1:
   resolved "https://registry.yarnpkg.com/pify/-/pify-4.0.1.tgz#4b2cd25c50d598735c50292224fd8c6df41e3231"
   integrity sha512-uB80kBFb/tfd68bVleG9T5GGsGPjJrLAUpR5PZIrhBnIaRTQRjqdJSsIKkOP6OAIFbj7GOrcudc5pNjZ+geV2g==
 
-pinia@0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/pinia/-/pinia-0.0.7.tgz#48b6b0de2a24fe8217e11992c57715d50b67e9ae"
-  integrity sha512-zvoVqW+8AwswQAh2GtJP7JD/X/cciZmeH++cH6oekG3EpMCIQba7cHsBSayw08RTfPuT3vMErtKMDegz4bxzLQ==
+pinia@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/pinia/-/pinia-0.1.0.tgz#d2e6a413b249770796c9b304f4c4799c2c981714"
+  integrity sha512-Hg8hXv4pw9/ACEXjk91SV5b5Nk45wUHVbwurconKWFpJDwOD7BgpMEPHECWj9WOXlyTfcPpmhqPMRCh72zCQqA==
 
 pkg-dir@^2.0.0:
   version "2.0.0"
