@@ -36,6 +36,9 @@ const config: NuxtConfig = {
     SERVICE_ACCOUNT: process.env.SERVICE_ACCOUNT!,
     STORAGE_SERVICE_ACCOUNT: process.env.STORAGE_SERVICE_ACCOUNT!,
   },
+  firebase: {
+    config: env.firebaseConfig,
+  },
   /*
    ** Auto import components
    ** See https://nuxtjs.org/api/configuration-components
