@@ -1,5 +1,5 @@
 <template lang="pug">
-.navbar {{ idk }}
+.navbar
   .user
     .user-wrap
       .avatar-wrap(v-if='mainStore.isLoggedIn')
@@ -144,8 +144,6 @@ export default defineComponent({
       } catch (e) {}
     };
 
-    const idk = ref(process.env.FIREBASE_CONFIG);
-
     return {
       burger,
       toggleBurger,
@@ -159,7 +157,6 @@ export default defineComponent({
       loginWithMicrosoft,
       logOut,
       mainStore,
-      idk,
     };
   },
 });

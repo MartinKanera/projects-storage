@@ -13,12 +13,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Docker image
-        env:
-          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
-          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
-          STORAGE_SERVICE_ACCOUNT: ${{ secrets.STORAGE_SERVICE_ACCOUNT }}
         run: |
-          docker build . --tag gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }}
+          docker build . --tag gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --build-arg FIREBASE_CONFIG=${{ secrets.FIREBASE_CONFIG }} --build-arg SERVICE_ACCOUNT=${{ secrets.SERVICE_ACCOUNT }} --build-arg STORAGE_SERVICE_ACCOUNT=${{ secrets.STORAGE_SERVICE_ACCOUNT }}
 
       - name: Authenticate into GCP
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
