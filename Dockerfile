@@ -5,14 +5,6 @@ WORKDIR /usr/src/app
 ENV HOST 0.0.0.0
 ENV PORT 8080
 
-COPY . .
-
-RUN yarn install --pure-lockfile --non-interactive
-
-RUN yarn build
-
-ENV NODE_ENV production
-
 ARG FIREBASE_CONFIG
 ENV FIREBASE_CONFIG=$FIREBASE_CONFIG
 
@@ -21,6 +13,14 @@ ENV SERVICE_ACCOUNT=$SERVICE_ACCOUNT
 
 ARG STORAGE_SERVICE_ACCOUNT
 ENV STORAGE_SERVICE_ACCOUNT=$STORAGE_SERVICE_ACCOUNT
+
+COPY . .
+
+RUN yarn install --pure-lockfile --non-interactive
+
+RUN yarn build
+
+ENV NODE_ENV production
 
 RUN yarn install --pure-lockfile --non-interactive --production
 
