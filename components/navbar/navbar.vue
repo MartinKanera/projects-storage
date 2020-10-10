@@ -2,11 +2,11 @@
 .navbar
   .user
     .user-wrap
-      .avatar-wrap(v-if='loggedIn')
-        img.avatar(src='https://i0.wp.com/www.hadviser.com/wp-content/uploads/2019/04/24-shaggy-bob-for-square-face-BcKy3nOnaAm.jpg?fit=995%2C995&ssl=1')/
+      .avatar-wrap(v-if='mainStore.isLoggedIn')
+        img.avatar(:src='mainStore.profilePicture')/
       .user-info
-        .user-text(v-if='loggedIn')
-          span.user-name Martin Kaněra
+        .user-text(v-if='mainStore.isLoggedIn')
+          span.user-name {{ mainStore.displayName }}
           span.user-role admin
         div(v-else)
           ps-btn(text, @click='loginWithMicrosoft')
@@ -14,7 +14,7 @@
               span.microsoft-btn microsoft login
             template(#icon-left)
               microsoft-logo(mr-1)/
-      .flex.justify-center.items-center.relative(v-if='loggedIn', v-on-clickaway='closeSettings')
+      .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeSettings')
         drop-down.drop(:class='{ "active-drop": displaySettings }', @click='toggleSettings')/
         ps-dropdown(:value='displaySettings')
           nuxt-link(to='/idk')
@@ -24,7 +24,7 @@
           ps-btn.text-ps-red(block, text, @click='logOut') Odhlásit
             template(#icon-left)
               logout/
-      .flex.justify-center.items-center.relative(v-if='loggedIn', v-on-clickaway='closeNotifications')
+      .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeNotifications')
         bell.cursor-pointer.ml-1(@click='toggleNotifications')/
         ps-dropdown(:value='displayNotifications')
           span.mx-auto.p-2 Nothing here :-O
@@ -111,23 +111,24 @@ export default defineComponent({
 
         const authUser = await firebase.auth().signInWithPopup(provider);
 
-        const userData = await axios.request({
-          url: '/api/user/create',
-          method: 'POST',
-          headers: {
-            authorization: `Bearer ${await authUser.user?.getIdToken()}`,
-          },
-          data: {
-            // @ts-ignore
-            accessToken: authUser.credential?.toJSON()['oauthAccessToken'],
-          },
-        });
+        const userData = (
+          await axios.request({
+            url: '/api/user/create',
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${await authUser.user?.getIdToken()}`,
+            },
+            data: {
+              // @ts-ignore
+              accessToken: authUser.credential?.toJSON()['oauthAccessToken'],
+            },
+          })
+        ).data.user;
 
-        let userDataAlt = userData.data.user;
-
-        userDataAlt = { userDataAlt, ...{ loggedIn: true } };
-
-        mainStore.patch(userDataAlt);
+        if (userData) {
+          mainStore.patch(userData);
+          mainStore.patch({ loggedIn: true });
+        }
       } catch (e) {
         // TODO Error handling
       }
@@ -153,9 +154,9 @@ export default defineComponent({
       toggleNotifications,
       closeNotifications,
       isDesktop,
-      loggedIn: mainStore.isLoggedIn,
       loginWithMicrosoft,
       logOut,
+      mainStore,
     };
   },
 });

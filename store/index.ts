@@ -14,5 +14,10 @@ export const useMainStore = createStore({
   }),
   getters: {
     isLoggedIn: (state) => state.loggedIn,
+    displayName: (state) => state.displayName,
+    profilePicture: (state) => state.profilePicture,
+    isStudent: (state) => state.student,
+    isAdmin: (state) => state.admin,
+    class: (state) => state.class,
   },
 });

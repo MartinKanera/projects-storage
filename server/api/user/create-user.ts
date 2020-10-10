@@ -1,8 +1,9 @@
-import fs from 'fs';
+// import fs from 'fs';
 import { Request, Response } from 'express';
 import axios from 'axios';
 
 import * as admin from 'firebase-admin';
+import { storage } from '../../../gc-storage';
 
 export default async (req: Request, res: Response) => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
@@ -12,7 +13,7 @@ export default async (req: Request, res: Response) => {
 
   const usersCollection = admin.firestore().collection('users');
 
-  const saveProfileImage = async () => {
+  const saveProfileImage = async (userId: string) => {
     try {
       const photoData = await axios.request({
         url: 'https://graph.microsoft.com/v1.0/me/photo/$value',
@@ -25,8 +26,22 @@ export default async (req: Request, res: Response) => {
 
       const photoBin = await photoData.data;
 
-      // fs.writeFileSync('./pokus.jpg', Buffer.from(photoBin, 'base64'));
-    } catch (e) {}
+      const bucketName = 'ps-profile-pictures';
+      const fileName = `${userId}.jpeg`;
+
+      const bucket = storage.bucket(bucketName);
+
+      const userImage = bucket.file(fileName);
+      const imageStream = userImage.createWriteStream();
+
+      imageStream.write(photoBin);
+      imageStream.end();
+
+      return `https://storage.googleapis.com/${bucketName}/${fileName}`;
+    } catch (_) {
+      // TODO take 'anonymous' profile picture
+      return '';
+    }
   };
 
   try {
@@ -35,11 +50,9 @@ export default async (req: Request, res: Response) => {
     const userDoc = (await admin.firestore().collection('users').doc(userData.uid).get()).data();
 
     if (!userDoc) {
-      await saveProfileImage();
-
       const newUserDoc = {
         displayName: userData.name,
-        profilePicture: userData.picture ?? '',
+        profilePicture: await saveProfileImage(userData.uid),
         admin: false,
         student: userData.email?.includes('delta-studenti'),
         verified: false,
@@ -48,9 +61,11 @@ export default async (req: Request, res: Response) => {
       };
 
       await usersCollection.doc(userData.uid).set(newUserDoc);
+
+      return res.status(200).json({ user: newUserDoc, project: {} });
     }
 
-    return res.status(200).json({ user: newUserDoc, project: {} });
+    return res.status(200).json({ user: userDoc, project: {} });
   } catch (e) {
     return res.status(400).send('Bad request');
   }

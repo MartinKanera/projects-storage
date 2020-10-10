@@ -6,6 +6,7 @@ import { env } from '../../env';
 const app = express();
 
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 if (!admin.apps.length)
   admin.initializeApp({
