@@ -11,8 +11,6 @@ const serverMiddleware: ServerMiddleware = async (req, res, next): Promise<void>
     } catch (e) {}
   })();
 
-  console.log(userAuth);
-
   if (userAuth) {
     // @ts-ignore
     res.locals = {
