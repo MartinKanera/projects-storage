@@ -49,7 +49,7 @@ const config: NuxtConfig = {
   /*
    ** Nuxt.js dev-modules
    */
-  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api', 'pinia/nuxt', '@/modules/firebase', ['@nuxtjs/dotenv', { systemvars: true }]],
+  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api', 'pinia/nuxt', '@/modules/firebase'],
   /*
    ** Nuxt.js modules
    */
@@ -57,7 +57,6 @@ const config: NuxtConfig = {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
     '@nuxtjs/pwa',
-    ['@nuxtjs/dotenv', { systemvars: true }],
   ],
   pwa: {
     workbox: {
