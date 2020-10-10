@@ -1,8 +1,8 @@
 <template lang="pug">
-  .min-h-screen
-    ps-navbar(v-model="isOpen")/
-    ps-drawer(v-model="isOpen")/
-    nuxt.pt-20/
+.min-h-screen
+  ps-navbar(v-model='isOpen')/
+  ps-drawer(v-model='isOpen')/
+  nuxt.pt-20/
 </template>
 
 <script lang="ts">
@@ -13,7 +13,6 @@ export default defineComponent({
     const isOpen = ref(false);
 
     watchEffect(() => {
-      // @ts-ignore
       if (process.client) {
         if (isOpen.value) document.querySelector('html')!.style.overflowY = 'hidden';
         else {

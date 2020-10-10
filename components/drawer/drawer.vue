@@ -1,33 +1,33 @@
 <template lang="pug">
-  transition(name="drawer")
-    .drawer(v-if="drawerState || isDesktop")
-      transition(name="drawer-content")
-        .content
-          nuxt-link(to="/" @click="closeDrawer")
-            .menu-item
-              .wrap
-                presentation-icon(:size="32")/
-                span.item-title Veřejné projekty
-          nuxt-link(to="/myproject" @click="closeDrawer")
-            .menu-item
-              .wrap
-                strategy-icon(:size="32")/
-                span.item-title Můj projekt
-          nuxt-link(to="/proposal" @click="closeDrawer")
-            .menu-item
-              .wrap
-                book-icon(:size="32")/
-                span.item-title Zadání
-          nuxt-link(to="/students" @click="closeDrawer")
-            .menu-item
-              .wrap
-                accounts-icon(:size="32")/
-                span.item-title Žáci
-          nuxt-link(to="/admin" @click="closeDrawer")
-            .menu-item
-              .wrap
-                admin-icon(:size="32")/
-                span.item-title Admin
+transition(name='drawer')
+  .drawer(v-if='drawerState || isDesktop')
+    transition(name='drawer-content')
+      .content
+        nuxt-link(to='/', @click='closeDrawer')
+          .menu-item
+            .wrap
+              presentation-icon(:size='32')/
+              span.item-title Veřejné projekty
+        nuxt-link(to='/myproject', @click='closeDrawer')
+          .menu-item
+            .wrap
+              strategy-icon(:size='32')/
+              span.item-title Můj projekt
+        nuxt-link(to='/proposal', @click='closeDrawer')
+          .menu-item
+            .wrap
+              book-icon(:size='32')/
+              span.item-title Zadání
+        nuxt-link(to='/students', @click='closeDrawer')
+          .menu-item
+            .wrap
+              accounts-icon(:size='32')/
+              span.item-title Žáci
+        nuxt-link(to='/admin', @click='closeDrawer')
+          .menu-item
+            .wrap
+              admin-icon(:size='32')/
+              span.item-title Admin
 </template>
 
 <script lang="ts">

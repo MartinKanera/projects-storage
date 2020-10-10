@@ -11,6 +11,9 @@ const colors = {
 };
 
 module.exports = {
+  future: {
+    removeDeprecatedGapUtilities: true,
+  },
   theme: {
     colors,
     boxShadow: {

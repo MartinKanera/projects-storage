@@ -1,4 +1,5 @@
 import { Configuration } from '@nuxt/types';
+import { env } from './env';
 
 const config: Configuration = {
   /*
@@ -16,7 +17,7 @@ const config: Configuration = {
    ** See https://nuxtjs.org/api/configuration-head
    */
   head: {
-    title: process.env.npm_package_name || '',
+    title: 'DELTA - Úložiště maturitních projektů',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -24,6 +25,8 @@ const config: Configuration = {
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
+
+  serverMiddleware: ['~/server/middleware/index.ts', { path: '/api', handler: '~/server/api/index.ts' }],
   /*
    ** Global CSS
    */
@@ -32,7 +35,16 @@ const config: Configuration = {
    ** Plugins to load before mounting the App
    ** https://nuxtjs.org/guide/plugins
    */
-  plugins: [],
+  plugins: ['@/plugins/firebase.ts'],
+  env: {
+    FIREBASE_CONFIG: process.env.FIREBASE_CONFIG,
+    SERVICE_ACCOUNT: process.env.SERVICE_ACCOUNT,
+    STORAGE_SERVICE_ACCOUNT: process.env.STORAGE_SERVICE_ACCOUNT,
+  },
+  firebase: {
+    config: env.firebaseConfig,
+    serviceAccount: env.serviceAccount,
+  },
   /*
    ** Auto import components
    ** See https://nuxtjs.org/api/configuration-components
@@ -41,7 +53,7 @@ const config: Configuration = {
   /*
    ** Nuxt.js dev-modules
    */
-  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api'],
+  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api', 'pinia/nuxt', '@/modules/firebase'],
   /*
    ** Nuxt.js modules
    */
@@ -50,6 +62,12 @@ const config: Configuration = {
     '@nuxtjs/axios',
     '@nuxtjs/pwa',
   ],
+  pwa: {
+    workbox: {
+      importScripts: ['/firebase.sw.js'],
+      dev: process.env.NODE_ENV === 'development',
+    },
+  },
   /*
    ** Axios module configuration
    ** See https://axios.nuxtjs.org/options

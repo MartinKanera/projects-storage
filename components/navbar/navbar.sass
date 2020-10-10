@@ -6,7 +6,7 @@
     @apply w-1/2 h-32
 
     border-bottom-right-radius: 2rem
-    padding: 0 1.75rem 0 1.75rem
+    padding: 0 1.35rem
 
   .drop
     @apply ml-2 cursor-pointer
@@ -64,7 +64,7 @@
   .user
     @apply flex justify-between flex-grow items-center
 
-    .user-info
+    .user-wrap
       @apply flex items-center text-ps-primary
 
       .avatar-wrap
@@ -81,11 +81,12 @@
           @screen md
             @apply h-66 w-66
 
-      .user-text
-        @apply flex flex-col
-
+      .user-info
         @screen md
           @apply pl-5
+
+        .user-text
+          @apply flex flex-col
 
         .user-name
           @apply text-sm font-extrabold text-base
@@ -97,3 +98,6 @@
           @apply text-sm text-ps-white font-normal
 
           margin-top: -5px
+
+        .microsoft-btn
+          border-bottom: 1px solid black

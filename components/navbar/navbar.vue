@@ -1,37 +1,54 @@
 <template lang="pug">
-  .navbar
-    .user
+.navbar
+  .user
+    .user-wrap
+      .avatar-wrap(v-if='mainStore.isLoggedIn')
+        img.avatar(:src='mainStore.profilePicture')/
       .user-info
-        .avatar-wrap
-          img(src="https://i0.wp.com/www.hadviser.com/wp-content/uploads/2019/04/24-shaggy-bob-for-square-face-BcKy3nOnaAm.jpg?fit=995%2C995&ssl=1").avatar/
-        .user-text
-          span.user-name Martin Kaněra
+        .user-text(v-if='mainStore.isLoggedIn')
+          span.user-name {{ mainStore.displayName }}
           span.user-role admin
-        .flex.justify-center.items-center.relative(v-on-clickaway="closeSettings")
-          drop-down.drop(:class="{ 'active-drop': displaySettings }" @click="toggleSettings")/
-          ps-dropdown(:value="displaySettings")
-            nuxt-link(to="/idk")
-              ps-btn(block text) nastavení účtu
-                template(#icon-left)
-                  user/
-            ps-btn.text-ps-red(block text) Odhlásit
+        div(v-else)
+          ps-btn(text, @click='loginWithMicrosoft')
+            template(#default)
+              span.microsoft-btn microsoft login
+            template(#icon-left)
+              microsoft-logo(mr-1)/
+      .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeSettings')
+        drop-down.drop(:class='{ "active-drop": displaySettings }', @click='toggleSettings')/
+        ps-dropdown(:value='displaySettings')
+          nuxt-link(to='/idk')
+            ps-btn(block, text) nastavení účtu
               template(#icon-left)
-                logout/
-        .flex.justify-center.items-center.relative(v-on-clickaway="closeNotifications")
-          bell.cursor-pointer.ml-1(@click="toggleNotifications")/
-          ps-dropdown(:value="displayNotifications")
-            span.mx-auto.p-2 Nothing here :-O
-    .menu-btn(v-if="!isDesktop" @click="toggleBurger")
-      .burger(:class="{ 'active': burger }")
+                user/
+          ps-btn.text-ps-red(block, text, @click='logOut') Odhlásit
+            template(#icon-left)
+              logout/
+      .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeNotifications')
+        bell.cursor-pointer.ml-1(@click='toggleNotifications')/
+        ps-dropdown(:value='displayNotifications')
+          span.mx-auto.p-2 Nothing here :-O
+  .menu-btn(v-if='!isDesktop', @click='toggleBurger')
+    .burger(:class='{ active: burger }')
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed, watchEffect } from 'nuxt-composition-api';
+import axios from 'axios';
+import { useMainStore } from '@/store';
+
 import dropDown from 'vue-material-design-icons/ChevronDown.vue';
 import bell from 'vue-material-design-icons/BellOutline.vue';
 import user from 'vue-material-design-icons/Account.vue';
 import logout from 'vue-material-design-icons/Logout.vue';
+import microsoftLogo from 'vue-material-design-icons/Microsoft.vue';
 import { directive as onClickaway } from 'vue-clickaway';
+
+import * as firebase from 'firebase/app';
+
+type Props = {
+  value: boolean;
+};
 
 export default defineComponent({
   components: {
@@ -39,6 +56,7 @@ export default defineComponent({
     bell,
     user,
     logout,
+    microsoftLogo,
   },
   props: {
     value: {
@@ -46,8 +64,11 @@ export default defineComponent({
       default: false,
     },
   },
+  // @ts-ignore
   directives: { onClickaway },
-  setup(props, { emit, root }) {
+  setup(props: Props, { emit, root }) {
+    const mainStore = useMainStore();
+
     const burger = ref(false);
 
     watchEffect(() => {
@@ -82,6 +103,47 @@ export default defineComponent({
 
     const closeNotifications = () => (displayNotifications.value = false);
 
+    const loginWithMicrosoft = async () => {
+      await require('firebase/auth');
+
+      try {
+        const provider = new firebase.auth.OAuthProvider('microsoft.com');
+
+        const authUser = await firebase.auth().signInWithPopup(provider);
+
+        const userData = (
+          await axios.request({
+            url: '/api/user/create',
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${await authUser.user?.getIdToken()}`,
+            },
+            data: {
+              // @ts-ignore
+              accessToken: authUser.credential?.toJSON()['oauthAccessToken'],
+            },
+          })
+        ).data.user;
+
+        if (userData) {
+          mainStore.patch(userData);
+          mainStore.patch({ loggedIn: true });
+        }
+      } catch (e) {
+        // TODO Error handling
+      }
+    };
+
+    const logOut = async () => {
+      await require('firebase/auth');
+
+      try {
+        await firebase.auth().signOut();
+        closeSettings();
+        mainStore.reset();
+      } catch (e) {}
+    };
+
     return {
       burger,
       toggleBurger,
@@ -92,6 +154,9 @@ export default defineComponent({
       toggleNotifications,
       closeNotifications,
       isDesktop,
+      loginWithMicrosoft,
+      logOut,
+      mainStore,
     };
   },
 });
