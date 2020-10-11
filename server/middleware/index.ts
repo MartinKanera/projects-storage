@@ -5,18 +5,18 @@ import admin from 'firebase-admin';
 const serverMiddleware: ServerMiddleware = async (req, res, next): Promise<void> => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
 
-  const userAuth = await (async () => {
-    try {
-      return await admin.auth().verifyIdToken(idToken);
-    } catch (e) {}
-  })();
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
-  if (userAuth) {
-    // @ts-ignore
-    res.locals = {
-      user: (await admin.firestore().collection('users').doc(userAuth.uid).get()).data(),
-    };
-  }
+  try {
+    const userAuth = await admin.auth().verifyIdToken(idToken);
+
+    if (userAuth) {
+      // @ts-ignore
+      res.locals = {
+        user: (await admin.firestore().collection('users').doc(userAuth.uid).get()).data(),
+      };
+    }
+  } catch (e) {}
 
   next();
 };

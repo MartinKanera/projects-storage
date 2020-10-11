@@ -19,6 +19,8 @@ const plugin: Plugin = (context: Context) => {
       if (userData) {
         mainStore.patch({ loggedIn: true });
         mainStore.patch(userData);
+      } else {
+        mainStore.reset();
       }
     }
   });

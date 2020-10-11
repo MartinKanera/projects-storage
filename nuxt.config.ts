@@ -22,6 +22,7 @@ const config: NuxtConfig = {
   },
 
   serverMiddleware: ['~/server/middleware/index.ts', { path: '/api', handler: '~/server/api/index.ts' }],
+
   /*
    ** Global CSS
    */
@@ -59,10 +60,7 @@ const config: NuxtConfig = {
   pwa: {
     workbox: {
       importScripts: ['/firebase.sw.js'],
-      // dev: process.env.NODE_ENV === 'development',
-      dev: true,
-      enabled: true,
-      cleanupOutdatedCaches: true,
+      dev: process.env.NODE_ENV === 'development',
     },
   },
   /*
