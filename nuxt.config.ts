@@ -59,7 +59,10 @@ const config: NuxtConfig = {
   pwa: {
     workbox: {
       importScripts: ['/firebase.sw.js'],
-      dev: process.env.NODE_ENV === 'development',
+      // dev: process.env.NODE_ENV === 'development',
+      dev: true,
+      enabled: true,
+      cleanupOutdatedCaches: true,
     },
   },
   /*
