@@ -139,7 +139,7 @@ export default defineComponent({
 
       try {
         await firebase.auth().signOut();
-        mainStore.reset();
+        await mainStore.reset();
         closeSettings();
       } catch (e) {
         console.error(e);
