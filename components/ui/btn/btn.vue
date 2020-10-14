@@ -1,5 +1,5 @@
 <template lang="pug">
-button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text }', @click='$emit("click")')
+button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text, shadow: !text }', @click='$emit("click")')
   .icon-left.mr-1(v-if='$slots["icon-left"]')
     slot(name='icon-left')
   .capitalize.flex-grow

@@ -4,15 +4,13 @@
     .class-modal
       span.text-ps-white.text-2xl Do jaké patříš třídy?
       .form
-        select.flex-grow.md-mr-6
-          option 4.A
-          option 4.B
+        ps-select.flex-grow.md-mr-6(v-model='selectedClass', placeholder='Třída...', :options='classes')
         ps-btn.float-right(@click='') 
           span.px-10 uložit
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'nuxt-composition-api';
+import { defineComponent, ref, watchEffect } from 'nuxt-composition-api';
 import { useMainStore } from '@/store';
 
 export default defineComponent({
@@ -21,12 +19,25 @@ export default defineComponent({
 
     const classModal = ref(false);
 
-    if (mainStore.isStudent && mainStore.class.value === '') {
-      classModal.value = true;
-    }
+    watchEffect(() => {
+      if (mainStore.isLoggedIn.value && mainStore.isStudent.value && mainStore.class.value === '') {
+        classModal.value = true;
+      } else {
+        classModal.value = false;
+      }
+    });
+
+    const classes = ref([
+      { placeholder: '4.A', value: '4.a' },
+      { placeholder: '4.B', value: '4.b' },
+    ]);
+
+    const selectedClass = ref('');
 
     return {
       classModal,
+      classes,
+      selectedClass,
     };
   },
 });
