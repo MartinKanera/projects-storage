@@ -3,27 +3,28 @@ transition(name='drawer')
   .drawer(v-if='drawerState || isDesktop')
     transition(name='drawer-content')
       .content
-        nuxt-link(to='/', @click='closeDrawer')
+        nuxt-link(v-if='', to='/', @click='closeDrawer')
           .menu-item
             .wrap
               presentation-icon(:size='32')/
               span.item-title Veřejné projekty
-        nuxt-link(to='/myproject', @click='closeDrawer')
+        nuxt-link(v-if='loggedIn && student', to='/myproject', @click='closeDrawer')
           .menu-item
             .wrap
               strategy-icon(:size='32')/
               span.item-title Můj projekt
-        nuxt-link(to='/proposal', @click='closeDrawer')
+        //- TODO Check if has projectId
+        nuxt-link(v-if='loggedIn && student && false', to='/proposal', @click='closeDrawer')
           .menu-item
             .wrap
               book-icon(:size='32')/
               span.item-title Zadání
-        nuxt-link(to='/students', @click='closeDrawer')
+        nuxt-link(v-if='loggedIn && teacher', to='/students', @click='closeDrawer')
           .menu-item
             .wrap
               accounts-icon(:size='32')/
               span.item-title Žáci
-        nuxt-link(to='/admin', @click='closeDrawer')
+        nuxt-link(v-if='loggedIn && admin', to='/admin', @click='closeDrawer')
           .menu-item
             .wrap
               admin-icon(:size='32')/
@@ -32,6 +33,8 @@ transition(name='drawer')
 
 <script lang="ts">
 import { defineComponent, ref, watchEffect, computed, onMounted } from 'nuxt-composition-api';
+import { useMainStore } from '@/store';
+
 import presentationIcon from 'vue-material-design-icons/Presentation.vue';
 import strategyIcon from 'vue-material-design-icons/Strategy.vue';
 import bookIcon from 'vue-material-design-icons/Book.vue';
@@ -53,6 +56,8 @@ export default defineComponent({
     bookIcon,
   },
   setup(props, { emit, root }) {
+    const mainStore = useMainStore();
+
     const drawerState = ref(false);
 
     watchEffect(() => {
@@ -79,6 +84,10 @@ export default defineComponent({
       drawerState,
       isDesktop,
       closeDrawer,
+      loggedIn: mainStore.isLoggedIn,
+      admin: mainStore.isAdmin,
+      verifiedStudent: mainStore.isStudent && mainStore.class.value !== '',
+      teacher: !mainStore.isStudent,
     };
   },
 });
