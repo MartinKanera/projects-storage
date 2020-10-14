@@ -3,9 +3,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'nuxt-composition-api';
+import { defineComponent, ref } from 'nuxt-composition-api';
+import { useMainStore } from '@/store';
 
-export default defineComponent({});
+export default defineComponent({
+  setup() {
+    const mainStore = useMainStore();
+
+    const classModal = ref(false);
+
+    if (mainStore.isStudent && mainStore.class.value === '') {
+      classModal.value = true;
+    }
+  },
+});
 </script>
 
 <style>
