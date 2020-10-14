@@ -5,8 +5,6 @@ import admin from 'firebase-admin';
 const serverMiddleware: ServerMiddleware = async (req, res, next): Promise<void> => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
 
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-
   try {
     const userAuth = await admin.auth().verifyIdToken(idToken);
 

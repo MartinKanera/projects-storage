@@ -17,7 +17,7 @@
       .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeSettings')
         drop-down.drop(:class='{ "active-drop": displaySettings }', @click='toggleSettings')/
         ps-dropdown(:value='displaySettings')
-          nuxt-link(to='/idk')
+          nuxt-link(to='/settings')
             ps-btn(block, text) nastavení účtu
               template(#icon-left)
                 user/
