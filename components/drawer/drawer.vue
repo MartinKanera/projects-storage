@@ -4,28 +4,28 @@ transition(name='drawer')
     transition(name='drawer-content')
       .content
         nuxt-link(v-if='', to='/', @click='closeDrawer')
-          .menu-item
+          .menu-item(@click='closeDrawer')
             .wrap
               presentation-icon(:size='32')/
               span.item-title Veřejné projekty
-        nuxt-link(v-if='loggedIn && student', to='/myproject', @click='closeDrawer')
-          .menu-item
+        nuxt-link(v-if='loggedIn && verifiedStudent', to='/myproject')
+          .menu-item(@click='closeDrawer')
             .wrap
               strategy-icon(:size='32')/
               span.item-title Můj projekt
         //- TODO Check if has projectId
-        nuxt-link(v-if='loggedIn && student && false', to='/proposal', @click='closeDrawer')
-          .menu-item
+        nuxt-link(v-if='loggedIn && verifiedStudent && false', to='/proposal', @click='closeDrawer')
+          .menu-item(@click='closeDrawer')
             .wrap
               book-icon(:size='32')/
               span.item-title Zadání
         nuxt-link(v-if='loggedIn && teacher', to='/students', @click='closeDrawer')
-          .menu-item
+          .menu-item(@click='closeDrawer')
             .wrap
               accounts-icon(:size='32')/
               span.item-title Žáci
         nuxt-link(v-if='loggedIn && admin', to='/admin', @click='closeDrawer')
-          .menu-item
+          .menu-item(@click='closeDrawer')
             .wrap
               admin-icon(:size='32')/
               span.item-title Admin
@@ -76,6 +76,7 @@ export default defineComponent({
     });
 
     const closeDrawer = () => {
+      console.log('Closed');
       drawerState.value = false;
       emit('input', drawerState.value);
     };

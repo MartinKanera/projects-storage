@@ -63,6 +63,7 @@ module.exports = {
       addUtilities({
         '.bg-ps-linear-gradient': { background: `linear-gradient(90deg, ${config('theme.colors.ps-green')} 11.98%, ${config('theme.colors.ps-mint')} 100%)` },
         '.ps-center-absolute': {
+          position: 'absolute',
           top: `${config('theme.inset.1/2')}`,
           left: `${config('theme.inset.1/2')}`,
           transform: `translate(-${config('theme.inset.1/2')}, -${config('theme.inset.1/2')})`,
