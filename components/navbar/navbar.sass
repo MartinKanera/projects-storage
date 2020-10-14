@@ -27,22 +27,28 @@
     cursor: pointer
 
     .burger
-      @apply w-24 absolute
+      @apply w-24 absolute bg-ps-primary
       @apply border-solid border-2 border-ps-primary
+      
+      // transition: background 0.5s ease-in-out
+      // transition: border 0s ease-in-out
+      transition: all 0.1s ease-in-out
+      // transition: background-color 0.1s ease-out
 
       height: 2px
       border-radius: 15px
-      transition: all 0.5s ease-in-out
 
       &::before, &::after
-        @apply w-24 absolute
+        @apply w-24 absolute bg-ps-primary
         @apply border-solid border-2 border-ps-primary
 
         content: ''
         right: -2px
         height: 2px
         border-radius: 15px
-        transition: all 0.5s ease-in-out
+
+      &::before, &::after
+        transition: all 0.3s ease-in-out
 
       &::before
         transform: translateY(-9px)
@@ -51,9 +57,10 @@
         transform: translateY(6px)
 
     .burger.active
-      @apply border-transparent
-
-      transition: all 0.5s ease-in-out
+      @apply  bg-transparent border-none
+      
+      // transition: background 0.3s ease-in-out
+      transition: all 0s ease-out
 
       &::before
         transform: rotate(45deg) translate(-1px, -1px)

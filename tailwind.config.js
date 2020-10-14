@@ -27,12 +27,12 @@ module.exports = {
         md: '768px',
       },
       spacing: {
-        '24': '24px',
-        '48': '48px',
-        '54': '54px',
-        '66': '66px',
-        '72': '72px',
-        '28': '7rem',
+        24: '24px',
+        48: '48px',
+        54: '54px',
+        66: '66px',
+        72: '72px',
+        28: '7rem',
       },
     },
     borderRadius: {
@@ -40,21 +40,21 @@ module.exports = {
       lg: '0.5rem',
     },
     minHeight: {
-      '52': '52px',
+      52: '52px',
     },
     minWidth: {
-      '52': '52px',
-      '48': '12rem',
+      52: '52px',
+      48: '12rem',
     },
     inset: {
       0: '0',
       '1/2': '50%',
-      '20': '5rem',
-      '32': '8rem',
+      20: '5rem',
+      32: '8rem',
     },
     zIndex: {
-      '100': 100,
-      '999': 999,
+      100: 100,
+      999: 999,
     },
   },
   variants: {},
@@ -63,6 +63,7 @@ module.exports = {
       addUtilities({
         '.bg-ps-linear-gradient': { background: `linear-gradient(90deg, ${config('theme.colors.ps-green')} 11.98%, ${config('theme.colors.ps-mint')} 100%)` },
         '.ps-center-absolute': {
+          position: 'absolute',
           top: `${config('theme.inset.1/2')}`,
           left: `${config('theme.inset.1/2')}`,
           transform: `translate(-${config('theme.inset.1/2')}, -${config('theme.inset.1/2')})`,

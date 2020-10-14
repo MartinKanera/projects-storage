@@ -1,0 +1,17 @@
+.popup-enter-active, .popup-leave-active 
+  transition: all .25s ease-in-out
+  transform: scale(1)
+
+.popup-enter, .popup-leave-to
+  transform: scale(0)
+
+.wrapper
+  @apply w-screen h-screen fixed top-0 left-0
+  @apply flex items-center justify-center
+
+  .modal
+    @apply bg-ps-secondary shadow rounded-lg
+    @apply w-11/12 p-6
+
+    @screen md
+      max-width: 40%
