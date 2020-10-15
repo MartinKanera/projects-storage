@@ -76,7 +76,6 @@ export default defineComponent({
     });
 
     const closeDrawer = () => {
-      console.log('Closed');
       drawerState.value = false;
       emit('input', drawerState.value);
     };

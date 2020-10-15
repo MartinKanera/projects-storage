@@ -75,6 +75,10 @@ module.exports = {
           outline: 'none',
           '-webkit-tap-highlight-color': 'transparent',
         },
+        'select:focus': {
+          outline: 'none',
+          '-webkit-tap-highlight-color': 'transparent',
+        },
       });
     }),
   ],
