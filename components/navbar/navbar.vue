@@ -140,6 +140,11 @@ export default defineComponent({
       try {
         const provider = new firebase.auth.OAuthProvider('microsoft.com');
 
+        provider.setCustomParameters({
+          prompt: 'select_account',
+          tenant: process.env.TENANT,
+        });
+
         const authUser = await firebase.auth().signInWithPopup(provider);
 
         const userData = (
@@ -154,7 +159,6 @@ export default defineComponent({
 
             data: {
               // @ts-ignore
-
               accessToken: authUser.credential?.toJSON()['oauthAccessToken'],
             },
           })
@@ -162,11 +166,11 @@ export default defineComponent({
 
         if (userData) {
           mainStore.patch(userData);
-
           mainStore.patch({ loggedIn: true });
         }
       } catch (e) {
         // TODO Error handling
+        console.error(e);
       }
     };
 

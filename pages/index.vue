@@ -1,50 +1,52 @@
 <template lang="pug">
-.idk
-  ps-modal(:value='classModal')
-    .class-modal
-      span.text-ps-white.text-2xl Do jaké patříš třídy?
-      .form
-        ps-select.flex-grow.md-mr-6(v-model='selectedClass', placeholder='Třída...', :options='classes')
-        ps-btn.float-right(@click='') 
-          span.px-10 uložit
+.page
+  //- ps-modal(:value='classModal')
+  //-   .class-modal
+  //-     span.text-ps-white.text-2xl Do jaké patříš třídy?
+  //-     .form
+  //-       ps-select.flex-grow.md-mr-6(v-model='selectedClass', placeholder='Třída...', :options='classes')
+  //-       ps-btn.float-right(@click='') 
+  //-         span.px-10 uložit
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'nuxt-composition-api';
+import { defineComponent } from 'nuxt-composition-api';
 import { useMainStore } from '@/store';
 
 export default defineComponent({
   setup() {
     const mainStore = useMainStore();
 
-    const classModal = ref(false);
+    // Ask for class future feature
 
-    watchEffect(() => {
-      if (mainStore.isLoggedIn.value && mainStore.isStudent.value && mainStore.class.value === '') {
-        classModal.value = true;
-      } else {
-        classModal.value = false;
-      }
-    });
+    // const classModal = ref(false);
 
-    const classes = ref([
-      { placeholder: '4.A', value: '4.a' },
-      { placeholder: '4.B', value: '4.b' },
-    ]);
+    // watchEffect(() => {
+    //   if (mainStore.isLoggedIn.value && mainStore.isStudent.value && mainStore.class.value === '') {
+    //     classModal.value = true;
+    //   } else {
+    //     classModal.value = false;
+    //   }
+    // });
 
-    const selectedClass = ref('');
+    // const classes = ref([
+    //   { placeholder: '4.A', value: '4.a' },
+    //   { placeholder: '4.B', value: '4.b' },
+    // ]);
+
+    // const selectedClass = ref('');
 
     return {
-      classModal,
-      classes,
-      selectedClass,
+      // classModal,
+      // classes,
+      // selectedClass,
     };
   },
 });
 </script>
 
 <style lang="sass" scoped>
-.idk
+.page
   height: 200vh
 
 .class-modal
