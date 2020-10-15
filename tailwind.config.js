@@ -13,6 +13,7 @@ const colors = {
 module.exports = {
   future: {
     removeDeprecatedGapUtilities: true,
+    purgeLayersByDefault: true,
   },
   theme: {
     colors,
@@ -72,6 +73,10 @@ module.exports = {
       addBase({
         body: { backgroundColor: config('theme.colors.ps-primary'), overflowX: 'hidden' },
         'button:focus': {
+          outline: 'none',
+          '-webkit-tap-highlight-color': 'transparent',
+        },
+        'select:focus': {
           outline: 'none',
           '-webkit-tap-highlight-color': 'transparent',
         },
