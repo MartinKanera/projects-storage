@@ -73,20 +73,15 @@ type Props = {
 export default defineComponent({
   components: {
     dropDown,
-
     bell,
-
     user,
-
     logout,
-
     microsoftLogo,
   },
 
   props: {
     value: {
       type: Boolean,
-
       default: false,
     },
   },
@@ -190,27 +185,16 @@ export default defineComponent({
 
     return {
       burger,
-
       toggleBurger,
-
       displaySettings,
-
       closeSettings,
-
       toggleSettings,
-
       displayNotifications,
-
       toggleNotifications,
-
       closeNotifications,
-
       isDesktop,
-
       loginWithMicrosoft,
-
       logOut,
-
       mainStore,
     };
   },
