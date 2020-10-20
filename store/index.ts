@@ -1,32 +1,42 @@
 import { createStore } from 'pinia';
 
 type State = {
-  loggedIn: Boolean;
-  displayName: String;
-  profilePicture: String;
-  student: Boolean;
-  admin: Boolean;
-  class: String;
-  year: Number;
+  user: {
+    id: String;
+    loggedIn: Boolean;
+    displayName: String;
+    profilePicture: String;
+    student: Boolean;
+    admin: Boolean;
+    year: Number;
+  };
+  project: {
+    id: String;
+  };
 };
 
 export const useMainStore = createStore({
   id: 'main',
   state: (): State => ({
-    loggedIn: false,
-    displayName: '',
-    profilePicture: '',
-    student: false,
-    admin: false,
-    class: '',
-    year: 0,
+    user: {
+      id: '',
+      loggedIn: false,
+      displayName: '',
+      profilePicture: '',
+      student: false,
+      admin: false,
+      year: 0,
+    },
+    project: {
+      id: '',
+    },
   }),
   getters: {
-    isLoggedIn: (state: State) => state.loggedIn,
-    displayName: (state: State) => state.displayName,
-    profilePicture: (state: State) => state.profilePicture,
-    isStudent: (state: State) => state.student,
-    isAdmin: (state: State) => state.admin,
-    class: (state: State) => state.class,
+    isLoggedIn: (state: State) => state.user.loggedIn,
+    displayName: (state: State) => state.user.displayName,
+    profilePicture: (state: State) => state.user.profilePicture,
+    isStudent: (state: State) => state.user.student,
+    isAdmin: (state: State) => state.user.admin,
+    projectId: (state: State) => state.project.id,
   },
 });
