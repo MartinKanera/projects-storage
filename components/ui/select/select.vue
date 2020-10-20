@@ -1,11 +1,16 @@
 <template lang="pug">
-select(@change='onSelectValue($event)')
-  option(v-if='placeholder') {{ placeholder }}
-  option(v-for='option in options', :value='option.value') {{ option.placeholder }}
+.select-wrap.relative
+  select(:class='{ loading: loading }', @change='onSelectValue($event)', :disabled='options.length === 0')
+    option(v-if='!options.length > 0') Nic k dispozici
+    option(v-else-if='placeholderValue') {{ placeholderValue }}
+    option(v-for='option in options', :value='option.value') {{ option.placeholder }}
+  .loader-wrap(v-if='loading')
+    img.ml-4.animate-spin(src='/loader.svg', width='20')
+    span.ml-2 Načítaní
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'nuxt-composition-api';
+import { defineComponent, ref } from 'nuxt-composition-api';
 
 export default defineComponent({
   props: {
@@ -19,14 +24,22 @@ export default defineComponent({
       },
       type: Array,
     },
+    loading: {
+      default: false,
+      type: Boolean,
+    },
   },
-  setup(_, { emit }) {
+  setup({ placeholder }, { emit }) {
+    const placeholderValue = ref(placeholder);
+
     const onSelectValue = (event: any) => {
+      placeholderValue.value = '';
       emit('input', event.target.value);
     };
 
     return {
       onSelectValue,
+      placeholderValue,
     };
   },
 });

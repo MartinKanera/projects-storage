@@ -1,6 +1,6 @@
 select
-  @apply py-2 pl-4
-  @apply text-ps-white rounded-lg font-bold shadow
+  @apply py-2 pl-4 w-full
+  @apply text-ps-white rounded-lg font-bold shadow text-sm
   @apply border-b-2 border-solid border-ps-green
 
   appearance: none
@@ -9,3 +9,8 @@ select
   background-size: 0.8em auto, 100%
 
   background-color: #202020
+
+.loader-wrap
+  @apply absolute top-0 w-full h-full bg-ps-primary rounded-lg text-sm
+  @apply border-b-2 border-solid border-ps-green
+  @apply flex items-center
