@@ -8,7 +8,7 @@ const config: NuxtConfig = {
    */
   target: 'server',
   server: {
-    port: 80,
+    port: process.env.PORT || 80,
   },
   /*
    ** Headers of the page
