@@ -137,9 +137,7 @@ export default defineComponent({
         const userData = (
           await axios.request({
             url: '/api/user/create',
-
             method: 'POST',
-
             headers: {
               authorization: `Bearer ${await authUser.user?.getIdToken()}`,
             },
@@ -167,8 +165,8 @@ export default defineComponent({
 
       try {
         await firebase.auth().signOut();
-
         await mainStore.reset();
+        root.$router.replace('/');
 
         closeSettings();
       } catch (e) {
