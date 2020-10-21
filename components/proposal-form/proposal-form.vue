@@ -24,7 +24,7 @@ type Project = {
 };
 
 export default defineComponent({
-  setup() {
+  setup(_, ctx) {
     const mainStore = useMainStore();
 
     const alreadySubmitted = ref(false);
@@ -32,9 +32,30 @@ export default defineComponent({
     const teachersLoading = ref(true);
     const teachers = ref([]);
 
+    // useFetch(async () => {
+    //   try {
+    //     const response = await axios.request({
+    //       url: '/api/teachers/list',
+    //       headers: {
+    //         authorization: mainStore.state.user.id,
+    //       },
+    //     });
+
+    //     if (response.data.status === 202) {
+    //       alreadySubmitted.value = true;
+    //     } else {
+    //       teachers.value = response.data;
+    //     }
+    //     teachersLoading.value = false;
+    //   } catch (e) {
+    //     console.error(e);
+    //   }
+    // });
+
     useFetch(async () => {
       try {
-        const response = await axios.get('/api/teachers/list', {
+        // @ts-ignore
+        const response = await ctx.root.$nuxt.$axios.get('/api/teachers/list', {
           headers: {
             authorization: mainStore.state.user.id,
           },
