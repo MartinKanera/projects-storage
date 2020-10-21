@@ -14,7 +14,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build . --tag gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --build-arg FIREBASE_CONFIG=${{ secrets.FIREBASE_CONFIG }} --build-arg SERVICE_ACCOUNT=${{ secrets.SERVICE_ACCOUNT }} --build-arg STORAGE_SERVICE_ACCOUNT=${{ secrets.STORAGE_SERVICE_ACCOUNT }} --build-arg TENANT=${{ secrets.TENANT_ID }}
+          docker build . --tag gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --build-arg FIREBASE_CONFIG=${{ secrets.FIREBASE_CONFIG }} --build-arg SERVICE_ACCOUNT=${{ secrets.SERVICE_ACCOUNT }} --build-arg STORAGE_SERVICE_ACCOUNT=${{ secrets.STORAGE_SERVICE_ACCOUNT }} --build-arg TENANT=${{ secrets.TENANT_ID }} --build-arg BROWSER_BASE_URL=${{ secrets.BROWSER_BASE_URL }}
 
       - name: Authenticate into GCP
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
