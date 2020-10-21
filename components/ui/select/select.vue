@@ -34,6 +34,7 @@ export default defineComponent({
 
     const onSelectValue = (event: any) => {
       placeholderValue.value = '';
+
       emit('input', event.target.value);
     };
 

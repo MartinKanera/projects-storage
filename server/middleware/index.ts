@@ -9,18 +9,20 @@ const serverMiddleware: ServerMiddleware = async (req, res, next): Promise<void>
     const userAuth = await admin.auth().verifyIdToken(idToken);
 
     if (userAuth) {
-      const project = (await admin.firestore().collection('projects').where('studentId', '==', userAuth.uid).get()).docs[0];
-
       const responseData = {
         user: {
           id: userAuth.uid,
           ...(await admin.firestore().collection('users').doc(userAuth.uid).get()).data(),
         },
-        project: {
+      };
+
+      try {
+        const project = (await admin.firestore().collection('projects').where('studentId', '==', userAuth.uid).get()).docs[0];
+        Object.assign('project', {
           id: project.id,
           ...project.data(),
-        },
-      };
+        });
+      } catch (_) {}
 
       // @ts-ignore
       res.locals = responseData;

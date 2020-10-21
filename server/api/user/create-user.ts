@@ -66,18 +66,21 @@ export default async (req: Request, res: Response) => {
       return res.status(200).json({ user: newUserDoc });
     }
 
-    const project = (await admin.firestore().collection('projects').where('studentId', '==', userData.uid).get()).docs[0];
-
     const responseData = {
       user: {
         id: userData.uid,
         ...userDoc,
       },
-      project: {
+    };
+
+    try {
+      const project = (await admin.firestore().collection('projects').where('studentId', '==', userData.uid).get()).docs[0];
+
+      Object.assign('project', {
         id: project.id,
         ...project.data(),
-      },
-    };
+      });
+    } catch (_) {}
 
     return res.status(200).send(responseData);
   } catch (e) {
