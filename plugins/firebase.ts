@@ -16,7 +16,7 @@ const plugin: Plugin = (context: Context) => {
       // @ts-ignore
       const userData = context.res?.locals;
 
-      if (userData.user) {
+      if (userData && userData.user) {
         userData.user.loggedIn = true;
 
         mainStore.patch(userData);
