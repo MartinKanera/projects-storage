@@ -56,16 +56,33 @@ export default async (req: Request, res: Response) => {
         admin: false,
         student: userData.email?.includes('delta-studenti'),
         verified: false,
-        class: '',
         year: 0,
       };
 
       await usersCollection.doc(userData.uid).set(newUserDoc);
 
-      return res.status(200).json({ user: newUserDoc, project: {} });
+      Object.assign('id', userData.uid);
+
+      return res.status(200).json({ user: newUserDoc });
     }
 
-    return res.status(200).json({ user: userDoc, project: {} });
+    const responseData = {
+      user: {
+        id: userData.uid,
+        ...userDoc,
+      },
+    };
+
+    try {
+      const project = (await admin.firestore().collection('projects').where('studentId', '==', userData.uid).get()).docs[0];
+
+      Object.assign('project', {
+        id: project.id,
+        ...project.data(),
+      });
+    } catch (_) {}
+
+    return res.status(200).send(responseData);
   } catch (e) {
     return res.status(400).send('Bad request');
   }

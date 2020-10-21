@@ -4,21 +4,17 @@
     .user-wrap
       .avatar-wrap(v-if='mainStore.isLoggedIn')
         img.avatar(:src='mainStore.profilePicture')/
-
       .user-info
         .user-text(v-if='mainStore.isLoggedIn')
           span.user-name {{ mainStore.displayName }}
-
-          span.user-role admin
-
+          span.user-role(v-if='!mainStore.isStudent && !mainStore.isAdmin') Učitel
+          span.user-role(v-else-if='!mainStore.isStudent && mainStore.isAdmin') Admin/Učitel
         div(v-else)
           ps-btn(text, @click='loginWithMicrosoft')
             template(#default)
               span.microsoft-btn microsoft login
-
             template(#icon-left)
               microsoft-logo(mr-1)/
-
       .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeSettings')
         drop-down.drop(:class='{ "active-drop": displaySettings }', @click='toggleSettings')/
 
@@ -30,17 +26,13 @@
           //-     template(#icon-left)
 
           //-       user/
-
           ps-btn.text-ps-red(block, text, @click='logOut') Odhlásit
             template(#icon-left)
               logout/
-
       .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeNotifications')
         bell.cursor-pointer.ml-1(@click='toggleNotifications')/
-
         ps-dropdown(:value='displayNotifications')
           span.mx-auto.p-2 Nothing here :-O
-
   .menu-btn(v-if='!isDesktop', @click='toggleBurger')
     .burger(:class='{ active: burger }')
 </template>
@@ -73,20 +65,15 @@ type Props = {
 export default defineComponent({
   components: {
     dropDown,
-
     bell,
-
     user,
-
     logout,
-
     microsoftLogo,
   },
 
   props: {
     value: {
       type: Boolean,
-
       default: false,
     },
   },
@@ -150,9 +137,7 @@ export default defineComponent({
         const userData = (
           await axios.request({
             url: '/api/user/create',
-
             method: 'POST',
-
             headers: {
               authorization: `Bearer ${await authUser.user?.getIdToken()}`,
             },
@@ -162,11 +147,12 @@ export default defineComponent({
               accessToken: authUser.credential?.toJSON()['oauthAccessToken'],
             },
           })
-        ).data.user;
+        ).data;
 
-        if (userData) {
+        if (userData.user) {
+          userData.user.loggedIn = true;
+
           mainStore.patch(userData);
-          mainStore.patch({ loggedIn: true });
         }
       } catch (e) {
         // TODO Error handling
@@ -179,8 +165,8 @@ export default defineComponent({
 
       try {
         await firebase.auth().signOut();
-
         await mainStore.reset();
+        root.$router.replace('/');
 
         closeSettings();
       } catch (e) {
@@ -190,27 +176,16 @@ export default defineComponent({
 
     return {
       burger,
-
       toggleBurger,
-
       displaySettings,
-
       closeSettings,
-
       toggleSettings,
-
       displayNotifications,
-
       toggleNotifications,
-
       closeNotifications,
-
       isDesktop,
-
       loginWithMicrosoft,
-
       logOut,
-
       mainStore,
     };
   },

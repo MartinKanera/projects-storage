@@ -3,23 +3,23 @@ transition(name='drawer')
   .drawer(v-if='drawerState || isDesktop')
     transition(name='drawer-content')
       .content
-        nuxt-link(v-if='', to='/', @click='closeDrawer')
+        nuxt-link(to='/', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               presentation-icon(:size='32')/
               span.item-title Veřejné projekty
-        nuxt-link(v-if='loggedIn && verifiedStudent', to='/myproject')
+        nuxt-link(v-if='loggedIn && !project', to='/myproject')
           .menu-item(@click='closeDrawer')
             .wrap
               strategy-icon(:size='32')/
               span.item-title Můj projekt
         //- TODO Check if has projectId
-        nuxt-link(v-if='loggedIn && verifiedStudent && false', to='/proposal', @click='closeDrawer')
+        nuxt-link(v-if='loggedIn && project', to='/proposal', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               book-icon(:size='32')/
               span.item-title Zadání
-        nuxt-link(v-if='loggedIn && teacher', to='/students', @click='closeDrawer')
+        nuxt-link(v-if='loggedIn && !student', to='/students', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               accounts-icon(:size='32')/
@@ -86,8 +86,8 @@ export default defineComponent({
       closeDrawer,
       loggedIn: mainStore.isLoggedIn,
       admin: mainStore.isAdmin,
-      verifiedStudent: mainStore.isStudent && mainStore.class.value !== '',
-      teacher: !mainStore.isStudent,
+      student: mainStore.isStudent,
+      project: !!mainStore.projectId,
     };
   },
 });

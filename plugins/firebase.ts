@@ -14,10 +14,11 @@ const plugin: Plugin = (context: Context) => {
 
     if (process.server) {
       // @ts-ignore
-      const userData = context.res?.locals?.user;
+      const userData = context.res?.locals;
 
-      if (userData) {
-        mainStore.patch({ loggedIn: true });
+      if (userData.user) {
+        userData.user.loggedIn = true;
+
         mainStore.patch(userData);
       } else {
         mainStore.reset();

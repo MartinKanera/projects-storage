@@ -2,7 +2,7 @@
 .min-h-screen
   ps-navbar(v-model='isOpen')/
   ps-drawer(v-model='isOpen')/
-  nuxt.pt-20/
+  nuxt.layout.pt-20.pl-0/
 </template>
 
 <script lang="ts">
@@ -25,3 +25,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.layout
+  @screen md
+    @apply pt-32 pl-28
+</style>

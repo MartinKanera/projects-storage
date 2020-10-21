@@ -1,5 +1,5 @@
 <template lang="pug">
-button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text, shadow: !text }', @click='$emit("click")')
+button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text, shadow: !text, disabled: disabled }', @click='$emit("click")', :disabled='disabled')
   .icon-left.mr-1(v-if='$slots["icon-left"]')
     slot(name='icon-left')
   .capitalize.flex-grow
@@ -20,6 +20,10 @@ export default defineComponent({
       default: false,
     },
     text: {
+      type: Boolean,
+      default: false,
+    },
+    disabled: {
       type: Boolean,
       default: false,
     },
