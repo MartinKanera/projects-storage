@@ -83,7 +83,7 @@ export default defineComponent({
         try {
           firebase
             .firestore()
-            .collection('projects')
+            .collection('prepaparedProjects')
             .where('teacherId', '==', selectedTeacherId)
             .where('studentId', '==', null)
             .onSnapshot((snapshot) => {
