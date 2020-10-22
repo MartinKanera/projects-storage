@@ -72,7 +72,7 @@ const config: NuxtConfig = {
    ** See https://axios.nuxtjs.org/options
    */
   axios: {
-    baseURL: process.env.BROWSER_BASE_URL,
+    baseURL: process.env.NODE_ENV === 'production' ? process.env.BROWSER_BASE_URL : '',
   },
   /*
    ** Build configuration
