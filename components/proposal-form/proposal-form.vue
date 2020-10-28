@@ -7,6 +7,7 @@
   span.self-start.mb-1.text-ps-green Projekty
   ps-select.w-full.mb-8(v-model='selectedProjectId', placeholder='Projekt', :options='projects', :loading='projectsLoading')
   ps-btn(:disabled='submitted || loadingBtn || disabledBtn', :loading='loadingBtn', @click='submitProposal') Odeslat
+  ps-snackbar(:display='displaySnack', :delay='9000') Zadání odesláno, počkej na schválení učitelem
 </template>
 
 <script lang="ts">
@@ -69,6 +70,7 @@ export default defineComponent({
             .where('teacherId', '==', selectedTeacherId)
             .where('studentId', '==', null)
             .onSnapshot((snapshot) => {
+              if (submitted.value) return Promise.reject(new Error('Proposal already submitted'));
               projects.value = snapshot.docs.map((projectDoc) => {
                 return {
                   placeholder: projectDoc.data().name,
@@ -95,6 +97,7 @@ export default defineComponent({
 
     const loadingBtn = ref(false);
     const disabledBtn = ref(true);
+    const displaySnack = ref(false);
 
     watch(selectedProjectId, (selectedProjectId) => (disabledBtn.value = selectedProjectId === ''));
 
@@ -108,10 +111,15 @@ export default defineComponent({
             },
             { merge: true },
           );
+
+          submitted.value = true;
+          displaySnack.value = true;
+
+          teachers.value = [];
+          projects.value = [];
         } catch (e) {
           console.error(e);
         }
-
         loadingBtn.value = false;
       }
     };
@@ -127,6 +135,7 @@ export default defineComponent({
       loadingBtn,
       submitProposal,
       disabledBtn,
+      displaySnack,
     };
   },
 });
