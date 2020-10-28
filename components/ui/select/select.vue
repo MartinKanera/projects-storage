@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'nuxt-composition-api';
+import { defineComponent, ref, watch, toRefs } from 'nuxt-composition-api';
 
 export default defineComponent({
   props: {
@@ -29,14 +29,20 @@ export default defineComponent({
       type: Boolean,
     },
   },
-  setup({ placeholder }, { emit }) {
-    const placeholderValue = ref(placeholder);
+  setup(props, { emit }) {
+    const { placeholder, options } = toRefs(props);
+
+    const placeholderValue = ref(props.placeholder);
 
     const onSelectValue = (event: any) => {
       placeholderValue.value = '';
 
       emit('input', event.target.value);
     };
+
+    watch(options, (_) => {
+      placeholderValue.value = placeholder.value;
+    });
 
     return {
       onSelectValue,
