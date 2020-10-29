@@ -7,5 +7,14 @@
   &.btn-text
     background: transparent
 
-.disabled
-  @apply cursor-not-allowed
+  &.disabled    
+    opacity: 0.7 
+
+
+.spinner
+  @apply animate-spin mx-auto h-24 w-24
+
+  background-color: black
+    -webkit-mask-image: url('/loader.svg')
+  mask-image: url('/loader.svg')
+  mask-size: contain

@@ -1,0 +1,24 @@
+.snackbar
+  @apply w-screen h-auto py-3 px-6 text-ps-primary font-semibold
+  @apply fixed bottom-0 bg-ps-linear-gradient rounded-t-lg shadow
+
+  @screen md
+    @apply w-8/12 left-1/2
+
+    transform: translateX(-50%)
+
+
+.slide-enter-active, .slide-leave-active
+  transition: transform 0.75s
+
+
+.slide-enter, .slide-leave-to
+  transform: translateY(101%)
+
+@screen md
+  .slide-enter-active, .slide-leave-active
+    transition: transform 0.75s
+
+
+  .slide-enter, .slide-leave-to
+    transform: translate(-50%, 101%)

@@ -61,7 +61,7 @@ export default async (req: Request, res: Response) => {
 
       await usersCollection.doc(userData.uid).set(newUserDoc);
 
-      Object.assign('id', userData.uid);
+      Object.assign('newUserDoc', { id: userData.uid });
 
       return res.status(200).json({ user: newUserDoc });
     }

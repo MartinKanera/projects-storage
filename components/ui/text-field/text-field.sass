@@ -1,0 +1,24 @@
+.text-field
+  @apply relative
+
+  .input
+    @apply pl-4 py-2 bg-ps-primary w-full
+    @apply text-ps-white rounded-lg shadow text-sm
+    @apply border-b-2 border-solid border-ps-green
+
+    height: 36px
+
+  &:focus-within .label,.input:not(:placeholder-shown) + .label
+    & > .text
+      @apply text-ps-green
+      @apply text-sm
+      @apply transform -translate-y-8 -translate-x-4
+      
+  .label
+    @apply absolute top-0 h-full box-border flex items-center
+    @apply pointer-events-none text-sm
+    @apply pl-4
+
+    & > .text
+      @apply text-ps-white
+      @apply transition-all duration-300 ease-out
