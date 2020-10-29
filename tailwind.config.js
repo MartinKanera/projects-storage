@@ -72,11 +72,7 @@ module.exports = {
       });
       addBase({
         body: { backgroundColor: config('theme.colors.ps-primary'), overflowX: 'hidden' },
-        'button:focus': {
-          outline: 'none',
-          '-webkit-tap-highlight-color': 'transparent',
-        },
-        'select:focus': {
+        '*:focus': {
           outline: 'none',
           '-webkit-tap-highlight-color': 'transparent',
         },

@@ -2,10 +2,11 @@
 .proposal-form
   span.text-lg.mb-5(v-if='!submitted') Vyber si téma maturitního projektu
   span.text-2xl.mb-5(v-else) Už máš vybrané téma
-  span.self-start.mb-1.text-ps-green Vedoucí projektu
+  span.self-start.mb-1.text-ps-green.text-sm Vedoucí projektu
   ps-select.w-full.mb-5(v-model='selectedTeacherId', placeholder='Učitel', :options='teachers', :loading='teachersLoading')
-  span.self-start.mb-1.text-ps-green Projekty
-  ps-select.w-full.mb-8(v-model='selectedProjectId', placeholder='Projekt', :options='projects', :loading='projectsLoading')
+  span.self-start.mb-1.text-ps-green.text-sm Projekty
+  ps-select.w-full.mb-10(v-model='selectedProjectId', placeholder='Projekt', :options='projects', :loading='projectsLoading')
+  ps-text-field.w-full.mb-8(v-model='studentsProjectName', v-if='displayTextField', type='text', label='Tvé vlastní téma', name='theme')
   ps-btn(:disabled='submitted || loadingBtn || disabledBtn', :loading='loadingBtn', @click='submitProposal') Odeslat
   ps-snackbar(:display='displaySnack', :delay='9000') Zadání odesláno, počkej na schválení učitelem
 </template>
@@ -61,8 +62,7 @@ export default defineComponent({
     watch(selectedTeacherId, (selectedTeacherId) => {
       if (process.client && selectedTeacherId) {
         projectsLoading.value = true;
-        const oldSelectedProjectId = selectedProjectId.value;
-
+        selectedProjectId.value = '';
         try {
           firebase
             .firestore()
@@ -77,15 +77,12 @@ export default defineComponent({
                   value: projectDoc.id,
                 };
               });
+              projects.value.push({ placeholder: 'Tvé téma', value: 'studentTheme' });
             });
-
-          if (projects.value.some((project) => project.value !== oldSelectedProjectId)) {
-            selectedProjectId.value = '';
-          }
+          projectsLoading.value = false;
         } catch (e) {
           console.error(e);
         }
-        projectsLoading.value = false;
       }
     });
 
@@ -99,18 +96,29 @@ export default defineComponent({
     const disabledBtn = ref(true);
     const displaySnack = ref(false);
 
-    watch(selectedProjectId, (selectedProjectId) => (disabledBtn.value = selectedProjectId === ''));
+    const studentsProjectName = ref('');
+    const displayTextField = ref(false);
+
+    watch(selectedProjectId, (selectedProjectId) => {
+      disabledBtn.value = selectedProjectId === '';
+      displayTextField.value = selectedProjectId === 'studentTheme';
+    });
 
     const submitProposal = async () => {
       if (!disabledBtn.value) {
         loadingBtn.value = true;
         try {
-          await firebase.firestore().collection('proposals').doc(selectedProjectId.value).set(
-            {
-              studentId: mainStore.state.user.id,
-            },
-            { merge: true },
-          );
+          let proposal = {
+            studentId: mainStore.state.user.id,
+            teacherId: selectedTeacherId.value,
+          };
+
+          if (studentsProjectName.value !== '') proposal = { ...proposal, ...{ name: studentsProjectName.value } };
+
+          const collectionRef = firebase.firestore().collection('proposals');
+          const docRef = selectedProjectId.value === 'studentTheme' ? collectionRef.doc() : collectionRef.doc(selectedProjectId.value);
+
+          await docRef.set(proposal, { merge: true });
 
           submitted.value = true;
           displaySnack.value = true;
@@ -136,6 +144,8 @@ export default defineComponent({
       submitProposal,
       disabledBtn,
       displaySnack,
+      studentsProjectName,
+      displayTextField,
     };
   },
 });

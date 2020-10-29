@@ -2,7 +2,7 @@
 .select-wrap.relative
   select(:class='{ loading: loading }', @change='onSelectValue($event)', :disabled='options.length === 0')
     option(v-if='!options.length > 0') Nic k dispozici
-    option(v-else-if='placeholderValue') {{ placeholderValue }}
+    option(v-else-if='placeholderValue', selected='selected') {{ placeholderValue }}
     option(v-for='option in options', :value='option.value') {{ option.placeholder }}
   .loader-wrap(v-if='loading')
     img.ml-4.animate-spin(src='/loader.svg', width='20')
