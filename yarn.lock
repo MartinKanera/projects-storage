@@ -2761,10 +2761,10 @@
     mustache "^2.3.0"
     stack-trace "0.0.10"
 
-"@prettier/plugin-pug@1.8.1":
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/@prettier/plugin-pug/-/plugin-pug-1.8.1.tgz#82d08c95221d78ec0c2013808e470b5ec9fd8e10"
-  integrity sha512-lXyGIECz6XsggTNfjqaQxeOB4PqoAL2pmhJ7koV7ibKA3JPlQeEkk91PcnUsSNFyFtLzfFBwaHepoBmJb5FNWQ==
+"@prettier/plugin-pug@1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@prettier/plugin-pug/-/plugin-pug-1.10.0.tgz#8b0889eafe5842dfbe4c52a60e29604739b74f32"
+  integrity sha512-kxPqSSNyRLayA8Kspscam/MWIdE8cDuxA6i1FKM+EBlHIn5/jtYJB3H0WMzlZhejKv7lXOICx23d4Ak8dCurhg==
   dependencies:
     pug-lexer "^5.0.0"
 
