@@ -1,5 +1,5 @@
 .btn
-  @apply rounded-lg p-2 flex justify-center items-center bg-ps-linear-gradient
+  @apply rounded-lg p-2 flex justify-center items-center bg-ps-linear-gradient relative
 
   &.btn-block
     @apply w-full
@@ -10,9 +10,8 @@
   &.disabled    
     opacity: 0.7 
 
-
 .spinner
-  @apply animate-spin mx-auto h-24 w-24
+  @apply animate-spin mx-auto h-24 w-24 absolute
 
   background-color: black
     -webkit-mask-image: url('/loader.svg')

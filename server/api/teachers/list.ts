@@ -16,7 +16,7 @@ export default async (req: Request, res: Response) => {
     return res.status(401).send();
   }
 
-  const teachersData = (await admin.firestore().collection('users').where('student', '==', false).get()).docs;
+  const teachersData = (await admin.firestore().collection('users').where('teacher', '==', true).get()).docs;
 
   const teachersList = teachersData.map((teacherDoc) => {
     return {

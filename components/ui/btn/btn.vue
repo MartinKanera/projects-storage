@@ -1,11 +1,10 @@
 <template lang="pug">
-button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text, shadow: !text, disabled: disabled }', @click='$emit("click")', :disabled='disabled')
+button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text, shadow: !text, disabled: disabled, loading: loading }', @click='$emit("click")', :disabled='disabled')
   .icon-left.mr-1(v-if='$slots["icon-left"]')
     slot(name='icon-left')
   .capitalize.flex-grow
-    slot(v-if='!loading') button
-    div(v-else)
-      .spinner
+    slot
+  .spinner(v-if='loading')
   .icon-right.ml-1(v-if='$slots["icon-right"]')
     slot(name='icon-right')
 </template>
