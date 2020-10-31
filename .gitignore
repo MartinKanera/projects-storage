@@ -95,3 +95,5 @@ sw.*
 #storybook
 .nuxt-storybook
 storybook-static
+
+firebase/firestore-deploy.rules

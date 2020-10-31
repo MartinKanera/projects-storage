@@ -76,15 +76,17 @@ module.exports = {
           outline: 'none',
           '-webkit-tap-highlight-color': 'transparent',
         },
-        'select:focus': {
+        select: {
           outline: 'none',
-          '-webkit-tap-highlight-color': 'transparent',
+        },
+        '*:focus': {
+          outline: 'none',
         },
       });
     }),
   ],
   purge: {
     enabled: process.env.NODE_ENV === 'production',
-    content: ['components/**/*.vue', 'layouts/**/*.vue', 'pages/**/*.vue', 'plugins/**/*.js', 'nuxt.config.js'],
+    content: ['components/**/*.vue', 'components/**/*.sass', 'layouts/**/*.vue', 'pages/**/*.vue', 'plugins/**/*.ts', 'nuxt.config.ts'],
   },
 };

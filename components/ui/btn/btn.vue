@@ -3,7 +3,9 @@ button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text, shadow: !te
   .icon-left.mr-1(v-if='$slots["icon-left"]')
     slot(name='icon-left')
   .capitalize.flex-grow
-    slot button
+    slot(v-if='!loading') button
+    div(v-else)
+      .spinner
   .icon-right.ml-1(v-if='$slots["icon-right"]')
     slot(name='icon-right')
 </template>
@@ -24,6 +26,10 @@ export default defineComponent({
       default: false,
     },
     disabled: {
+      type: Boolean,
+      default: false,
+    },
+    loading: {
       type: Boolean,
       default: false,
     },

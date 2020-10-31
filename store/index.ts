@@ -7,6 +7,7 @@ type State = {
     displayName: String;
     profilePicture: String;
     student: Boolean;
+    teacher: Boolean;
     admin: Boolean;
     year: Number;
   };
@@ -24,6 +25,7 @@ export const useMainStore = createStore({
       displayName: '',
       profilePicture: '',
       student: false,
+      teacher: false,
       admin: false,
       year: 0,
     },
@@ -36,6 +38,7 @@ export const useMainStore = createStore({
     displayName: (state: State) => state.user.displayName,
     profilePicture: (state: State) => state.user.profilePicture,
     isStudent: (state: State) => state.user.student,
+    isTeacher: (state: State) => state.user.teacher,
     isAdmin: (state: State) => state.user.admin,
     projectId: (state: State) => state.project.id,
   },

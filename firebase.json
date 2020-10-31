@@ -1,0 +1,11 @@
+{
+  "firestore": {
+    "rules": "firebase/firestore-deploy.rules",
+    "indexes": "firebase/firestore.indexes.json",
+    "predeploy": ["node firebase/rules.js"]
+  },
+  "storage": {
+    "rules": "firebase/storage.rules",
+    "predeploy": ["node firebase/rules.js"]
+  }
+}
