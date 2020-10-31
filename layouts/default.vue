@@ -1,8 +1,8 @@
 <template lang="pug">
 .min-h-screen
-  ps-navbar(v-model='isOpen')/
-  ps-drawer(v-model='isOpen')/
-  nuxt.layout.pt-20.pl-0/
+  ps-navbar.top-0(v-model='isOpen')/
+  ps-drawer.top-0(v-model='isOpen')/
+  nuxt.layout.mt-20.ml-0/
 </template>
 
 <script lang="ts">
@@ -29,5 +29,5 @@ export default defineComponent({
 <style lang="sass" scoped>
 .layout
   @screen md
-    @apply pt-32 pl-28
+    @apply mt-32 ml-28
 </style>
