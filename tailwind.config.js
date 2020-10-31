@@ -72,15 +72,21 @@ module.exports = {
       });
       addBase({
         body: { backgroundColor: config('theme.colors.ps-primary'), overflowX: 'hidden' },
-        '*:focus': {
+        'button:focus': {
           outline: 'none',
           '-webkit-tap-highlight-color': 'transparent',
+        },
+        select: {
+          outline: 'none',
+        },
+        '*:focus': {
+          outline: 'none',
         },
       });
     }),
   ],
   purge: {
     enabled: process.env.NODE_ENV === 'production',
-    content: ['components/**/*.vue', 'layouts/**/*.vue', 'pages/**/*.vue', 'plugins/**/*.js', 'nuxt.config.js'],
+    content: ['components/**/*.vue', 'components/**/*.sass', 'layouts/**/*.vue', 'pages/**/*.vue', 'plugins/**/*.ts', 'nuxt.config.ts'],
   },
 };

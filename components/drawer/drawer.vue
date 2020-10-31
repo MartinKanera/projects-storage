@@ -8,18 +8,18 @@ transition(name='drawer')
             .wrap
               presentation-icon(:size='32')/
               span.item-title Veřejné projekty
-        nuxt-link(v-if='loggedIn && !project', to='/myproject')
+        nuxt-link(v-if='loggedIn && !project && student', to='/myproject')
           .menu-item(@click='closeDrawer')
             .wrap
               strategy-icon(:size='32')/
               span.item-title Můj projekt
         //- TODO Check if has projectId
-        nuxt-link(v-if='loggedIn && project', to='/proposal', @click='closeDrawer')
+        nuxt-link(v-if='loggedIn && project && student', to='/proposal', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               book-icon(:size='32')/
               span.item-title Zadání
-        nuxt-link(v-if='loggedIn && !student', to='/students', @click='closeDrawer')
+        nuxt-link(v-if='loggedIn && teacher', to='/students', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               accounts-icon(:size='32')/
@@ -87,6 +87,7 @@ export default defineComponent({
       loggedIn: mainStore.isLoggedIn,
       admin: mainStore.isAdmin,
       student: mainStore.isStudent,
+      teacher: mainStore.isTeacher,
       project: !!mainStore.projectId,
     };
   },

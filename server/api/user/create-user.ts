@@ -40,7 +40,7 @@ export default async (req: Request, res: Response) => {
       return `https://storage.googleapis.com/${bucketName}/${fileName}`;
     } catch (_) {
       // TODO take 'anonymous' profile picture
-      return '';
+      return 'https://storage.googleapis.com/ps-profile-pictures/empty.png';
     }
   };
 
@@ -50,18 +50,19 @@ export default async (req: Request, res: Response) => {
     const userDoc = (await admin.firestore().collection('users').doc(userData.uid).get()).data();
 
     if (!userDoc) {
-      const newUserDoc = {
+      let newUserDoc = {
         displayName: userData.name,
         profilePicture: await saveProfileImage(userData.uid),
         admin: false,
         student: userData.email?.includes('delta-studenti'),
+        teacher: userData.email?.includes('delta-skola'),
         verified: false,
         year: 0,
       };
 
       await usersCollection.doc(userData.uid).set(newUserDoc);
 
-      Object.assign('newUserDoc', { id: userData.uid });
+      newUserDoc = { ...newUserDoc, ...{ id: userData.uid } };
 
       return res.status(200).json({ user: newUserDoc });
     }
