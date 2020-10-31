@@ -7,25 +7,20 @@
       .user-info
         .user-text(v-if='mainStore.isLoggedIn')
           span.user-name {{ mainStore.displayName }}
-          span.user-role(v-if='!mainStore.isStudent && !mainStore.isAdmin') Učitel
-          span.user-role(v-else-if='!mainStore.isStudent && mainStore.isAdmin') Admin/Učitel
+          span.user-role(v-if='mainStore.isTeacher && !mainStore.isAdmin') Učitel
+          span.user-role(v-else-if='mainStore.isAdmin && !mainStore.isTeacher') Admin
+          span.user-role(v-else-if='mainStore.isTeacher && mainStore.isAdmin') Admin/Učitel
         div(v-else)
-          ps-btn(text, @click='loginWithMicrosoft')
+          ps-btn(text, @click='loginWithMicrosoft', :disabled='awaitingLogin')
             template(#default)
               span.microsoft-btn microsoft login
             template(#icon-left)
-              microsoft-logo(mr-1)/
+              microsoft-logo(v-if='!awaitingLogin')/
+              ps-microsoft-loader.mt-2(v-else)
       .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeSettings')
         drop-down.drop(:class='{ "active-drop": displaySettings }', @click='toggleSettings')/
 
         ps-dropdown(:value='displaySettings')
-          //- nuxt-link(to='/settings')
-
-          //-   ps-btn(block, text) nastavení účtu
-
-          //-     template(#icon-left)
-
-          //-       user/
           ps-btn.text-ps-red(block, text, @click='logOut') Odhlásit
             template(#icon-left)
               logout/
@@ -121,10 +116,14 @@ export default defineComponent({
 
     const closeNotifications = () => (displayNotifications.value = false);
 
+    const awaitingLogin = ref(false);
+
     const loginWithMicrosoft = async () => {
       await require('firebase/auth');
 
       try {
+        awaitingLogin.value = true;
+
         const provider = new firebase.auth.OAuthProvider('microsoft.com');
 
         provider.setCustomParameters({
@@ -144,7 +143,7 @@ export default defineComponent({
 
             data: {
               // @ts-ignore
-              accessToken: authUser.credential?.toJSON()['oauthAccessToken'],
+              accessToken: authUser.credential?.toJSON().oauthAccessToken,
             },
           })
         ).data;
@@ -158,6 +157,7 @@ export default defineComponent({
         // TODO Error handling
         console.error(e);
       }
+      awaitingLogin.value = false;
     };
 
     const logOut = async () => {
@@ -166,12 +166,10 @@ export default defineComponent({
       try {
         await firebase.auth().signOut();
         await mainStore.reset();
-        root.$router.replace('/');
+        if (root.$route.path !== '/') root.$router.replace('/');
 
         closeSettings();
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) {}
     };
 
     return {
@@ -186,6 +184,7 @@ export default defineComponent({
       isDesktop,
       loginWithMicrosoft,
       logOut,
+      awaitingLogin,
       mainStore,
     };
   },

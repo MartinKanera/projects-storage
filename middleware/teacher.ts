@@ -1,12 +1,12 @@
 import { Middleware } from '@nuxt/types';
 import { useMainStore } from '@/store';
 
-const studentMiddleware: Middleware = (ctx) => {
+const teacherMiddleware: Middleware = (ctx) => {
   const mainStore = useMainStore();
 
-  if (!mainStore.isLoggedIn.value || !mainStore.isStudent.value) {
+  if (!mainStore.isLoggedIn.value || !mainStore.isTeacher.value) {
     ctx.redirect('/');
   }
 };
 
-export default studentMiddleware;
+export default teacherMiddleware;
