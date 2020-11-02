@@ -5,6 +5,9 @@ service cloud.firestore {
     //   allow read, write: if true;
     // }
     include "functions/functions.rules";
+    match /users/{studentId} {
+      allow read, write: if true;
+    }
     // Proposals
     match /proposals/{proposalId} {
       allow read, list: if request.auth != null;
