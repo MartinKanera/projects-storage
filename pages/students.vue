@@ -9,7 +9,8 @@
       :studentId='proposal.studentId',
       :displayName='proposal.displayName',
       :projectName='proposal.projectName',
-      :profilePicture='proposal.profilePicture'
+      :profilePicture='proposal.profilePicture',
+      :proposalRef='proposal.proposalRef'
     )
 </template>
 
@@ -25,6 +26,7 @@ type StudentProposal = {
   displayName: String;
   projectName: String;
   profilePicture: String;
+  proposalRef: firebase.firestore.DocumentReference;
 };
 
 export default defineComponent({
@@ -41,6 +43,17 @@ export default defineComponent({
           .where('teacherId', '==', mainStore.state.user.id)
           .onSnapshot(async (proposalsSnap) => {
             const studentIds = proposalsSnap.docs.map((proposal) => proposal.data().studentId);
+            const proposalsRefs = proposalsSnap.docs.map((proposal) => {
+              return {
+                studentId: proposal.data().studentId,
+                ref: proposal.ref,
+              };
+            });
+
+            if (!studentIds.length) {
+              proposals.value = [];
+              return;
+            }
 
             const studentsColection = (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', studentIds).get()).docs;
 
@@ -50,6 +63,7 @@ export default defineComponent({
                 displayName: studentDoc.data().displayName,
                 projectName: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().name,
                 profilePicture: studentDoc.data().profilePicture,
+                proposalRef: proposalsRefs.find((proposalRef) => proposalRef.studentId === studentDoc.id)!.ref,
               };
             });
           });

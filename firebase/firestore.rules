@@ -5,6 +5,9 @@ service cloud.firestore {
     //   allow read, write: if true;
     // }
     include "functions/functions.rules";
+
+    // TODO firestore rules for users
+    // Users
     match /users/{studentId} {
       allow read, write: if true;
     }
@@ -24,6 +27,18 @@ service cloud.firestore {
         isTeacher(request) ||
         isAdmin(request) &&
         validProposalMod(request);
+
+      allow delete: if (isTeacher(request) &&
+        resource.data.teacherId == request.auth.uid) ||
+        isAdmin(request);
+    }
+    // TODO firestore rules for projects
+    // Projects
+    match /projects/{projectId} {
+      allow create: if (isTeacher(request) &&
+        request.resource.data.teacherId == request.auth.uid) ||
+        isAdmin(request) &&
+        validProjectMod(request);
     }
   }
 }

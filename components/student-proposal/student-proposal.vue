@@ -6,10 +6,10 @@
       span.text-ps-green.font-bold.block {{ displayName }}
       span.text-ps-white {{ projectName }}
   .flex.justify-between.mt-5
-    ps-btn.text-ps-white.text-sm(error) Zamítnout
+    ps-btn.text-ps-white.text-sm(error, @click='declineProposal') Zamítnout
       template(#icon-left) 
         closeIcon(:size='20')/
-    ps-btn.text-sm Schválit
+    ps-btn.text-sm(@click='acceptProposal') Schválit
       template(#icon-right) 
         checkIcon(:size='20')/
 </template>
@@ -19,6 +19,8 @@ import { defineComponent } from 'nuxt-composition-api';
 
 import checkIcon from 'vue-material-design-icons/Check.vue';
 import closeIcon from 'vue-material-design-icons/CloseCircle.vue';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 export default defineComponent({
   components: {
@@ -46,8 +48,61 @@ export default defineComponent({
       default: '',
       required: true,
     },
+    proposalRef: {
+      default: () => {
+        return {} as firebase.firestore.DocumentReference;
+      },
+      required: true,
+    },
   },
-  setup() {},
+  setup(props) {
+    const proposalRef = props.proposalRef;
+
+    const declineProposal = async () => {
+      await firebase.firestore().runTransaction(async (transaction) => {
+        try {
+          const sfDoc = await transaction.get(proposalRef);
+
+          if (sfDoc.data()?.premade) {
+            transaction.update(proposalRef, { studentId: null });
+          } else {
+            transaction.delete(proposalRef);
+          }
+
+          return transaction;
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    };
+
+    const acceptProposal = async () => {
+      await firebase.firestore().runTransaction(async (transaction) => {
+        try {
+          const sfDoc = await transaction.get(proposalRef);
+
+          const projectRef = firebase.firestore().collection('projects').doc();
+
+          transaction.set(projectRef, {
+            name: sfDoc.data()?.name,
+            studentId: sfDoc.data()?.studentId,
+            teacherId: sfDoc.data()?.teacherId,
+          });
+
+          transaction.delete(proposalRef);
+
+          return transaction;
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    };
+
+    return {
+      declineProposal,
+      acceptProposal,
+    };
+  },
 });
 </script>
 
