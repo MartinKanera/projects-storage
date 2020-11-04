@@ -22,6 +22,9 @@ import closeIcon from 'vue-material-design-icons/CloseCircle.vue';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 
+import axios from 'axios';
+import { useMainStore } from '@/store';
+
 export default defineComponent({
   components: {
     closeIcon,
@@ -57,6 +60,7 @@ export default defineComponent({
   },
   setup(props) {
     const proposalRef = props.proposalRef;
+    const mainStore = useMainStore();
 
     const declineProposal = async () => {
       await firebase.firestore().runTransaction(async (transaction) => {
@@ -77,25 +81,20 @@ export default defineComponent({
     };
 
     const acceptProposal = async () => {
-      await firebase.firestore().runTransaction(async (transaction) => {
-        try {
-          const sfDoc = await transaction.get(proposalRef);
-
-          const projectRef = firebase.firestore().collection('projects').doc();
-
-          transaction.set(projectRef, {
-            name: sfDoc.data()?.name,
-            studentId: sfDoc.data()?.studentId,
-            teacherId: sfDoc.data()?.teacherId,
-          });
-
-          transaction.delete(proposalRef);
-
-          return transaction;
-        } catch (e) {
-          console.error(e);
-        }
-      });
+      try {
+        await axios.request({
+          method: 'PUT',
+          url: '/api/proposal/accept',
+          headers: {
+            authorization: `Bearer ${mainStore.state.user.id}`,
+          },
+          data: {
+            proposalId: proposalRef.id,
+          },
+        });
+      } catch (e) {
+        console.error(e);
+      }
     };
 
     return {

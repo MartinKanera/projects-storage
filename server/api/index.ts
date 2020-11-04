@@ -15,5 +15,6 @@ if (!admin.apps.length)
 
 app.post('/user/create', async (req, res) => (await import('./user/create-user')).default(req, res));
 app.get('/teachers/list', async (req, res) => (await import('./teachers/list')).default(req, res));
+app.put('/proposal/accept', async (req, res) => (await import('./proposals/accept')).default(req, res));
 
 export default app;
