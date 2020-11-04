@@ -59,38 +59,35 @@ export default defineComponent({
     const projects = ref([] as Array<Project>);
     const projectsLoading = ref(false);
 
-    watch(selectedTeacherId, (selectedTeacherId) => {
-      if (process.client && selectedTeacherId) {
+    watch(selectedTeacherId, (_) => proposalsListener());
+
+    let activeListener = () => {};
+
+    const proposalsListener = () => {
+      if (process.client && selectedTeacherId.value) {
+        activeListener();
+
         projectsLoading.value = true;
         selectedProjectId.value = '';
-        try {
-          firebase
-            .firestore()
-            .collection('proposals')
-            .where('teacherId', '==', selectedTeacherId)
-            .where('studentId', '==', null)
-            .onSnapshot((snapshot) => {
-              if (submitted.value) return Promise.reject(new Error('Proposal already submitted'));
-              projects.value = snapshot.docs.map((projectDoc) => {
-                return {
-                  placeholder: projectDoc.data().name,
-                  value: projectDoc.id,
-                };
-              });
-              projects.value.push({ placeholder: 'Tvé téma', value: 'studentTheme' });
-            });
-          projectsLoading.value = false;
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    });
 
-    watch(projects, (_) => {
-      if (!projects.value.length) {
-        selectedProjectId.value = '';
+        activeListener = firebase
+          .firestore()
+          .collection('proposals')
+          .where('teacherId', '==', selectedTeacherId.value)
+          .where('studentId', '==', null)
+          .onSnapshot((snapshot) => {
+            projects.value = snapshot.docs.map((projectDoc) => {
+              return {
+                placeholder: projectDoc.data().name,
+                value: projectDoc.id,
+              };
+            });
+            projects.value.push({ placeholder: 'Tvé téma', value: 'studentTheme' });
+          });
+
+        projectsLoading.value = false;
       }
-    });
+    };
 
     const loadingBtn = ref(false);
     const disabledBtn = ref(true);
@@ -100,8 +97,13 @@ export default defineComponent({
     const displayTextField = ref(false);
 
     watch(selectedProjectId, (selectedProjectId) => {
-      disabledBtn.value = selectedProjectId === '';
       displayTextField.value = selectedProjectId === 'studentTheme';
+      disabledBtn.value = selectedProjectId === '' || displayTextField.value;
+    });
+
+    watch(studentsProjectName, (_) => {
+      if (selectedProjectId.value === 'studentTheme') disabledBtn.value = !(studentsProjectName.value.length > 0);
+      else studentsProjectName.value = '';
     });
 
     const submitProposal = async () => {
@@ -122,9 +124,11 @@ export default defineComponent({
 
           submitted.value = true;
           displaySnack.value = true;
+          activeListener();
 
           teachers.value = [];
           projects.value = [];
+          displayTextField.value = false;
         } catch (e) {
           console.error(e);
         }
