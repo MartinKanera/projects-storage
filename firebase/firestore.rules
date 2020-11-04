@@ -39,6 +39,8 @@ service cloud.firestore {
         request.resource.data.teacherId == request.auth.uid) ||
         isAdmin(request) &&
         validProjectMod(request);
+
+      allow read, list: if true;
     }
   }
 }

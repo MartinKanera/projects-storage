@@ -1,6 +1,6 @@
 <template lang="pug">
 .student-proposal
-  .flex.idk.items-center
+  .flex.items-center
     img.border-2.border-solid.border-ps-green.rounded-full(:src='profilePicture', width='48')
     .ml-2
       span.text-ps-green.font-bold.block {{ displayName }}
