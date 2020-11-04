@@ -4,7 +4,8 @@ button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text, shadow: !te
     slot(name='icon-left')
   .capitalize.flex-grow
     slot
-  .spinner(v-if='loading')
+  .spinner-wrap(v-if='loading', :class='{ "btn-error": error }')
+    .spinner(:class='{ "btn-error": error }')
   .icon-right.ml-1(v-if='$slots["icon-right"]')
     slot(name='icon-right')
 </template>

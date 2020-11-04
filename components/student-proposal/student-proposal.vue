@@ -6,16 +6,16 @@
       span.text-ps-green.font-bold.block {{ displayName }}
       span.text-ps-white {{ projectName }}
   .flex.justify-between.mt-5
-    ps-btn.text-ps-white.text-sm(error, @click='declineProposal') Zamítnout
+    ps-btn.text-ps-white.text-sm(error, @click='declineProposal', :loading='declineLoading', :disabled='declineLoading || acceptLoading') Zamítnout
       template(#icon-left) 
         closeIcon(:size='20')/
-    ps-btn.text-sm(@click='acceptProposal') Schválit
+    ps-btn.text-sm(@click='acceptProposal', :loading='acceptLoading', :disabled='declineLoading || acceptLoading') Schválit
       template(#icon-right) 
         checkIcon(:size='20')/
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'nuxt-composition-api';
+import { defineComponent, ref } from 'nuxt-composition-api';
 
 import checkIcon from 'vue-material-design-icons/Check.vue';
 import closeIcon from 'vue-material-design-icons/CloseCircle.vue';
@@ -62,7 +62,11 @@ export default defineComponent({
     const proposalRef = props.proposalRef;
     const mainStore = useMainStore();
 
+    const declineLoading = ref(false);
+
     const declineProposal = async () => {
+      declineLoading.value = true;
+
       await firebase.firestore().runTransaction(async (transaction) => {
         try {
           const sfDoc = await transaction.get(proposalRef);
@@ -78,9 +82,15 @@ export default defineComponent({
           console.error(e);
         }
       });
+
+      declineLoading.value = false;
     };
 
+    const acceptLoading = ref(false);
+
     const acceptProposal = async () => {
+      acceptLoading.value = true;
+
       try {
         await axios.request({
           method: 'PUT',
@@ -95,11 +105,15 @@ export default defineComponent({
       } catch (e) {
         console.error(e);
       }
+
+      acceptLoading.value = false;
     };
 
     return {
       declineProposal,
       acceptProposal,
+      declineLoading,
+      acceptLoading,
     };
   },
 });
