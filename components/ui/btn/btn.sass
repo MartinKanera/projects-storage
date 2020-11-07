@@ -1,10 +1,14 @@
 .btn
-  @apply rounded-lg p-2 flex justify-center items-center bg-ps-linear-gradient relative
+  @apply p-2 px-3 flex justify-center items-center bg-ps-linear-gradient relative
+
+  border-radius: 50px
 
   &.btn-block
     @apply w-full
 
   &.btn-text
+    @apply rounded-lg
+
     background: transparent
 
   &.disabled:not(.loading)
@@ -17,8 +21,9 @@
     background: transparent
 
 .spinner-wrap
-  @apply w-full h-full absolute flex items-center justify-center bg-ps-linear-gradient rounded-lg
+  @apply w-full h-full absolute flex items-center justify-center bg-ps-linear-gradient
   
+  border-radius: 50px
   filter: grayscale(0%) !important
 
   &.btn-error
