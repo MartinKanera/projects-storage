@@ -1,0 +1,24 @@
+.nav
+  @apply flex flex-col
+
+  @screen md
+    @apply flex-row
+
+
+  .tab-link
+    @apply mr-2 mb-4 px-5 py-1
+    @apply bg-ps-secondary shadow rounded-lg cursor-pointer
+    @apply text-ps-white capitalize
+    @apply flex flex justify-center
+
+    transition: border ease-in .1s
+
+    -webkit-user-select: none
+    -ms-user-select: none
+    user-select: none
+
+    &:hover
+      @apply border-solid border-ps-green border-b-2
+
+    &.active
+      @apply border-solid border-ps-green border-b-2

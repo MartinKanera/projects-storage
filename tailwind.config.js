@@ -26,6 +26,7 @@ module.exports = {
     extend: {
       screens: {
         md: '768px',
+        lg: '1024px',
       },
       spacing: {
         24: '24px',

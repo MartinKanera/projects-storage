@@ -1,19 +1,44 @@
 .btn
-  @apply rounded-lg p-2 flex justify-center items-center bg-ps-linear-gradient relative
+  @apply p-2 px-3 flex justify-center items-center bg-ps-linear-gradient relative
+
+  border-radius: 50px
 
   &.btn-block
     @apply w-full
 
   &.btn-text
+    @apply rounded-lg
+
     background: transparent
 
-  &.disabled    
-    opacity: 0.7 
+  &.disabled:not(.loading)
+    filter: grayscale(75%)
+  
+  &.btn-error
+    @apply bg-ps-red #{!important}
+    @apply text-ps-white
 
-.spinner
-  @apply animate-spin mx-auto h-24 w-24 absolute
+    background: transparent
 
-  background-color: black
-    -webkit-mask-image: url('/loader.svg')
-  mask-image: url('/loader.svg')
-  mask-size: contain
+.spinner-wrap
+  @apply w-full h-full absolute flex items-center justify-center bg-ps-linear-gradient
+  
+  border-radius: 50px
+  filter: grayscale(0%) !important
+
+  &.btn-error
+    @apply bg-ps-red #{!important}
+    @apply text-ps-white #{!important}
+
+    background: transparent
+
+  .spinner
+    @apply animate-spin mx-auto h-24 w-24
+
+    background-color: black
+      -webkit-mask-image: url('/loader.svg')
+    mask-image: url('/loader.svg')
+    mask-size: contain
+
+    &.btn-error
+      background-color: white !important
