@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'nuxt-composition-api';
+import { defineComponent, ref, watch } from 'nuxt-composition-api';
 
 import wordIcon from 'vue-material-design-icons/FileWord.vue';
 import zipIcon from 'vue-material-design-icons/ZipBox.vue';
@@ -30,6 +30,11 @@ export default defineComponent({
     pdfIcon,
     imageIcon,
     fileIcon,
+  },
+  props: {
+    value: {
+      default: () => [],
+    },
   },
   setup(_, { emit }) {
     const files = ref([]);
@@ -56,12 +61,12 @@ export default defineComponent({
       [...currentFiles].forEach((file) => {
         // @ts-ignore
         files.value.push(file);
-
-        console.log(file);
       });
     };
 
-    watchEffect(() => emit('input', files));
+    watch(files, (files) => {
+      emit('input', files);
+    });
 
     return {
       files,
