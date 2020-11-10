@@ -7,6 +7,6 @@
 import { defineComponent } from 'nuxt-composition-api';
 
 export default defineComponent({
-  middleware: 'student',
+  middleware: ['student', 'proposal'],
 });
 </script>

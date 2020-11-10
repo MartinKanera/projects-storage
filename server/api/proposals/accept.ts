@@ -35,13 +35,13 @@ export default async (req: Request, res: Response) => {
         studentId: sfDoc.data()?.studentId,
         teacherId: sfDoc.data()?.teacherId,
         opponentId: '',
-        currentYear: sfDoc.data()?.currentYear,
+        currentYear: userData?.currentYear,
       });
 
       transaction.delete(proposalRef);
 
       return transaction;
-    } catch (e) {
+    } catch (_) {
       return res.status(500).send();
     }
   });
