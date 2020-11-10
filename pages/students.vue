@@ -8,7 +8,7 @@
       :key='proposal.studentId',
       :studentId='proposal.studentId',
       :displayName='proposal.displayName',
-      :projectName='proposal.projectName',
+      :ptojectTitle='proposal.ptojectTitle',
       :profilePicture='proposal.profilePicture',
       :proposalRef='proposal.proposalRef'
     )
@@ -19,14 +19,14 @@
         plus-icon/
     ps-modal(v-model='projectModalDisplay')
       span.text-2xl.text-ps-white.font-medium Přidat zadání projektu
-      ps-text-field.my-8(name='project-name', label='Název projektu', v-model='projectName')
+      ps-text-field.my-8(name='project-name', label='Název projektu', v-model='ptojectTitle')
       ps-btn.ml-auto(@click='addProject', :disabled='submitting || disabledBtn', :loading='submitting') Přidat projekt
   .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
     ps-teacher-project(
       v-for='project in projects',
       :key='project.projectId',
       :projectId='project.projectId',
-      :projectName='project.projectName',
+      :ptojectTitle='project.ptojectTitle',
       :displayName='project.displayName',
       :profilePicture='project.profilePicture'
     )
@@ -44,14 +44,14 @@ import plusIcon from 'vue-material-design-icons/Plus.vue';
 type StudentProposal = {
   studentId: String;
   displayName: String;
-  projectName: String;
+  ptojectTitle: String;
   profilePicture: String;
   proposalRef: firebase.firestore.DocumentReference;
 };
 
 type Project = {
   projectId: String;
-  projectName: String;
+  ptojectTitle: String;
   displayName: String;
   profilePicture: String;
 };
@@ -95,7 +95,7 @@ export default defineComponent({
               return {
                 studentId: studentDoc.id,
                 displayName: studentDoc.data().displayName,
-                projectName: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().name,
+                ptojectTitle: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().title,
                 profilePicture: studentDoc.data().profilePicture,
                 proposalRef: proposalsRefs.find((proposalRef) => proposalRef.studentId === studentDoc.id)!.ref,
               };
@@ -107,8 +107,8 @@ export default defineComponent({
         firebase
           .firestore()
           .collection('projects')
+          .where('currentYear', '>=', new firebase.firestore.Timestamp(new Date().getSeconds(), 0))
           .where('teacherId', '==', mainStore.state.user.id)
-          .where('year', '==', new Date().getFullYear())
           .onSnapshot(async (projectSnap) => {
             const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
 
@@ -124,7 +124,7 @@ export default defineComponent({
 
               return {
                 projectId: projectDoc.id,
-                projectName: projectDoc.data().name,
+                ptojectTitle: projectDoc.data().title,
                 displayName: currentStudent?.data().displayName,
                 profilePicture: currentStudent?.data().profilePicture,
               };
@@ -165,13 +165,13 @@ export default defineComponent({
       projectModalDisplay.value = !projectModalDisplay.value;
     };
 
-    const projectName = ref('');
+    const ptojectTitle = ref('');
 
     const submitting = ref(false);
     const disabledBtn = ref(true);
 
     watchEffect(() => {
-      disabledBtn.value = projectName.value === '';
+      disabledBtn.value = ptojectTitle.value === '';
     });
 
     const addProject = async () => {
@@ -181,7 +181,7 @@ export default defineComponent({
       try {
         await docRef.set({
           premade: true,
-          name: projectName.value,
+          title: ptojectTitle.value,
           teacherId: mainStore.state.user.id,
           studentId: null,
         });
@@ -198,7 +198,7 @@ export default defineComponent({
       projects,
       projectModal,
       projectModalDisplay,
-      projectName,
+      ptojectTitle,
       addProject,
       submitting,
       disabledBtn,

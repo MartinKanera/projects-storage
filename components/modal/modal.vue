@@ -14,6 +14,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props, { emit }) {
     const display = ref(false);
@@ -32,6 +36,7 @@ export default defineComponent({
     });
 
     const closeModal = () => {
+      if (props.disabled) return;
       display.value = false;
       emit('input', display.value);
     };

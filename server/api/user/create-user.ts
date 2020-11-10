@@ -9,7 +9,6 @@ export default async (req: Request, res: Response) => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
 
   // TODO implement req.body premade teachor account
-  // TODO project doc
 
   const usersCollection = admin.firestore().collection('users');
 
@@ -39,7 +38,6 @@ export default async (req: Request, res: Response) => {
 
       return `https://storage.googleapis.com/${bucketName}/${fileName}`;
     } catch (_) {
-      // TODO take 'anonymous' profile picture
       return 'https://storage.googleapis.com/ps-profile-pictures/empty.png';
     }
   };
@@ -56,8 +54,7 @@ export default async (req: Request, res: Response) => {
         admin: false,
         student: userData.email?.includes('delta-studenti'),
         teacher: userData.email?.includes('delta-skola'),
-        verified: false,
-        year: 0,
+        currentYear: null,
       };
 
       await usersCollection.doc(userData.uid).set(newUserDoc);

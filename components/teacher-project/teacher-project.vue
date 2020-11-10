@@ -4,7 +4,7 @@
     img.border-2.border-solid.border-ps-green.rounded-full(:src='profilePicture', width='48')
     .ml-2
       span.text-ps-green.font-bold.block {{ displayName }}
-      span.text-ps-white {{ projectName }}
+      span.text-ps-white {{ ptojectTitle }}
   ps-btn.text-ps-white(text) odevzdat posudek
     template(#icon-right)
       arrow-right.text-ps-white(:size='32')
@@ -27,7 +27,7 @@ export default defineComponent({
       default: '',
       required: true,
     },
-    projectName: {
+    ptojectTitle: {
       type: String,
       default: '',
       required: true,

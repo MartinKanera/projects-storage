@@ -15,12 +15,12 @@ function isAdmin(request) {
 
 function validProposalMod(request) {
   return request.resource.data.studentId != null &&
-    request.resource.data.name is string && 
+    request.resource.data.title is string && 
     request.resource.data.teacherId != null;
 }
 
 function validProjectMod(request) {
   return request.resource.data.studentId != null &&
-    request.resource.data.name is string &&
+    request.resource.data.title is string &&
     request.resource.data.teacherId != null;
 }

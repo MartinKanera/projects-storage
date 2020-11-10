@@ -1,7 +1,9 @@
 <template lang="pug">
 .admin-stats
   slot.placeholder
-  div
+  div(v-if='loading')
+    img.animate-spin.mx-auto(src='/loader.svg', width='36')
+  div(v-else)
     span {{ currentCount }}/
     span.max {{ maxCount }}
 </template>
@@ -18,6 +20,10 @@ export default defineComponent({
     maxCount: {
       type: Number,
       default: 0,
+    },
+    loading: {
+      type: Boolean,
+      default: true,
     },
   },
 });

@@ -6,7 +6,7 @@
   ps-select.w-full.mb-5(v-model='selectedTeacherId', placeholder='Učitel', :options='teachers', :loading='teachersLoading')
   span.self-start.mb-1.text-ps-green.text-sm Projekty
   ps-select.w-full.mb-10(v-model='selectedProjectId', placeholder='Projekt', :options='projects', :loading='projectsLoading')
-  ps-text-field.w-full.mb-8(v-model='studentsProjectName', v-if='displayTextField', type='text', label='Tvé vlastní téma', name='theme')
+  ps-text-field.w-full.mb-8(v-model='studentsProjectTitle', v-if='displayTextField', type='text', label='Tvé vlastní téma', name='theme')
   ps-btn(:disabled='submitted || loadingBtn || disabledBtn', :loading='loadingBtn', @click='submitProposal') Odeslat
   ps-snackbar(:display='displaySnack', :delay='9000') Zadání odesláno, počkej na schválení učitelem
 </template>
@@ -78,7 +78,7 @@ export default defineComponent({
           .onSnapshot((snapshot) => {
             projects.value = snapshot.docs.map((projectDoc) => {
               return {
-                placeholder: projectDoc.data().name,
+                placeholder: projectDoc.data().title,
                 value: projectDoc.id,
               };
             });
@@ -93,7 +93,7 @@ export default defineComponent({
     const disabledBtn = ref(true);
     const displaySnack = ref(false);
 
-    const studentsProjectName = ref('');
+    const studentsProjectTitle = ref('');
     const displayTextField = ref(false);
 
     watch(selectedProjectId, (selectedProjectId) => {
@@ -101,9 +101,9 @@ export default defineComponent({
       disabledBtn.value = selectedProjectId === '' || displayTextField.value;
     });
 
-    watch(studentsProjectName, (_) => {
-      if (selectedProjectId.value === 'studentTheme') disabledBtn.value = !(studentsProjectName.value.length > 0);
-      else studentsProjectName.value = '';
+    watch(studentsProjectTitle, (_) => {
+      if (selectedProjectId.value === 'studentTheme') disabledBtn.value = !(studentsProjectTitle.value.length > 0);
+      else studentsProjectTitle.value = '';
     });
 
     const submitProposal = async () => {
@@ -117,7 +117,7 @@ export default defineComponent({
 
           console.log(proposal);
 
-          if (studentsProjectName.value !== '') proposal = { ...proposal, ...{ name: studentsProjectName.value } };
+          if (studentsProjectTitle.value !== '') proposal = { ...proposal, ...{ title: studentsProjectTitle.value } };
 
           const collectionRef = firebase.firestore().collection('proposals');
           const docRef = selectedProjectId.value === 'studentTheme' ? collectionRef.doc() : collectionRef.doc(selectedProjectId.value);
@@ -150,7 +150,7 @@ export default defineComponent({
       submitProposal,
       disabledBtn,
       displaySnack,
-      studentsProjectName,
+      studentsProjectTitle,
       displayTextField,
     };
   },
