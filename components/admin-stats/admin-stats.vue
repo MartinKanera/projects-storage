@@ -1,7 +1,7 @@
 <template lang="pug">
 .admin-stats
   slot.placeholder
-  div(v-if='loading')
+  .spinner(v-if='loading')
     img.animate-spin.mx-auto(src='/loader.svg', width='36')
   div(v-else)
     span {{ currentCount }}/

@@ -11,6 +11,8 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'nuxt-composition-api';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 export default defineComponent({
   setup() {
