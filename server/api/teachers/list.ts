@@ -12,10 +12,11 @@ export default async (req: Request, res: Response) => {
     return res.status(401).send();
   }
 
-  if ((await admin.firestore().collection('proposals').where('studentId', '==', userId).get()).docs[0].exists)
+  if ((await admin.firestore().collection('proposals').where('studentId', '==', userId).get()).docs[0]?.exists)
     return res.status(202).send({ message: 'Proposal already submitted', status: 202 });
 
-  if ((await admin.firestore().collection('projects').where('studentId', '==', userId).get()).docs[0].exists) return res.status(202).send({ message: 'You already have project', status: 202 });
+  if ((await admin.firestore().collection('projects').where('studentId', '==', userId).get()).docs[0]?.exists)
+    return res.status(202).send({ message: 'You already have project', status: 202 });
 
   const userData = (await admin.firestore().collection('users').doc(userId).get()).data();
 

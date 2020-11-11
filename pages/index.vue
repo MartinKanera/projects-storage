@@ -23,7 +23,7 @@ export default defineComponent({
 
     const graduationYears = ref([] as Array<{ placeholder: Number; value: Number }>);
 
-    const yearModalDisplay = computed(() => mainStore.state.user.currentYear === null && mainStore.isLoggedIn);
+    const yearModalDisplay = computed(() => mainStore.state.user.currentYear === null && mainStore.isLoggedIn && mainStore.isStudent);
 
     for (let i = 1; i < 5; i++) {
       const year = new Date().getFullYear() + i;
