@@ -16,9 +16,13 @@ export default async (req: Request, res: Response) => {
   // @ts-ignore
   if (!req.file || !req.body.projectId) return res.status(400).send('Missing parameters');
 
+  const projectId = req.body.projectId;
+  const projectDoc = await admin.firestore().collection('projects').doc(projectId).get();
+
+  if (projectDoc.data()?.teacherId !== userId && projectDoc.data()?.opponentId !== userId) return res.status(403).send('You cannot submit review for this project');
+
   // @ts-ignore
   const file = req.file;
-  const projectId = req.body.projectId;
 
   // files.map((file: any) => {
   //   const splitName = file.originalname.split('.');

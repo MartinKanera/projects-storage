@@ -19,6 +19,8 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
   
       transaction.set(statisticsRef, {
         currentProjects: projectsCount + difference,
+        // 2 reviews per project
+        currentMaxReviews: (projectsCount + difference) * 2,
       }, { merge: true });
   
       return transaction;
@@ -27,6 +29,28 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
 
   if (!snap.before.data() && snap.after.data()) return await runTransaction(1);
   if (!snap.after.data()) return await runTransaction(-1);
+
+  // Reviews were updated
+  const oldReviewsCount = (snap.before.data()?.reviews ?? []).length;
+  const newReviewsCount = (snap.after.data()?.reviews ?? []).length;
+
+  // functions.logger.log(oldReviewsCount + ' ' + newReviewsCount);
+
+  if (oldReviewsCount !== newReviewsCount) {
+    return await db.runTransaction(async (transaction) => {
+      const sfDoc = await transaction.get(statisticsRef)
+
+      let reviewsCount = sfDoc.data()?.currentReviews;
+
+      if (!reviewsCount) reviewsCount = 0;
+
+      transaction.set(statisticsRef, {
+        currentReviews: reviewsCount + newReviewsCount - oldReviewsCount,
+      }, { merge: true });
+
+      return transaction;
+    })
+  }
 
   // TODO onUpdate check if new reviews came or project is submitted
   return;
@@ -86,6 +110,8 @@ exports.newSchoolYear = functions.pubsub.schedule('0 0 25 5 *').timeZone('Europe
     await statisticsRef.set({
       currentMaxStudents: 0,
       currentProjects: 0,
+      currentReviews: 0,
+      currentMaxReviews: 0,
     }, { merge: true })
   } catch (_) {};
 

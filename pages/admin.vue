@@ -3,7 +3,7 @@
   .mb-4.flex.flex-col(class='lg:flex-row')
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentProjects', :maxCount='statistics.currentMaxStudents') Žáci kteří mají zadání
     ps-admin-stats(:loading='statsLoading') Vložené práce
-    ps-admin-stats(:loading='statsLoading') Odevzdané posudky
+    ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentReviews', :maxCount='statistics.currentMaxReviews') Odevzdané posudky
   ps-tabs(:tabs='["aktuální školní rok", "všechny práce"]', :selected='selectedTab', @selected='setTab')
     ps-tab(:active='selectedTab == "aktuální školní rok"')
     ps-tab(:active='selectedTab == "všechny práce"')
