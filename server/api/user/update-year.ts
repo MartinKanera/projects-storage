@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import admin from 'firebase-admin';
 
 export default async (req: Request, res: Response) => {
-  const idToken = req.headers.authorization?.split(' ')[1] ?? '';
+  const userId = req.headers.authorization?.split(' ')[1] ?? '';
 
   try {
-    await admin.auth().getUser(idToken);
+    await admin.auth().getUser(userId);
   } catch (_) {
     return res.status(401).send('Unauthorized');
   }
@@ -18,7 +18,7 @@ export default async (req: Request, res: Response) => {
   const currentYearTimestamp = admin.firestore.Timestamp.fromDate(new Date(year, 4, 25));
 
   try {
-    await admin.firestore().collection('users').doc(idToken).update({
+    await admin.firestore().collection('users').doc(userId).update({
       currentYear: currentYearTimestamp,
     });
 

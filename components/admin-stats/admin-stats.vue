@@ -23,7 +23,7 @@ export default defineComponent({
     },
     loading: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
 });

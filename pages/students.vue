@@ -28,7 +28,8 @@
       :projectId='project.projectId',
       :ptojectTitle='project.ptojectTitle',
       :displayName='project.displayName',
-      :profilePicture='project.profilePicture'
+      :profilePicture='project.profilePicture',
+      :reviewed='project.reviewed'
     )
 </template>
 
@@ -54,6 +55,7 @@ type Project = {
   ptojectTitle: String;
   displayName: String;
   profilePicture: String;
+  reviewed: Boolean;
 };
 
 export default defineComponent({
@@ -127,6 +129,7 @@ export default defineComponent({
                 ptojectTitle: projectDoc.data().title,
                 displayName: currentStudent?.data().displayName,
                 profilePicture: currentStudent?.data().profilePicture,
+                reviewed: (projectDoc.data()?.reviews ?? []).some((review: any) => review.teacherId === mainStore.state.user.id),
               };
             });
           });

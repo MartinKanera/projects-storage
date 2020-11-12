@@ -1,7 +1,7 @@
 <template lang="pug">
-.drag-drop(@dragover.prevent, @drop.prevent, @drop='handleFileDrop')
-  .list-wrap.mt-2
-    .text-ps-white.flex(v-for='file in files')
+.drag-drop(@dragover.prevent, @drop.prevent, @drop='handleFileDrop', :class='{ tile: tile }')
+  .list-wrap(:class='{ "mt-2": files.length > 0 }')
+    .text-ps-white.flex.mt-2(v-for='file in files')
       word-icon(v-if='file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"')
       zip-icon(v-else-if='file.type == "application/x-zip-compressed"')
       pdf-icon(v-else-if='file.type == "application/pdf"')
@@ -11,7 +11,7 @@
   .input-wrap
     ps-btn(@click='btnTrigger') Vyber soubory
     span.ml-3.text-ps-white nebo je sem přetáhni
-    input#chooseFiles(type='file', name='file-input', multiple='true', @change='handleFileInput', style='display: none')
+    input#chooseFiles(type='file', name='file-input', :multiple='multiple', @change='handleFileInput', style='display: none')
 </template>
 
 <script lang="ts">
@@ -35,8 +35,16 @@ export default defineComponent({
     value: {
       default: () => [],
     },
+    multiple: {
+      type: Boolean,
+      default: false,
+    },
+    tile: {
+      type: Boolean,
+      default: false,
+    },
   },
-  setup(_, { emit }) {
+  setup(props, { emit }) {
     const files = ref([]);
 
     const btnTrigger = () => {
@@ -47,6 +55,14 @@ export default defineComponent({
       const droppedFiles = e.dataTransfer.files;
 
       if (!droppedFiles) return;
+
+      if (!props.multiple) {
+        files.value = [];
+        // @ts-ignore
+        files.value.push(droppedFiles[0]);
+        return;
+      }
+
       [...droppedFiles].forEach((file) => {
         // @ts-ignore
         files.value.push(file);
@@ -57,6 +73,13 @@ export default defineComponent({
       const currentFiles = e.target.files;
 
       if (!currentFiles) return;
+
+      if (!props.multiple) {
+        files.value = [];
+        // @ts-ignore
+        files.value.push(currentFiles[0]);
+        return;
+      }
 
       [...currentFiles].forEach((file) => {
         // @ts-ignore
