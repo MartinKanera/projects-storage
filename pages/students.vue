@@ -29,7 +29,7 @@
       :ptojectTitle='project.ptojectTitle',
       :displayName='project.displayName',
       :profilePicture='project.profilePicture',
-      :reviewed='project.reviewed'
+      :reviews='project.reviews'
     )
 </template>
 
@@ -55,7 +55,7 @@ type Project = {
   ptojectTitle: String;
   displayName: String;
   profilePicture: String;
-  reviewed: Boolean;
+  reviews: [];
 };
 
 export default defineComponent({
@@ -129,7 +129,7 @@ export default defineComponent({
                 ptojectTitle: projectDoc.data().title,
                 displayName: currentStudent?.data().displayName,
                 profilePicture: currentStudent?.data().profilePicture,
-                reviewed: (projectDoc.data()?.reviews ?? []).some((review: any) => review.teacherId === mainStore.state.user.id),
+                reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
               };
             });
           });

@@ -22,6 +22,6 @@ app.post('/user/create', async (req, res) => (await import('./user/create-user')
 app.get('/teachers/list', async (req, res) => (await import('./teachers/list')).default(req, res));
 app.put('/proposal/accept', async (req, res) => (await import('./proposals/accept')).default(req, res));
 app.put('/user/year', async (req, res) => (await import('./user/update-year')).default(req, res));
-app.post('/review/upload', uploader.single('file'), async (req, res) => (await import('./reviews/upload')).default(req, res));
+app.post('/review/upload', uploader.array('files'), async (req, res) => (await import('./reviews/upload')).default(req, res));
 
 export default app;

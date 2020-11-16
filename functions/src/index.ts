@@ -34,8 +34,6 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
   const oldReviewsCount = (snap.before.data()?.reviews ?? []).length;
   const newReviewsCount = (snap.after.data()?.reviews ?? []).length;
 
-  // functions.logger.log(oldReviewsCount + ' ' + newReviewsCount);
-
   if (oldReviewsCount !== newReviewsCount) {
     return await db.runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(statisticsRef)
@@ -52,11 +50,11 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
     })
   }
 
-  // TODO onUpdate check if new reviews came or project is submitted
+  // TODO onUpdate project is submitted
   return;
 });
 
-exports.userHooks = functions.firestore.document('users/{userId}').onWrite(async (snap, context) => {
+exports.usersHooks = functions.firestore.document('users/{userId}').onWrite(async (snap, context) => {
   const statisticsRef = db.collection('system').doc('statistics');
 
   const runTransaction = async (difference: number) => {

@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import axios from 'axios';
 
 import * as admin from 'firebase-admin';
-import { storage } from '../../../gc-storage';
 
 export default async (req: Request, res: Response) => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
@@ -28,7 +27,7 @@ export default async (req: Request, res: Response) => {
       const bucketName = 'ps-profile-pictures';
       const fileName = `${userId}.jpeg`;
 
-      const bucket = storage.bucket(bucketName);
+      const bucket = admin.storage().bucket(bucketName);
 
       const userImage = bucket.file(fileName);
       const imageStream = userImage.createWriteStream();

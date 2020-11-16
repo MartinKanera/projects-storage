@@ -40,6 +40,9 @@ service cloud.firestore {
         isAdmin(request) &&
         validProjectMod(request);
 
+      allow update: if (isTeacher(request)) ||
+        isAdmin(request);
+
       allow read, list: if true;
     }
 

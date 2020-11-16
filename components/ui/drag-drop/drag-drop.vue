@@ -1,27 +1,31 @@
 <template lang="pug">
 .drag-drop(@dragover.prevent, @drop.prevent, @drop='handleFileDrop', :class='{ tile: tile }')
-  .list-wrap(:class='{ "mt-2": files.length > 0 }')
-    .text-ps-white.flex.mt-2(v-for='file in files')
-      word-icon(v-if='file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"')
-      zip-icon(v-else-if='file.type == "application/x-zip-compressed"')
-      pdf-icon(v-else-if='file.type == "application/pdf"')
-      image-icon(v-else-if='file.type.split("/")[0] == "image"')
-      file-icon(v-else)
-      span.ml-2 {{ file.name }}
+  .list-wrap.w-full.mb-4(:class='{ "mt-2": files.length > 0 }')
+    .text-ps-white.flex.justify-between(v-for='file in files')
+      .flex
+        word-icon(v-if='file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"')
+        pdf-icon(v-else-if='file.type == "application/pdf"')
+        zip-icon(v-else-if='file.type == "application/x-zip-compressed"')
+        image-icon(v-else-if='file.type.split("/")[0] == "image"')
+        file-icon(v-else)
+        span.ml-2 {{ file.name }}
+      ps-btn.justify-self-end(text, @click='removeFile(file.name)')
+        bin-icon(:size='20')
   .input-wrap
     ps-btn(@click='btnTrigger') Vyber soubory
     span.ml-3.text-ps-white nebo je sem přetáhni
-    input#chooseFiles(type='file', name='file-input', :multiple='multiple', @change='handleFileInput', style='display: none')
+    input#chooseFiles(type='file', name='file-input', :multiple='multiple', @change='handleFileInput', style='display: none', :accept='accept')
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, watch } from 'nuxt-composition-api';
 
 import wordIcon from 'vue-material-design-icons/FileWord.vue';
-import zipIcon from 'vue-material-design-icons/ZipBox.vue';
 import pdfIcon from 'vue-material-design-icons/PdfBox.vue';
+import zipIcon from 'vue-material-design-icons/ZipBox.vue';
 import imageIcon from 'vue-material-design-icons/Image.vue';
 import fileIcon from 'vue-material-design-icons/File.vue';
+import binIcon from 'vue-material-design-icons/Delete.vue';
 
 export default defineComponent({
   components: {
@@ -30,6 +34,7 @@ export default defineComponent({
     pdfIcon,
     imageIcon,
     fileIcon,
+    binIcon,
   },
   props: {
     value: {
@@ -43,12 +48,25 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    accept: {
+      type: String,
+      default: '',
+    },
   },
   setup(props, { emit }) {
     const files = ref([]);
 
     const btnTrigger = () => {
       document.getElementById('chooseFiles')?.click();
+    };
+
+    const extensions = props.accept.replaceAll('.', '').split(',');
+
+    const checkType = (file: any) => {
+      if (props.accept === '') return true;
+      const fileNameSplitted = file.name.split('.');
+
+      return extensions.some((extension) => extension === fileNameSplitted[fileNameSplitted.length - 1]);
     };
 
     const handleFileDrop = (e: any) => {
@@ -59,13 +77,13 @@ export default defineComponent({
       if (!props.multiple) {
         files.value = [];
         // @ts-ignore
-        files.value.push(droppedFiles[0]);
+        if (checkType(droppedFiles[0])) files.value.push(droppedFiles[0]);
         return;
       }
 
       [...droppedFiles].forEach((file) => {
         // @ts-ignore
-        files.value.push(file);
+        if (checkType(file)) files.value.push(file);
       });
     };
 
@@ -77,13 +95,13 @@ export default defineComponent({
       if (!props.multiple) {
         files.value = [];
         // @ts-ignore
-        files.value.push(currentFiles[0]);
+        if (checkType(currentFiles[0])) files.value.push(currentFiles[0]);
         return;
       }
 
       [...currentFiles].forEach((file) => {
         // @ts-ignore
-        files.value.push(file);
+        if (checkType(file)) files.value.push(file);
       });
     };
 
@@ -91,11 +109,17 @@ export default defineComponent({
       emit('input', files);
     });
 
+    const removeFile = (fileName: string) => {
+      // @ts-ignore
+      files.value = files.value.filter((file) => file.name !== fileName);
+    };
+
     return {
       files,
       btnTrigger,
       handleFileDrop,
       handleFileInput,
+      removeFile,
     };
   },
 });

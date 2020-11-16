@@ -5,25 +5,59 @@
     .ml-2
       span.text-ps-green.font-bold.block {{ displayName }}
       span.text-ps-white {{ ptojectTitle }}
-  ps-btn.text-ps-white(v-if='!reviewed', text, @click='openModal') odevzdat posudek
-    template(#icon-right)
-      arrow-right.text-ps-white(:size='32')/
-  .flex(v-else)
-    span.text-ps-white.mr-1 Hodnoceno
-    check-icon.text-ps-white/
+  .actions.justify-self-end
+    nuxt-link(to='idk')
+      ps-btn.text-ps-white(text) Projekt
+        template(#icon-right)
+          arrow-right.text-ps-white(:size='32')/
+    ps-btn.text-ps-white(text, @click='openModal') Nastavení
+      template(#icon-right)
+        arrow-right.text-ps-white(:size='32')/
+  //- .flex(v-else)
+  //-   span.text-ps-white.mr-1 Hodnoceno
+  //-   check-icon.text-ps-white/
   ps-modal(v-model='displayModal')
     .flex.flex-col
-      ps-drag-drop(v-model='reviews', tile)
-      ps-btn.self-end(v-if='reviews.length > 0', @click='uploadReviews', :disabled='uploading', :loading='uploading') Odeslat posudek
+      span.text-2xl.text-ps-white {{ ptojectTitle }}
+      span.text-lg.text-ps-green {{ displayName }}
+      span.mt-4.mb-1.text-ps-white Nahraj posudky
+      ps-drag-drop(v-model='reviewsFiles', tile, multiple, accept='.pdf,.xlsx')
+      ps-btn.self-end(v-if='reviewsFiles.length > 0', @click='uploadReviews', :disabled='uploading', :loading='uploading') Odeslat posudek
+      span.mt-8.text-ps-green Odevzdané posudky:
+      .text-ps-white.flex.items-center.justify-between(v-for='review in uploadedReviews')
+        .flex
+          word-icon(v-if='review.fileType == "docx"')/
+          pdf-icon(v-else-if='review.fileType == "pdf"')/
+          file-icon(v-else)/
+          span {{ review.fileName }}
+        ps-btn.justify-self-end(text, @click='removeReview(review.fileUrl)')
+          bin-icon(:size='20')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'nuxt-composition-api';
+import { defineComponent, ref, watch, toRefs } from 'nuxt-composition-api';
 import { useMainStore } from '@/store';
 import axios from 'axios';
 
+import firebase from 'firebase/app';
+import 'firebase/storage';
+import 'firebase/firestore';
+
 import arrowRight from 'vue-material-design-icons/ChevronRight.vue';
 import checkIcon from 'vue-material-design-icons/Check.vue';
+
+import wordIcon from 'vue-material-design-icons/FileWord.vue';
+import pdfIcon from 'vue-material-design-icons/PdfBox.vue';
+import fileIcon from 'vue-material-design-icons/File.vue';
+import binIcon from 'vue-material-design-icons/Delete.vue';
+
+type UploadedReview = {
+  fileName: string;
+  fileUrl: string;
+  teacherId: string;
+  uploaded: firebase.firestore.Timestamp;
+  fileType: string;
+};
 
 export default defineComponent({
   props: {
@@ -43,14 +77,17 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    reviewed: {
-      type: Boolean,
-      required: true,
+    reviews: {
+      default: () => [],
     },
   },
   components: {
     arrowRight,
     checkIcon,
+    wordIcon,
+    pdfIcon,
+    fileIcon,
+    binIcon,
   },
   setup(props) {
     const displayModal = ref(false);
@@ -59,10 +96,10 @@ export default defineComponent({
     };
     const mainStore = useMainStore();
 
-    const reviews = ref([]);
+    const reviewsFiles = ref([]);
 
     watch(displayModal, (displayModal) => {
-      if (!displayModal) reviews.value = [];
+      if (!displayModal) reviewsFiles.value = [];
     });
 
     const uploading = ref(false);
@@ -71,10 +108,12 @@ export default defineComponent({
       try {
         uploading.value = true;
 
-        const file = reviews.value[0];
+        const files = reviewsFiles.value;
 
         const fd = new FormData();
-        fd.append('file', file);
+
+        files.forEach((file) => fd.append('files', file));
+
         fd.append('projectId', props.projectId);
 
         await axios.post('/api/review/upload', fd, {
@@ -91,12 +130,69 @@ export default defineComponent({
       displayModal.value = false;
     };
 
+    const { reviews } = toRefs(props);
+
+    const uploadedReviews = ref(
+      reviews.value.map((uploadedReview: UploadedReview) => {
+        const splitted = uploadedReview.fileName?.split('.');
+
+        return {
+          ...uploadedReview,
+          fileType: splitted[splitted.length - 1],
+        };
+      }),
+    );
+
+    watch(reviews, (reviews) => {
+      uploadedReviews.value = reviews.map((uploadedReview: UploadedReview) => {
+        const splitted = uploadedReview.fileName?.split('.');
+
+        return {
+          ...uploadedReview,
+          fileType: splitted[splitted.length - 1],
+        };
+      });
+    });
+
+    const removeReview = async (url: string) => {
+      const storage = firebase.app().storage('gs://ps-reviews');
+      const fileRef = storage.refFromURL(url);
+
+      try {
+        await fileRef.delete();
+
+        const projectRef = firebase.firestore().collection('projects').doc(props.projectId);
+
+        await firebase.firestore().runTransaction(async (transaction) => {
+          const sfDoc = await transaction.get(projectRef);
+
+          const reviews = sfDoc.data()?.reviews ?? [];
+
+          const updatedReviews = reviews.filter((review: any) => review.fileUrl !== url);
+
+          transaction.set(
+            projectRef,
+            {
+              reviews: updatedReviews,
+            },
+            { merge: true },
+          );
+
+          return transaction;
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
     return {
       displayModal,
       openModal,
-      reviews,
+      reviewsFiles,
       uploadReviews,
       uploading,
+      uploadedReviews,
+      removeReview,
     };
   },
 });
