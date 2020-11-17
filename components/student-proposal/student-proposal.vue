@@ -4,7 +4,7 @@
     img.border-2.border-solid.border-ps-green.rounded-full(:src='profilePicture', width='48')
     .ml-2
       span.text-ps-green.font-bold.block {{ displayName }}
-      span.text-ps-white {{ ptojectTitle }}
+      span.text-ps-white {{ projectTitle }}
   .flex.justify-between.mt-5
     ps-btn.text-ps-white.text-sm(error, @click='declineProposal', :loading='declineLoading', :disabled='declineLoading || acceptLoading') Zamítnout
       template(#icon-left) 
@@ -41,7 +41,7 @@ export default defineComponent({
       default: '',
       required: true,
     },
-    ptojectTitle: {
+    projectTitle: {
       type: String,
       default: '',
       required: true,

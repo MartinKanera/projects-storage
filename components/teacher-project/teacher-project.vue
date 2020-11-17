@@ -4,7 +4,7 @@
     img.border-2.border-solid.border-ps-green.rounded-full(:src='profilePicture', width='48')
     .ml-2
       span.text-ps-green.font-bold.block {{ displayName }}
-      span.text-ps-white {{ ptojectTitle }}
+      span.text-ps-white {{ projectTitle }}
   .actions.justify-self-end
     nuxt-link(to='idk')
       ps-btn.text-ps-white(text) Projekt
@@ -18,7 +18,7 @@
   //-   check-icon.text-ps-white/
   ps-modal(v-model='displayModal')
     .flex.flex-col
-      span.text-2xl.text-ps-white {{ ptojectTitle }}
+      span.text-2xl.text-ps-white {{ projectTitle }}
       span.text-lg.text-ps-green {{ displayName }}
       span.mt-4.mb-1.text-ps-white Nahraj posudky
       ps-drag-drop(v-model='reviewsFiles', tile, multiple, accept='.pdf,.xlsx')
@@ -69,7 +69,7 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    ptojectTitle: {
+    projectTitle: {
       type: String,
       required: true,
     },

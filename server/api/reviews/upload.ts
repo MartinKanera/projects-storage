@@ -22,8 +22,6 @@ export default async (req: Request, res: Response) => {
     if (!acceptedTypes.some((type) => type === file.mimetype)) return res.status(400).send('Provided file with unaccepted extension');
   }
 
-  console.log('Shiver me timbers, shiver me niggers');
-
   const projectId = req.body.projectId;
   const projectDoc = await admin.firestore().collection('projects').doc(projectId).get();
 

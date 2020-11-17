@@ -8,29 +8,36 @@
       :key='proposal.studentId',
       :studentId='proposal.studentId',
       :displayName='proposal.displayName',
-      :ptojectTitle='proposal.ptojectTitle',
+      :projectTitle='proposal.projectTitle',
       :profilePicture='proposal.profilePicture',
       :proposalRef='proposal.proposalRef'
     )
-  .flex.justify-between
-    span.text-2xl.text-ps-white.font-medium Moji studenti
-    ps-btn(@click='projectModal') Přidat zadání
-      template(#icon-right)
-        plus-icon/
-    ps-modal(v-model='projectModalDisplay')
-      span.text-2xl.text-ps-white.font-medium Přidat zadání projektu
-      ps-text-field.my-8(name='project-name', label='Název projektu', v-model='ptojectTitle')
-      ps-btn.ml-auto(@click='addProject', :disabled='submitting || disabledBtn', :loading='submitting') Přidat projekt
-  .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
-    ps-teacher-project(
-      v-for='project in projects',
-      :key='project.projectId',
-      :projectId='project.projectId',
-      :ptojectTitle='project.ptojectTitle',
-      :displayName='project.displayName',
-      :profilePicture='project.profilePicture',
-      :reviews='project.reviews'
-    )
+  ps-tabs(:tabs='["studenti", "předpřipravené zadání"]', :selected='selectedTab', @selected='setTab')
+    ps-tab(:active='selectedTab == "studenti"')
+      .flex.justify-between
+        span.text-2xl.text-ps-white.font-medium Moji studenti
+      .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
+        ps-teacher-project(
+          v-for='project in projects',
+          :key='project.projectId',
+          :projectId='project.projectId',
+          :projectTitle='project.projectTitle',
+          :displayName='project.displayName',
+          :profilePicture='project.profilePicture',
+          :reviews='project.reviews'
+        )
+    ps-tab(:active='selectedTab == "předpřipravené zadání"')
+      .flex.justify-between
+        span.text-2xl.text-ps-white.font-medium Předpřipravené projekty
+        ps-btn(@click='projectModal') Přidat zadání
+          template(#icon-right)
+            plus-icon/
+        ps-modal(v-model='projectModalDisplay')
+          span.text-2xl.text-ps-white.font-medium Přidat zadání projektu
+          ps-text-field.my-8(name='project-name', label='Název projektu', v-model='projectTitle')
+          ps-btn.ml-auto(@click='addProject', :disabled='submitting || disabledBtn', :loading='submitting') Přidat projekt
+      .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
+        ps-premade-project(v-for='project in premadeProjects', :key='project.projectId', :projectId='project.projectId', :projectTitle='project.projectTitle')
 </template>
 
 <script lang="ts">
@@ -45,17 +52,22 @@ import plusIcon from 'vue-material-design-icons/Plus.vue';
 type StudentProposal = {
   studentId: String;
   displayName: String;
-  ptojectTitle: String;
+  projectTitle: String;
   profilePicture: String;
   proposalRef: firebase.firestore.DocumentReference;
 };
 
 type Project = {
   projectId: String;
-  ptojectTitle: String;
+  projectTitle: String;
   displayName: String;
   profilePicture: String;
   reviews: [];
+};
+
+type PremadeProject = {
+  projectId: String;
+  projectTitle: String;
 };
 
 export default defineComponent({
@@ -64,9 +76,15 @@ export default defineComponent({
     plusIcon,
   },
   setup() {
-    const proposals = ref([] as Array<StudentProposal>);
+    const selectedTab = ref('studenti');
 
+    const setTab = (tab: string) => {
+      selectedTab.value = tab;
+    };
+
+    const proposals = ref([] as Array<StudentProposal>);
     const projects = ref([] as Array<Project>);
+    const premadeProjects = ref([] as Array<PremadeProject>);
 
     const mainStore = useMainStore();
 
@@ -97,7 +115,7 @@ export default defineComponent({
               return {
                 studentId: studentDoc.id,
                 displayName: studentDoc.data().displayName,
-                ptojectTitle: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().title,
+                projectTitle: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().title,
                 profilePicture: studentDoc.data().profilePicture,
                 proposalRef: proposalsRefs.find((proposalRef) => proposalRef.studentId === studentDoc.id)!.ref,
               };
@@ -126,7 +144,7 @@ export default defineComponent({
 
               return {
                 projectId: projectDoc.id,
-                ptojectTitle: projectDoc.data().title,
+                projectTitle: projectDoc.data().title,
                 displayName: currentStudent?.data().displayName,
                 profilePicture: currentStudent?.data().profilePicture,
                 reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
@@ -136,6 +154,23 @@ export default defineComponent({
       } catch (e) {
         console.error(e);
       }
+
+      try {
+        firebase
+          .firestore()
+          .collection('proposals')
+          .where('teacherId', '==', mainStore.state.user.id)
+          .where('studentId', '==', null)
+          .where('premade', '==', true)
+          .onSnapshot((premadeSnap) => {
+            premadeProjects.value = premadeSnap.docs.map((premadeDoc) => {
+              return {
+                projectId: premadeDoc.id,
+                projectTitle: premadeDoc.data()?.title,
+              };
+            });
+          });
+      } catch (_) {}
     }
 
     const inArray = async (colRef: firebase.firestore.CollectionReference, inputArray: Array<String>) => {
@@ -168,13 +203,13 @@ export default defineComponent({
       projectModalDisplay.value = !projectModalDisplay.value;
     };
 
-    const ptojectTitle = ref('');
+    const projectTitle = ref('');
 
     const submitting = ref(false);
     const disabledBtn = ref(true);
 
     watchEffect(() => {
-      disabledBtn.value = ptojectTitle.value === '';
+      disabledBtn.value = projectTitle.value === '';
     });
 
     const addProject = async () => {
@@ -184,7 +219,7 @@ export default defineComponent({
       try {
         await docRef.set({
           premade: true,
-          title: ptojectTitle.value,
+          title: projectTitle.value,
           teacherId: mainStore.state.user.id,
           studentId: null,
         });
@@ -197,14 +232,17 @@ export default defineComponent({
     };
 
     return {
+      selectedTab,
+      setTab,
       proposals,
       projects,
       projectModal,
       projectModalDisplay,
-      ptojectTitle,
+      projectTitle,
       addProject,
       submitting,
       disabledBtn,
+      premadeProjects,
     };
   },
 });
