@@ -32,7 +32,7 @@
     "@nuxt/types": "2.14.3",
     "@nuxt/typescript-build": "2.0.3",
     "@nuxtjs/eslint-config-typescript": "4.0.0",
-    "@nuxtjs/storybook": "3.0.0",
+    "@nuxtjs/storybook": "3.2.0",
     "@nuxtjs/tailwindcss": "3.0.2",
     "@prettier/plugin-pug": "1.10.1",
     "babel-core": "7.0.0-bridge.0",
