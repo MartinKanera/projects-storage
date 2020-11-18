@@ -46,7 +46,7 @@ service cloud.firestore {
       allow read, list: if true;
     }
 
-    match /system/statistics {
+    match /system/{systemDoc} {
       allow read: if isAdmin(request);
     }
   }

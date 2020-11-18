@@ -23,5 +23,7 @@ app.get('/teachers/list', async (req, res) => (await import('./teachers/list')).
 app.put('/proposal/accept', async (req, res) => (await import('./proposals/accept')).default(req, res));
 app.put('/user/year', async (req, res) => (await import('./user/update-year')).default(req, res));
 app.post('/review/upload', uploader.array('files'), async (req, res) => (await import('./reviews/upload')).default(req, res));
+app.put('/teacher/create', async (req, res) => (await import('./user/extern-teacher')).default(req, res));
+app.put('/teacher/remove', async (req, res) => (await import('./user/remove-extern-teacher')).default(req, res));
 
 export default app;

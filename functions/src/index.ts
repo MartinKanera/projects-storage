@@ -20,7 +20,7 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
       transaction.set(statisticsRef, {
         currentProjects: projectsCount + difference,
         // 2 reviews per project
-        currentMaxReviews: (projectsCount + difference) * 2,
+        currentMaxReviews: (projectsCount + difference) * 4,
       }, { merge: true });
   
       return transaction;
@@ -74,14 +74,15 @@ exports.usersHooks = functions.firestore.document('users/{userId}').onWrite(asyn
       return transaction;
     });
   }
+  const currentSchoolYear: admin.firestore.Timestamp = (await db.collection('system').doc('schoolYear').get()).data()?.currentYear;
 
+  if (!snap.before.data() && snap.after.data() && snap.after.data()?.student) return await runTransaction(1);
   // Delete
-  if (!snap.after.data() && snap.before.data()?.student) return await runTransaction(-1);
+  if (!snap.after.data() && snap.before.data()?.student && currentSchoolYear.isEqual(snap.before.data()?.currentYear)) return await runTransaction(-1);
   // Update
-  if (snap.before.data() && snap.after.data()) {
+  if (snap.after.data()?.student && snap.before.data() && snap.after.data()) {
     // users currentYear changed
-    if (snap.before.data()?.currentYear !== snap.after.data()?.currentYear) {
-      const currentSchoolYear: admin.firestore.Timestamp = (await db.collection('system').doc('schoolYear').get()).data()?.currentYear;
+    if (!snap.before.data()?.currentYear.isEqual(snap.after.data()?.currentYear)) {
       
       if (currentSchoolYear.isEqual(snap.after.data()?.currentYear)) return await runTransaction(1);
 
@@ -92,7 +93,7 @@ exports.usersHooks = functions.firestore.document('users/{userId}').onWrite(asyn
   return;
 });
 
-// TODO Yearly function set school currentSchoolYear, reset all system fields and update maxStudents count
+// TODO Yearly function set school currentSchoolYear, reset all system fields and update maxStudents count 
 exports.newSchoolYear = functions.pubsub.schedule('0 0 25 5 *').timeZone('Europe/Prague').onRun(async () => {
   // UTC+2
   const newSchoolYear = admin.firestore.Timestamp.fromDate(new Date(new Date().getFullYear(), 4, 24, 22));

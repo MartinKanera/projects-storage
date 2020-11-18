@@ -8,7 +8,7 @@
   ps-select.w-full.mb-10(v-model='selectedProjectId', placeholder='Projekt', :options='projects', :loading='projectsLoading')
   ps-text-field.w-full.mb-8(v-model='studentsProjectTitle', v-if='displayTextField', type='text', label='Tvé vlastní téma', name='theme')
   ps-btn(:disabled='submitted || loadingBtn || disabledBtn', :loading='loadingBtn', @click='submitProposal') Odeslat
-  ps-snackbar(:display='displaySnack', :delay='9000') Zadání odesláno, počkej na schválení učitelem
+  ps-snackbar(v-model='displaySnack', :delay='9000') Zadání odesláno, počkej na schválení učitelem
 </template>
 
 <script lang="ts">

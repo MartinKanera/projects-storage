@@ -20,8 +20,13 @@
 
     background: transparent
 
+  &:not(.btn-text) > .spinner-wrap
+    @apply bg-ps-linear-gradient
+    
+    background-color: white !important
+
 .spinner-wrap
-  @apply w-full h-full absolute flex items-center justify-center bg-ps-linear-gradient
+  @apply w-full h-full absolute flex items-center justify-center bg-ps-secondary
   
   border-radius: 50px
   filter: grayscale(0%) !important
@@ -39,6 +44,9 @@
       -webkit-mask-image: url('/loader.svg')
     mask-image: url('/loader.svg')
     mask-size: contain
+
+    &.btn-text
+      background-color: white !important
 
     &.btn-error
       background-color: white !important

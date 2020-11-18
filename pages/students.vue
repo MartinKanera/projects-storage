@@ -27,9 +27,9 @@
           :reviews='project.reviews'
         )
     ps-tab(:active='selectedTab == "předpřipravené zadání"')
-      .flex.justify-between
+      .flex.flex-col.justify-between(class='md:flex-row')
         span.text-2xl.text-ps-white.font-medium Předpřipravené projekty
-        ps-btn(@click='projectModal') Přidat zadání
+        ps-btn.self-start(@click='projectModal', class='md:self-center') Přidat zadání
           template(#icon-right)
             plus-icon/
         ps-modal(v-model='projectModalDisplay')
