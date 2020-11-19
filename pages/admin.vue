@@ -18,9 +18,10 @@
         :studentId='project.studentId',
         :submittedDate='project.submittedDate',
         :teacherId='project.teacherId',
-        :projectTitle='project.projectTitle',
+        :title='project.title',
         :displayName='project.displayName',
-        :profilePicture='project.profilePicture'
+        :profilePicture='project.profilePicture',
+        :teachers='teachers'
       )
     ps-tab(:active='selectedTab == "všechny práce"')
       span.text-ps-white.text-xl.mt-2 Všechny práce
@@ -35,9 +36,10 @@
         :studentId='project.studentId',
         :submittedDate='project.submittedDate',
         :teacherId='project.teacherId',
-        :projectTitle='project.projectTitle',
+        :title='project.title',
         :displayName='project.displayName',
-        :profilePicture='project.profilePicture'
+        :profilePicture='project.profilePicture',
+        :teachers='teachers'
       )
     ps-tab(:active='selectedTab == "externí učitelé"')
       .flex.flex-col
@@ -81,7 +83,7 @@ type Project = {
   studentId: String;
   submittedDate: firebase.firestore.Timestamp;
   teacherId: String;
-  projectTitle: String;
+  title: String;
   displayName: String;
   profilePicture: String;
 };
@@ -136,6 +138,8 @@ export default defineComponent({
       return (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', studentIds).get()).docs;
     };
 
+    const teachers = ref([]);
+
     const currentYearProjects = ref([] as Array<Project>);
     let lastOfCurrent: any = null;
 
@@ -143,6 +147,9 @@ export default defineComponent({
       try {
         statistics.value = (await firebase.firestore().collection('system').doc('statistics').get()).data();
         currentSchoolYear.value = (await firebase.firestore().collection('system').doc('schoolYear').get()).data()?.currentYear;
+
+        // @ts-ignore
+        teachers.value = (await firebase.firestore().collection('users').where('teacher', '==', true).get()).docs;
 
         statsLoading.value = false;
       } catch (e) {
@@ -169,7 +176,7 @@ export default defineComponent({
             studentId: projectData?.studentId,
             submittedDate: projectData?.submittedDate,
             teacherId: projectData?.teacherId,
-            projectTitle: projectData?.title,
+            title: projectData?.title,
             displayName: userData?.displayName,
             profilePicture: userData?.profilePicture,
           };
@@ -208,7 +215,7 @@ export default defineComponent({
             studentId: projectData?.studentId,
             submittedDate: projectData?.submittedDate,
             teacherId: projectData?.teacherId,
-            projectTitle: projectData?.title,
+            title: projectData?.title,
             displayName: userData?.displayName,
             profilePicture: userData?.profilePicture,
           };
@@ -241,7 +248,7 @@ export default defineComponent({
             studentId: projectData?.studentId,
             submittedDate: projectData?.submittedDate,
             teacherId: projectData?.teacherId,
-            projectTitle: projectData?.title,
+            title: projectData?.title,
             displayName: userData?.displayName,
             profilePicture: userData?.profilePicture,
           };
@@ -276,7 +283,7 @@ export default defineComponent({
             studentId: projectData?.studentId,
             submittedDate: projectData?.submittedDate,
             teacherId: projectData?.teacherId,
-            projectTitle: projectData?.title,
+            title: projectData?.title,
             displayName: userData?.displayName,
             profilePicture: userData?.profilePicture,
           };
@@ -370,6 +377,7 @@ export default defineComponent({
       teacherBtn,
       allProjects,
       currentYearProjects,
+      teachers,
     };
   },
 });

@@ -1,6 +1,6 @@
 <template lang="pug">
 .text-field
-  input.input(:type='type', placeholder=' ', :name='name', @input='$emit("input", $event.target.value)')
+  input.input(:type='type', placeholder=' ', :name='name', @input='$emit("input", $event.target.value)', :value='value')
   label.label(:for='name')
     span.text {{ label }}
 </template>
@@ -10,6 +10,10 @@ import { defineComponent } from 'nuxt-composition-api';
 
 export default defineComponent({
   props: {
+    value: {
+      type: String,
+      default: '',
+    },
     type: {
       type: String,
       default: 'text',
