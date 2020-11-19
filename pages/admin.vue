@@ -4,9 +4,7 @@
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentProjects', :maxCount='statistics.currentMaxStudents') Žáci kteří mají zadání
     ps-admin-stats(:loading='statsLoading', :currentCount='0', :maxCount='statistics.currentMaxStudents') Vložené práce
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentReviews', :maxCount='statistics.currentMaxReviews') Odevzdaná hodnocení
-  .flex.justify-between.items-center.my-4
-    span.flex-1.bg-ps-secondary lulw search nebo co
-  ps-tabs.w-full(:tabs='["aktuální školní rok", "všechny práce", "externí učitelé"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
+  ps-tabs.mt-4.w-full(:tabs='["aktuální školní rok", "všechny práce", "externí učitelé"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
     ps-tab(:active='selectedTab == "aktuální školní rok"')
       span.text-ps-white.text-xl.mt-2 Aktuální školní rok
       ps-admin-project.mt-2(
