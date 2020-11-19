@@ -8,7 +8,39 @@
     span.flex-1.bg-ps-secondary lulw search nebo co
   ps-tabs.w-full(:tabs='["aktuální školní rok", "všechny práce", "externí učitelé"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
     ps-tab(:active='selectedTab == "aktuální školní rok"')
+      span.text-ps-white.text-xl.mt-2 Aktuální školní rok
+      ps-admin-project.mt-2(
+        v-for='project in currentYearProjects',
+        :key='project.projectId',
+        :projectId='project.projectId',
+        :currentYear='project.currentYear',
+        :opponentId='project.opponentId',
+        :publicProject='project.publicProject',
+        :reviews='project.reviews',
+        :studentId='project.studentId',
+        :submittedDate='project.submittedDate',
+        :teacherId='project.teacherId',
+        :projectTitle='project.projectTitle',
+        :displayName='project.displayName',
+        :profilePicture='project.profilePicture'
+      )
     ps-tab(:active='selectedTab == "všechny práce"')
+      span.text-ps-white.text-xl.mt-2 Všechny práce
+      ps-admin-project.mt-2(
+        v-for='project in currentYearProjects',
+        :key='project.projectId',
+        :projectId='project.projectId',
+        :currentYear='project.currentYear',
+        :opponentId='project.opponentId',
+        :publicProject='project.publicProject',
+        :reviews='project.reviews',
+        :studentId='project.studentId',
+        :submittedDate='project.submittedDate',
+        :teacherId='project.teacherId',
+        :projectTitle='project.projectTitle',
+        :displayName='project.displayName',
+        :profilePicture='project.profilePicture'
+      )
     ps-tab(:active='selectedTab == "externí učitelé"')
       .flex.flex-col
         ps-btn.self-end(@click='displayTeacherModal = !displayTeacherModal') založit účet
@@ -34,8 +66,6 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'nuxt-composition-api';
 
-import { useMainStore } from '@/store';
-
 import axios from 'axios';
 
 import firebase from 'firebase/app';
@@ -46,9 +76,16 @@ import plusIcon from 'vue-material-design-icons/Plus.vue';
 
 type Project = {
   projectId: String;
+  currentYear: firebase.firestore.Timestamp;
+  opponentId: String;
+  publicProject: Boolean;
   reviews: [];
   studentId: String;
+  submittedDate: firebase.firestore.Timestamp;
   teacherId: String;
+  projectTitle: String;
+  displayName: String;
+  profilePicture: String;
 };
 
 type ExternTeacher = {
@@ -63,8 +100,6 @@ export default defineComponent({
     plusIcon,
   },
   setup() {
-    const mainStore = useMainStore();
-
     const message = ref('');
     const displaySnack = ref(false);
 
@@ -78,13 +113,14 @@ export default defineComponent({
     const setTab = (tab: string) => {
       selectedTab.value = tab;
 
-      switch (tab) {
+      switch (selectedTab.value) {
         case 'aktuální školní rok': {
-          // return firebase.firestore().collection('projects').where('currentYear', '==', mainStore.state.currentSchoolYear);
+          window.onscroll = currentYearLazyLoading;
           break;
         }
         case 'všechny práce': {
-          // return firebase.firestore().collection('projects');
+          if (allProjects.value.length === 0) getAllProjects();
+          window.onscroll = allLazyLoading;
           break;
         }
         case 'externí učitelé': {
@@ -94,8 +130,16 @@ export default defineComponent({
       }
     };
 
-    // Current school year's projects
+    const getUserDocs = async (projectDocs: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[]) => {
+      if (projectDocs.length === 0) return;
+
+      const studentIds = projectDocs.map((project) => project.data()?.studentId);
+
+      return (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', studentIds).get()).docs;
+    };
+
     const currentYearProjects = ref([] as Array<Project>);
+    let lastOfCurrent: any = null;
 
     onMounted(async () => {
       try {
@@ -107,22 +151,142 @@ export default defineComponent({
         console.error(e);
       }
 
+      const projectDocs = (await firebase.firestore().collection('projects').orderBy('title', 'asc').where('currentYear', '==', currentSchoolYear.value).limit(10).get()).docs;
+
+      const usersDocs = await getUserDocs(projectDocs);
+
+      lastOfCurrent = projectDocs[projectDocs.length - 1];
+
       try {
-        currentYearProjects.value = (await firebase.firestore().collection('projects').where('currentYear', '==', currentSchoolYear.value).limit(10).get()).docs.map((project) => {
+        currentYearProjects.value = projectDocs.map((project) => {
+          const userData = usersDocs?.find((user) => user.id === project.data()?.studentId)?.data();
+          const projectData = project.data();
+
           return {
             projectId: project.id,
-            reviews: project.data()?.reviews,
-            studentId: project.data()?.studentId,
-            teacherId: project.data()?.teacherId,
+            currentYear: projectData?.currentYear,
+            opponentId: projectData?.opponentId,
+            publicProject: projectData?.public,
+            reviews: projectData?.reviews,
+            studentId: projectData?.studentId,
+            submittedDate: projectData?.submittedDate,
+            teacherId: projectData?.teacherId,
+            projectTitle: projectData?.title,
+            displayName: userData?.displayName,
+            profilePicture: userData?.profilePicture,
           };
         });
-      } catch (_) {}
+      } catch (e) {}
+
+      console.log(currentYearProjects.value);
+
+      window.onscroll = currentYearLazyLoading;
     });
 
-    // All projects
-    const allProjects = ref([]);
+    const currentYearLazyLoading = async () => {
+      if (!(window.innerHeight + Math.ceil(window.pageYOffset) >= document.body.offsetHeight) || !lastOfCurrent) return;
 
-    // Teachers view
+      console.log('Bottom of current years projects');
+
+      const projectDocs = (
+        await firebase.firestore().collection('projects').orderBy('title', 'asc').where('currentYear', '==', currentSchoolYear.value).startAfter(lastOfCurrent).limit(10).get()
+      ).docs;
+
+      const usersDocs = await getUserDocs(projectDocs);
+
+      lastOfCurrent = projectDocs[projectDocs.length - 1];
+
+      currentYearProjects.value.push(
+        ...projectDocs.map((project) => {
+          const userData = usersDocs?.find((user) => user.id === project.data()?.studentId)?.data();
+          const projectData = project.data();
+
+          return {
+            projectId: project.id,
+            currentYear: projectData?.currentYear,
+            opponentId: projectData?.opponentId,
+            publicProject: projectData?.public,
+            reviews: projectData?.reviews,
+            studentId: projectData?.studentId,
+            submittedDate: projectData?.submittedDate,
+            teacherId: projectData?.teacherId,
+            projectTitle: projectData?.title,
+            displayName: userData?.displayName,
+            profilePicture: userData?.profilePicture,
+          };
+        }),
+      );
+    };
+
+    // All projects
+    const allProjects = ref([] as Array<Project>);
+    let lastOfAll: any = null;
+
+    const getAllProjects = async () => {
+      const projectDocs = (await firebase.firestore().collection('projects').orderBy('currentYear', 'desc').limit(10).get()).docs;
+
+      const usersDocs = await getUserDocs(projectDocs);
+
+      lastOfAll = projectDocs[projectDocs.length - 1];
+
+      try {
+        allProjects.value = projectDocs.map((project) => {
+          const userData = usersDocs?.find((user) => user.id === project.data()?.studentId)?.data();
+          const projectData = project.data();
+
+          return {
+            projectId: project.id,
+            currentYear: projectData?.currentYear,
+            opponentId: projectData?.opponentId,
+            publicProject: projectData?.public,
+            reviews: projectData?.reviews,
+            studentId: projectData?.studentId,
+            submittedDate: projectData?.submittedDate,
+            teacherId: projectData?.teacherId,
+            projectTitle: projectData?.title,
+            displayName: userData?.displayName,
+            profilePicture: userData?.profilePicture,
+          };
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    const allLazyLoading = async () => {
+      if (!(window.innerHeight + Math.ceil(window.pageYOffset) >= document.body.offsetHeight) || !lastOfAll) return;
+
+      console.log('Bottom of all projects');
+
+      const projectDocs = (await firebase.firestore().collection('projects').orderBy('currentYear', 'desc').startAfter(lastOfAll).limit(10).get()).docs;
+
+      const usersDocs = await getUserDocs(projectDocs);
+
+      lastOfAll = projectDocs[projectDocs.length - 1];
+
+      allProjects.value.push(
+        ...projectDocs.map((project) => {
+          const userData = usersDocs?.find((user) => user.id === project.data()?.studentId)?.data();
+          const projectData = project.data();
+
+          return {
+            projectId: project.id,
+            currentYear: projectData?.currentYear,
+            opponentId: projectData?.opponentId,
+            publicProject: projectData?.public,
+            reviews: projectData?.reviews,
+            studentId: projectData?.studentId,
+            submittedDate: projectData?.submittedDate,
+            teacherId: projectData?.teacherId,
+            projectTitle: projectData?.title,
+            displayName: userData?.displayName,
+            profilePicture: userData?.profilePicture,
+          };
+        }),
+      );
+    };
+
+    // Extern teachers view
     const externTeachers = ref([] as Array<ExternTeacher>);
     let externTeachersListener: (() => void) | null = null;
 
@@ -206,6 +370,8 @@ export default defineComponent({
       createTeacher,
       displayName,
       teacherBtn,
+      allProjects,
+      currentYearProjects,
     };
   },
 });

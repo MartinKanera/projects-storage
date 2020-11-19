@@ -36,6 +36,8 @@ export default async (req: Request, res: Response) => {
         teacherId: sfDoc.data()?.teacherId,
         opponentId: '',
         currentYear: userData?.currentYear,
+        public: false,
+        submittedDate: null,
       });
 
       transaction.delete(proposalRef);
