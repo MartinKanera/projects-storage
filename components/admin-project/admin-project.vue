@@ -4,28 +4,33 @@
     img.profile-picture(:src='profilePicture', width='48')
     .flex.justify-between.flex-1(class='lg:justify-between')
       .flex.flex-col.justify-center
-        span.text-ps-green.font-bold.text-lg {{ project.displayName }}
+        span.text-ps-green.font-bold.text-lg {{ displayName }}
         span.text-ps-white {{ project.title }}
       .flex.flex-col.text-ps-white.items-end(class='lg:flex-row lg:mr-4 lg:items-center')
         span(class='lg:mr-4') posudky: {{ reviews.length }}/
           span.text-ps-green 4
-        span(v-if='submittedDate') {{ getDate() }}
+        span(v-if='submittedDate') {{ getDate(submittedDate) }}
         span(v-else) není odevzdán
   .actions
     nuxt-link(to='idk')
       ps-btn.self-start(text) projekt
         template(#icon-right)
           chevron-icon(:size='18')/
-    ps-btn.self-start(text, @click='detailsModal = !detailsModal') detail
+    ps-btn.self-start(text, @click='openModal') detail
       template(#icon-right)
         details-icon(:size='18')/
   ps-modal.text-ps-white.leading-6(v-model='detailsModal')
     .flex.flex-col
       span.text-ps-green.text-2xl {{ projectToUpdate.title }}
-      span.mb-8 {{ projectToUpdate.displayName }}
-      ps-text-field.mb-8(v-model='projectToUpdate.title', name='projectTitle', label='Název projektu')
-      ps-text-field.mb-8(v-model='projectToUpdate.displayName', name='displayName', label='Jméno studenta')
-      ps-select.mb-6
+      span.mb-8 {{ displayName }}
+      ps-text-field.mb-4(v-model='projectToUpdate.title', name='projectTitle', label='Název projektu')
+      span.text-ps-green Vedoucí projektu
+      ps-select.mb-4(v-model='projectToUpdate.teacherId', placeholder='Vedoucí projektu', :options='deltaTeachers')
+      span.text-ps-green Oponent
+      ps-select.mb-4(v-model='projectToUpdate.opponentId', placeholder='Oponent', :options='teachers')
+      .flex.flex-col
+        span.text-ps-green.text-lg(v-if='reviews.length > 0') Odevzdaná hodnocení
+        span(v-for='review in reviewsView') {{ review.displayName }} - {{ review.fileName }}
       ps-btn.self-end(@click='updateProject') Uložit změny
 </template>
 
@@ -89,23 +94,22 @@ export default defineComponent({
     },
     teachers: {
       type: Array,
+      default: () => [],
     },
   },
   // { projectId, currentYear, opponentId, publicProject, reviews, studentId, submittedDate, teacherId, title, displayName, profilePicture, teachers }
-  setup({ projectId, studentId, submittedDate, currentYear, opponentId, publicProject, teacherId, title, displayName }) {
-    const project = ref({ currentYear, opponentId, publicProject, teacherId, title, displayName });
+  setup({ projectId, currentYear, opponentId, publicProject, teacherId, title, teachers, reviews }) {
+    const project = ref({ currentYear, opponentId, publicProject, teacherId, title });
     const projectToUpdate = ref({ ...project.value });
 
-    console.log(project.value);
+    // @ts-ignore
+    const getDate = (timeStamp: firebase.firestore.Timestamp) => new Date(timeStamp?.toMillis()).toString().substr(4, 11);
 
     // @ts-ignore
-    const getDate = () => new Date(submittedDate?.toMillis()).toString().substr(4, 11);
-
-    const detailsModal = ref(false);
+    const deltaTeachers = ref(teachers.filter((teacher) => !teacher.extern));
 
     const updateProject = async () => {
       const projectRef = firebase.firestore().collection('projects').doc(projectId);
-      const userRef = firebase.firestore().collection('users').doc(studentId);
 
       try {
         // eslint-disable-next-line require-await
@@ -118,15 +122,35 @@ export default defineComponent({
             title: projectToUpdate.value.title,
           });
 
-          transaction.update(userRef, {
-            displayName: projectToUpdate.value.displayName,
-          });
-
           return transaction;
         });
 
         project.value = { ...projectToUpdate.value };
         detailsModal.value = false;
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    const detailsModal = ref(false);
+    const reviewsView = ref(undefined);
+
+    const openModal = async () => {
+      detailsModal.value = true;
+
+      if (reviewsView.value || reviews.length === 0) return;
+
+      try {
+        const teachers = (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', [teacherId, opponentId]).get()).docs;
+
+        // @ts-ignore
+        reviewsView.value = reviews.map((review) => {
+          return {
+            // @ts-ignore
+            ...review,
+            displayName: teachers.find((teacher) => review.teacherId === teacher.id || review.opponentId === teacher.id)?.data()?.displayName,
+          };
+        });
       } catch (e) {
         console.error(e);
       }
@@ -138,6 +162,9 @@ export default defineComponent({
       updateProject,
       project,
       projectToUpdate,
+      deltaTeachers,
+      openModal,
+      reviewsView,
     };
   },
 });

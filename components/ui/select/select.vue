@@ -2,8 +2,8 @@
 .select-wrap.relative
   select(:class='{ loading: loading }', @change='onSelectValue($event)', :disabled='options.length === 0')
     option(v-if='!options.length > 0') Nic k dispozici
-    option(v-else-if='placeholderValue', selected='selected') {{ placeholderValue }}
-    option(v-for='option in options', :value='option.value') {{ option.placeholder }}
+    option(v-else-if='placeholderValue && !options.some((option) => option.value === value)', selected='selected') {{ placeholderValue }}
+    option(v-for='option in options', :value='option.value', :selected='value === option.value') {{ option.placeholder }}
   .loader-wrap(v-if='loading')
     img.ml-4.animate-spin(src='/loader.svg', width='20')
     span.ml-2 Načítaní
@@ -14,6 +14,9 @@ import { defineComponent, ref, watch, toRefs } from 'nuxt-composition-api';
 
 export default defineComponent({
   props: {
+    value: {
+      type: String,
+    },
     placeholder: {
       default: '',
       type: String,

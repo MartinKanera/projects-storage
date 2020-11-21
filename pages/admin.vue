@@ -138,6 +138,27 @@ export default defineComponent({
       return (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', studentIds).get()).docs;
     };
 
+    const formatProjectArray = (projectDocs: any, userDocs: any) => {
+      return projectDocs.map((project: any) => {
+        const userData = userDocs?.find((user: any) => user.id === project.data()?.studentId)?.data();
+        const projectData = project.data();
+
+        return {
+          projectId: project.id,
+          currentYear: projectData?.currentYear,
+          opponentId: projectData?.opponentId,
+          publicProject: projectData?.public,
+          reviews: projectData?.reviews,
+          studentId: projectData?.studentId,
+          submittedDate: projectData?.submittedDate,
+          teacherId: projectData?.teacherId,
+          title: projectData?.title,
+          displayName: userData?.displayName,
+          profilePicture: userData?.profilePicture,
+        };
+      });
+    };
+
     const teachers = ref([]);
 
     const currentYearProjects = ref([] as Array<Project>);
@@ -149,7 +170,13 @@ export default defineComponent({
         currentSchoolYear.value = (await firebase.firestore().collection('system').doc('schoolYear').get()).data()?.currentYear;
 
         // @ts-ignore
-        teachers.value = (await firebase.firestore().collection('users').where('teacher', '==', true).get()).docs;
+        teachers.value = (await firebase.firestore().collection('users').where('teacher', '==', true).get()).docs.map((teacher) => {
+          return {
+            value: teacher.id,
+            placeholder: teacher.data()?.displayName,
+            extern: teacher.data()?.extern,
+          };
+        });
 
         statsLoading.value = false;
       } catch (e) {
@@ -162,28 +189,7 @@ export default defineComponent({
 
       lastOfCurrent = projectDocs[projectDocs.length - 1];
 
-      try {
-        currentYearProjects.value = projectDocs.map((project) => {
-          const userData = usersDocs?.find((user) => user.id === project.data()?.studentId)?.data();
-          const projectData = project.data();
-
-          return {
-            projectId: project.id,
-            currentYear: projectData?.currentYear,
-            opponentId: projectData?.opponentId,
-            publicProject: projectData?.public,
-            reviews: projectData?.reviews,
-            studentId: projectData?.studentId,
-            submittedDate: projectData?.submittedDate,
-            teacherId: projectData?.teacherId,
-            title: projectData?.title,
-            displayName: userData?.displayName,
-            profilePicture: userData?.profilePicture,
-          };
-        });
-      } catch (e) {}
-
-      console.log(currentYearProjects.value);
+      currentYearProjects.value = formatProjectArray(projectDocs, usersDocs);
 
       window.onscroll = currentYearLazyLoading;
     });
@@ -201,26 +207,7 @@ export default defineComponent({
 
       lastOfCurrent = projectDocs[projectDocs.length - 1];
 
-      currentYearProjects.value.push(
-        ...projectDocs.map((project) => {
-          const userData = usersDocs?.find((user) => user.id === project.data()?.studentId)?.data();
-          const projectData = project.data();
-
-          return {
-            projectId: project.id,
-            currentYear: projectData?.currentYear,
-            opponentId: projectData?.opponentId,
-            publicProject: projectData?.public,
-            reviews: projectData?.reviews,
-            studentId: projectData?.studentId,
-            submittedDate: projectData?.submittedDate,
-            teacherId: projectData?.teacherId,
-            title: projectData?.title,
-            displayName: userData?.displayName,
-            profilePicture: userData?.profilePicture,
-          };
-        }),
-      );
+      currentYearProjects.value.push(...formatProjectArray(projectDocs, usersDocs));
     };
 
     // All projects
@@ -234,28 +221,7 @@ export default defineComponent({
 
       lastOfAll = projectDocs[projectDocs.length - 1];
 
-      try {
-        allProjects.value = projectDocs.map((project) => {
-          const userData = usersDocs?.find((user) => user.id === project.data()?.studentId)?.data();
-          const projectData = project.data();
-
-          return {
-            projectId: project.id,
-            currentYear: projectData?.currentYear,
-            opponentId: projectData?.opponentId,
-            publicProject: projectData?.public,
-            reviews: projectData?.reviews,
-            studentId: projectData?.studentId,
-            submittedDate: projectData?.submittedDate,
-            teacherId: projectData?.teacherId,
-            title: projectData?.title,
-            displayName: userData?.displayName,
-            profilePicture: userData?.profilePicture,
-          };
-        });
-      } catch (e) {
-        console.error(e);
-      }
+      allProjects.value = formatProjectArray(projectDocs, usersDocs);
     };
 
     const allLazyLoading = async () => {
@@ -269,26 +235,7 @@ export default defineComponent({
 
       lastOfAll = projectDocs[projectDocs.length - 1];
 
-      allProjects.value.push(
-        ...projectDocs.map((project) => {
-          const userData = usersDocs?.find((user) => user.id === project.data()?.studentId)?.data();
-          const projectData = project.data();
-
-          return {
-            projectId: project.id,
-            currentYear: projectData?.currentYear,
-            opponentId: projectData?.opponentId,
-            publicProject: projectData?.public,
-            reviews: projectData?.reviews,
-            studentId: projectData?.studentId,
-            submittedDate: projectData?.submittedDate,
-            teacherId: projectData?.teacherId,
-            title: projectData?.title,
-            displayName: userData?.displayName,
-            profilePicture: userData?.profilePicture,
-          };
-        }),
-      );
+      allProjects.value.push(...formatProjectArray(projectDocs, usersDocs));
     };
 
     // Extern teachers view
@@ -333,6 +280,10 @@ export default defineComponent({
             },
           },
         );
+
+        email.value = '';
+        password.value = '';
+        displayName.value = '';
 
         message.value = 'Účet učitele vytvořen';
         displaySnack.value = true;
