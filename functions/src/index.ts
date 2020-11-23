@@ -30,25 +30,36 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
   if (!snap.before.data() && snap.after.data()) return await runTransaction(1);
   if (!snap.after.data()) return await runTransaction(-1);
 
-  // Reviews were updated
-  const oldReviewsCount = (snap.before.data()?.reviews ?? []).length;
-  const newReviewsCount = (snap.after.data()?.reviews ?? []).length;
+  if (snap.before.data() && snap.after.data()) {
+    // Reviews were updated
+    const oldReviewsCount = (snap.before.data()?.reviews ?? []).length;
+    const newReviewsCount = (snap.after.data()?.reviews ?? []).length;
 
-  if (oldReviewsCount !== newReviewsCount) {
-    return await db.runTransaction(async (transaction) => {
-      const sfDoc = await transaction.get(statisticsRef)
+    if (oldReviewsCount !== newReviewsCount) {
+      return await db.runTransaction(async (transaction) => {
+        const sfDoc = await transaction.get(statisticsRef)
 
-      let reviewsCount = sfDoc.data()?.currentReviews;
+        let reviewsCount = sfDoc.data()?.currentReviews;
 
-      if (!reviewsCount) reviewsCount = 0;
+        if (!reviewsCount) reviewsCount = 0;
 
-      transaction.set(statisticsRef, {
-        currentReviews: reviewsCount + newReviewsCount - oldReviewsCount,
-      }, { merge: true });
+        transaction.set(statisticsRef, {
+          currentReviews: reviewsCount + newReviewsCount - oldReviewsCount,
+        }, { merge: true });
 
-      return transaction;
-    })
-  }
+        return transaction;
+      })
+    }
+
+    // students currentYear changed
+    if (!snap.before.data()?.currentYear.isEqual(snap.after.data()?.currentYear)) {
+      const currentSchoolYear: admin.firestore.Timestamp = (await db.collection('system').doc('schoolYear').get()).data()?.currentYear;
+      
+      if (currentSchoolYear.isEqual(snap.after.data()?.currentYear)) await runTransaction(1);
+
+      if (!currentSchoolYear.isEqual(snap.after.data()?.currentYear)) await runTransaction(-1)
+    }
+  };
 
   // TODO onUpdate project is submitted
   return;
