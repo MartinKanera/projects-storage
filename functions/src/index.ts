@@ -64,8 +64,6 @@ exports.usersHooks = functions.firestore.document('users/{userId}').onWrite(asyn
       let usersCount = sfDoc.data()?.currentMaxStudents;
 
       if (!usersCount) usersCount = 0;
-
-      functions.logger.debug(usersCount + difference);
   
       transaction.set(statisticsRef, {
         currentMaxStudents: usersCount + difference,
@@ -80,13 +78,29 @@ exports.usersHooks = functions.firestore.document('users/{userId}').onWrite(asyn
   // Delete
   if (!snap.after.data() && snap.before.data()?.student && currentSchoolYear.isEqual(snap.before.data()?.currentYear)) return await runTransaction(-1);
   // Update
-  if (snap.after.data()?.student && snap.before.data() && snap.after.data()) {
-    // users currentYear changed
-    if (!snap.before.data()?.currentYear.isEqual(snap.after.data()?.currentYear)) {
-      
-      if (currentSchoolYear.isEqual(snap.after.data()?.currentYear)) return await runTransaction(1);
+  if (snap.before.data() && snap.after.data()) {
+    if (snap.after.data()?.student) {
+      // students currentYear changed
+      if (!snap.before.data()?.currentYear.isEqual(snap.after.data()?.currentYear)) {
+        
+        if (currentSchoolYear.isEqual(snap.after.data()?.currentYear)) await runTransaction(1);
 
-      if (!currentSchoolYear.isEqual(snap.after.data()?.currentYear)) return await runTransaction(-1)
+        if (!currentSchoolYear.isEqual(snap.after.data()?.currentYear)) await runTransaction(-1)
+
+        try {
+          const projectRef = (await db.collection('projects').where('studentId', '==', snap.after.id).get()).docs[0].ref;
+
+          await db.runTransaction(async (transaction) => {
+            const sfDoc = await transaction.get(projectRef);
+
+            if (sfDoc.exists) transaction.set(projectRef, { currentYear: snap.after.data()?.currentYear }, { merge: true });
+
+            return transaction;
+          });
+        } catch (e) {
+          functions.logger.error(e);
+        }
+      }
     }
   };
 
