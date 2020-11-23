@@ -16,6 +16,7 @@ export default defineComponent({
   props: {
     value: {
       type: String,
+      default: '',
     },
     placeholder: {
       default: '',

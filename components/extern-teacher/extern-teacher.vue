@@ -47,15 +47,11 @@ export default defineComponent({
     const removeUser = async () => {
       removeLoading.value = true;
       try {
-        await axios.put(
-          '/api/teacher/remove',
-          { teacherId },
-          {
-            headers: {
-              Authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
-            },
+        await axios.delete(`/api/teacher/delete/${teacherId}`, {
+          headers: {
+            Authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
           },
-        );
+        });
       } catch (e) {
         console.error(e);
       }

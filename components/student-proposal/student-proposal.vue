@@ -21,9 +21,9 @@ import checkIcon from 'vue-material-design-icons/Check.vue';
 import closeIcon from 'vue-material-design-icons/CloseCircle.vue';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/auth';
 
 import axios from 'axios';
-import { useMainStore } from '@/store';
 
 export default defineComponent({
   components: {
@@ -60,7 +60,6 @@ export default defineComponent({
   },
   setup(props) {
     const proposalRef = props.proposalRef;
-    const mainStore = useMainStore();
 
     const declineLoading = ref(false);
 
@@ -92,16 +91,15 @@ export default defineComponent({
       acceptLoading.value = true;
 
       try {
-        await axios.request({
-          method: 'PUT',
-          url: '/api/proposal/accept',
-          headers: {
-            authorization: `Bearer ${mainStore.state.user.id}`,
+        await axios.put(
+          `/api/proposal/accept/${proposalRef.id}`,
+          {},
+          {
+            headers: {
+              authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
+            },
           },
-          data: {
-            proposalId: proposalRef.id,
-          },
-        });
+        );
       } catch (e) {
         console.error(e);
       }

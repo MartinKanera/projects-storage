@@ -36,11 +36,11 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch, toRefs } from 'nuxt-composition-api';
-import { useMainStore } from '@/store';
 import axios from 'axios';
 
 import firebase from 'firebase/app';
 import 'firebase/storage';
+import 'firebase/auth';
 import 'firebase/firestore';
 
 import arrowRight from 'vue-material-design-icons/ChevronRight.vue';
@@ -94,7 +94,6 @@ export default defineComponent({
     const openModal = () => {
       displayModal.value = true;
     };
-    const mainStore = useMainStore();
 
     const reviewsFiles = ref([]);
 
@@ -114,11 +113,9 @@ export default defineComponent({
 
         files.forEach((file) => fd.append('files', file));
 
-        fd.append('projectId', props.projectId);
-
-        await axios.post('/api/review/upload', fd, {
+        await axios.post(`/api/review/upload/${props.projectId}`, fd, {
           headers: {
-            Authorization: `Bearer ${mainStore.state.user.id}`,
+            Authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
             'Content-Type': 'multipart/form-data',
           },
         });

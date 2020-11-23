@@ -12,19 +12,25 @@ export default async (req: Request, res: Response) => {
     return res.status(401).send('Unauthorized');
   }
 
-  if (!req.body.teacherId) return res.status(400).send('Missing parameters');
+  if (!req.params.id) return res.status(400).send('Missing parameters');
 
   try {
-    const userRef = admin.firestore().collection('users').doc(req.body.teacherId);
+    const userRef = admin.firestore().collection('users').doc(req.params.id);
 
     await admin.firestore().runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(userRef);
 
       if (!(sfDoc.exists || sfDoc.data()?.extern)) return res.status(404).send('User does not exist/is not teacher');
 
-      transaction.delete(userRef);
+      transaction.set(
+        userRef,
+        {
+          deleted: true,
+        },
+        { merge: true },
+      );
 
-      await admin.auth().deleteUser(req.body.teacherId);
+      await admin.auth().deleteUser(req.params.id);
 
       return transaction;
     });

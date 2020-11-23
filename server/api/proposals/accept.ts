@@ -2,28 +2,28 @@ import admin from 'firebase-admin';
 import { Request, Response } from 'express';
 
 export default async (req: Request, res: Response) => {
-  const userId = req.headers.authorization?.split(' ')[1] ?? '';
-  const proposalId = req.body.proposalId;
+  const idToken = req.headers.authorization?.split(' ')[1] ?? '';
+
+  if (!req.params.id) return res.status(400).send('Missing parameters');
+
+  const proposalRef = admin.firestore().collection('proposals').doc(req.params.id);
 
   try {
-    await admin.auth().getUser(userId);
+    const user = await admin.auth().verifyIdToken(idToken);
+
+    const userData = (await admin.firestore().collection('users').doc(user.uid).get()).data();
+
+    if (!(userData?.teacher || userData?.admin)) return res.status(403).send('Forbidden');
+    if (userData?.teacher && !((await proposalRef.get()).data()?.teacherId === user.uid)) return res.status(403).send();
   } catch {
     return res.status(401).send('Unauthorized');
   }
 
-  if (!proposalId) return res.status(400).send('Missing parameters');
-
-  const userData = (await admin.firestore().collection('users').doc(userId).get()).data();
-
-  if (!(userData?.teacher || userData?.admin)) return res.status(403).send('Forbidden');
-
-  const proposalRef = admin.firestore().collection('proposals').doc(proposalId);
-
-  if (userData?.teacher && !((await proposalRef.get()).data()?.teacherId === userId)) return res.status(403).send();
-
   await admin.firestore().runTransaction(async (transaction) => {
     try {
       const sfDoc = await transaction.get(proposalRef);
+
+      const schoolYear = (await transaction.get(admin.firestore().collection('system').doc('schoolYear'))).data();
 
       const projectRef = admin.firestore().collection('projects').doc();
 
@@ -35,7 +35,7 @@ export default async (req: Request, res: Response) => {
         studentId: sfDoc.data()?.studentId,
         teacherId: sfDoc.data()?.teacherId,
         opponentId: '',
-        currentYear: userData?.currentYear,
+        currentYear: schoolYear?.currentYear,
         public: false,
         submittedDate: null,
       });
@@ -43,8 +43,8 @@ export default async (req: Request, res: Response) => {
       transaction.delete(proposalRef);
 
       return transaction;
-    } catch (_) {
-      return res.status(500).send();
+    } catch (e) {
+      return res.status(500).send(e);
     }
   });
 

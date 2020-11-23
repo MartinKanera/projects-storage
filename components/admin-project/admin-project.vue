@@ -5,7 +5,7 @@
     .flex.justify-between.flex-1(class='lg:justify-between')
       .flex.flex-col.justify-center
         span.text-ps-green.font-bold.text-lg {{ displayName }}
-        span.text-ps-white {{ project.title }}
+        span.text-ps-white {{ title }}
       .flex.flex-col.text-ps-white.items-end(class='lg:flex-row lg:mr-4 lg:items-center')
         span(class='lg:mr-4') posudky: {{ reviews.length }}/
           span.text-ps-green 4
@@ -24,6 +24,8 @@
       span.text-ps-green.text-2xl {{ projectToUpdate.title }}
       span.mb-8 {{ displayName }}
       ps-text-field.mb-4(v-model='projectToUpdate.title', name='projectTitle', label='Název projektu')
+      span.text-ps-green Viditelnost projektu
+      ps-select.mb-4(v-model='projectToUpdate.publicProject', :options='projectPublicity')
       span.text-ps-green Vedoucí projektu
       ps-select.mb-4(v-model='projectToUpdate.teacherId', placeholder='Vedoucí projektu', :options='deltaTeachers')
       span.text-ps-green Oponent
@@ -31,7 +33,7 @@
       .flex.flex-col
         span.text-ps-green.text-lg(v-if='reviews.length > 0') Odevzdaná hodnocení
         span(v-for='review in reviewsView') {{ review.displayName }} - {{ review.fileName }}
-      ps-btn.self-end(@click='updateProject') Uložit změny
+      ps-btn.self-end(@click='updateProject', :loading='btnLoading', :disabled='btnLoading') Uložit změny
 </template>
 
 <script lang="ts">
@@ -41,6 +43,8 @@ import 'firebase/firestore';
 
 import detailsIcon from 'vue-material-design-icons/AccountDetails.vue';
 import chevronIcon from 'vue-material-design-icons/ChevronRight.vue';
+
+import axios from 'axios';
 
 export default defineComponent({
   components: {
@@ -98,38 +102,39 @@ export default defineComponent({
     },
   },
   // { projectId, currentYear, opponentId, publicProject, reviews, studentId, submittedDate, teacherId, title, displayName, profilePicture, teachers }
-  setup({ projectId, currentYear, opponentId, publicProject, teacherId, title, teachers, reviews }) {
-    const project = ref({ currentYear, opponentId, publicProject, teacherId, title });
-    const projectToUpdate = ref({ ...project.value });
+  setup({ projectId, opponentId, publicProject, teacherId, title, teachers, reviews }) {
+    const projectToUpdate = ref({ opponentId, publicProject: publicProject.toString(), teacherId, title });
 
-    // @ts-ignore
     const getDate = (timeStamp: firebase.firestore.Timestamp) => new Date(timeStamp?.toMillis()).toString().substr(4, 11);
 
     // @ts-ignore
     const deltaTeachers = ref(teachers.filter((teacher) => !teacher.extern));
+    const btnLoading = ref(false);
 
     const updateProject = async () => {
-      const projectRef = firebase.firestore().collection('projects').doc(projectId);
+      btnLoading.value = true;
 
       try {
-        // eslint-disable-next-line require-await
-        await firebase.firestore().runTransaction(async (transaction) => {
-          transaction.update(projectRef, {
-            currentYear: projectToUpdate.value.currentYear,
+        await axios.put(
+          `/api/project/${projectId}`,
+          {
             opponentId: projectToUpdate.value.opponentId,
-            public: projectToUpdate.value.publicProject,
+            public: JSON.parse(projectToUpdate.value.publicProject),
             teacherId: projectToUpdate.value.teacherId,
             title: projectToUpdate.value.title,
-          });
-
-          return transaction;
-        });
-
-        project.value = { ...projectToUpdate.value };
+          },
+          {
+            headers: {
+              authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
+            },
+          },
+        );
         detailsModal.value = false;
       } catch (e) {
         console.error(e);
       }
+
+      btnLoading.value = false;
     };
 
     const detailsModal = ref(false);
@@ -156,15 +161,21 @@ export default defineComponent({
       }
     };
 
+    const projectPublicity = [
+      { placeholder: 'Private', value: 'false' },
+      { placeholder: 'Veřejný', value: 'true' },
+    ];
+
     return {
       getDate,
       detailsModal,
       updateProject,
-      project,
       projectToUpdate,
       deltaTeachers,
       openModal,
       reviewsView,
+      projectPublicity,
+      btnLoading,
     };
   },
 });

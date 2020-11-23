@@ -4,8 +4,8 @@
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentProjects', :maxCount='statistics.currentMaxStudents') Žáci kteří mají zadání
     ps-admin-stats(:loading='statsLoading', :currentCount='0', :maxCount='statistics.currentMaxStudents') Vložené práce
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentReviews', :maxCount='statistics.currentMaxReviews') Odevzdaná hodnocení
-  ps-tabs.mt-4.w-full(:tabs='["aktuální školní rok", "všechny práce", "externí učitelé"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
-    ps-tab(:active='selectedTab == "aktuální školní rok"')
+  ps-tabs.mt-4.w-full(:tabs='["aktuální projekty", "ostatní projekty", "externí učitelé"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
+    ps-tab(:active='selectedTab == "aktuální projekty"')
       span.text-ps-white.text-xl.mt-2 Aktuální školní rok
       ps-admin-project.mt-2(
         v-for='project in currentYearProjects',
@@ -23,10 +23,10 @@
         :profilePicture='project.profilePicture',
         :teachers='teachers'
       )
-    ps-tab(:active='selectedTab == "všechny práce"')
+    ps-tab(:active='selectedTab == "ostatní projekty"')
       span.text-ps-white.text-xl.mt-2 Všechny práce
       ps-admin-project.mt-2(
-        v-for='project in currentYearProjects',
+        v-for='project in allProjects',
         :key='project.projectId',
         :projectId='project.projectId',
         :currentYear='project.currentYear',
@@ -108,17 +108,17 @@ export default defineComponent({
 
     const currentSchoolYear = ref(firebase.firestore.Timestamp.prototype);
 
-    const selectedTab = ref('aktuální školní rok');
+    const selectedTab = ref('aktuální projekty');
 
     const setTab = (tab: string) => {
       selectedTab.value = tab;
 
       switch (selectedTab.value) {
-        case 'aktuální školní rok': {
+        case 'aktuální projekty': {
           window.onscroll = currentYearLazyLoading;
           break;
         }
-        case 'všechny práce': {
+        case 'ostatní projekty': {
           if (allProjects.value.length === 0) getAllProjects();
           window.onscroll = allLazyLoading;
           break;
@@ -162,6 +162,7 @@ export default defineComponent({
     const teachers = ref([]);
 
     const currentYearProjects = ref([] as Array<Project>);
+    const listeners = [];
     let lastOfCurrent: any = null;
 
     onMounted(async () => {
@@ -183,59 +184,118 @@ export default defineComponent({
         console.error(e);
       }
 
-      const projectDocs = (await firebase.firestore().collection('projects').orderBy('title', 'asc').where('currentYear', '==', currentSchoolYear.value).limit(10).get()).docs;
+      listeners.push(
+        firebase
+          .firestore()
+          .collection('projects')
+          .orderBy(firebase.firestore.FieldPath.documentId(), 'asc')
+          .where('currentYear', '==', currentSchoolYear.value)
+          .limit(10)
+          .onSnapshot(async (snapshots) => {
+            const projectDocs = snapshots.docs;
 
-      const usersDocs = await getUserDocs(projectDocs);
+            const usersDocs = await getUserDocs(projectDocs);
 
-      lastOfCurrent = projectDocs[projectDocs.length - 1];
+            lastOfCurrent = projectDocs[projectDocs.length - 1];
 
-      currentYearProjects.value = formatProjectArray(projectDocs, usersDocs);
+            const projects = formatProjectArray(projectDocs, usersDocs);
 
-      window.onscroll = currentYearLazyLoading;
+            projects.forEach((project: Project) => {
+              currentYearProjects.value = currentYearProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
+              currentYearProjects.value.push(project);
+            });
+
+            window.onscroll = currentYearLazyLoading;
+          }),
+      );
     });
 
-    const currentYearLazyLoading = async () => {
+    const currentYearLazyLoading = () => {
       if (!(window.innerHeight + Math.ceil(window.pageYOffset) >= document.body.offsetHeight) || !lastOfCurrent) return;
 
       console.log('Bottom of current years projects');
 
-      const projectDocs = (
-        await firebase.firestore().collection('projects').orderBy('title', 'asc').where('currentYear', '==', currentSchoolYear.value).startAfter(lastOfCurrent).limit(10).get()
-      ).docs;
+      listeners.push(
+        firebase
+          .firestore()
+          .collection('projects')
+          .where('currentYear', '==', currentSchoolYear.value)
+          .startAfter(lastOfCurrent)
+          .limit(10)
+          .onSnapshot(async (snapshots) => {
+            const projectDocs = snapshots.docs;
 
-      const usersDocs = await getUserDocs(projectDocs);
+            const usersDocs = await getUserDocs(projectDocs);
 
-      lastOfCurrent = projectDocs[projectDocs.length - 1];
+            lastOfCurrent = projectDocs[projectDocs.length - 1];
 
-      currentYearProjects.value.push(...formatProjectArray(projectDocs, usersDocs));
+            const projects = formatProjectArray(projectDocs, usersDocs);
+
+            projects.forEach((project: Project) => {
+              currentYearProjects.value = currentYearProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
+              currentYearProjects.value.push(project);
+            });
+          }),
+      );
     };
 
-    // All projects
+    // Older projects
     const allProjects = ref([] as Array<Project>);
     let lastOfAll: any = null;
 
-    const getAllProjects = async () => {
-      const projectDocs = (await firebase.firestore().collection('projects').orderBy('currentYear', 'desc').limit(10).get()).docs;
+    const getAllProjects = () => {
+      listeners.push(
+        firebase
+          .firestore()
+          .collection('projects')
+          .where('currentYear', '<', currentSchoolYear.value)
+          .orderBy('currentYear', 'desc')
+          .limit(10)
+          .onSnapshot(async (snapshots) => {
+            const projectDocs = snapshots.docs;
 
-      const usersDocs = await getUserDocs(projectDocs);
+            const usersDocs = await getUserDocs(projectDocs);
 
-      lastOfAll = projectDocs[projectDocs.length - 1];
+            lastOfAll = projectDocs[projectDocs.length - 1];
 
-      allProjects.value = formatProjectArray(projectDocs, usersDocs);
+            const projects = formatProjectArray(projectDocs, usersDocs);
+
+            projects.forEach((project: Project) => {
+              allProjects.value = allProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
+              allProjects.value.push(project);
+            });
+          }),
+      );
     };
 
-    const allLazyLoading = async () => {
+    const allLazyLoading = () => {
       if (!(window.innerHeight + Math.ceil(window.pageYOffset) >= document.body.offsetHeight) || !lastOfAll) return;
 
       console.log('Bottom of all projects');
 
-      const projectDocs = (await firebase.firestore().collection('projects').orderBy('currentYear', 'desc').startAfter(lastOfAll).limit(10).get()).docs;
+      listeners.push(
+        firebase
+          .firestore()
+          .collection('projects')
+          .where('currentYear', '<', currentSchoolYear.value)
+          .orderBy('currentYear', 'desc')
+          .startAfter(lastOfAll)
+          .limit(10)
+          .onSnapshot(async (snapshots) => {
+            const projectDocs = snapshots.docs;
 
-      const usersDocs = await getUserDocs(projectDocs);
+            const usersDocs = await getUserDocs(projectDocs);
 
-      lastOfAll = projectDocs[projectDocs.length - 1];
+            lastOfAll = projectDocs[projectDocs.length - 1];
 
-      allProjects.value.push(...formatProjectArray(projectDocs, usersDocs));
+            const projects = formatProjectArray(projectDocs, usersDocs);
+
+            projects.forEach((project: Project) => {
+              allProjects.value = allProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
+              allProjects.value.push(project);
+            });
+          }),
+      );
     };
 
     // Extern teachers view
@@ -248,6 +308,7 @@ export default defineComponent({
           .firestore()
           .collection('users')
           .where('extern', '==', true)
+          .where('deleted', '!=', true)
           .onSnapshot((externTeachersSnap) => {
             externTeachers.value = externTeachersSnap.docs.map((externTeacher) => {
               return {

@@ -14,6 +14,7 @@ import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/auth';
 
 import axios from 'axios';
 
@@ -57,7 +58,7 @@ export default defineComponent({
             { year: currentYear.value },
             {
               headers: {
-                Authorization: `Bearer ${mainStore.state.user.id}`,
+                Authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
               },
             },
           )
