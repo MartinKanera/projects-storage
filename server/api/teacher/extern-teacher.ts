@@ -34,6 +34,7 @@ export default async (req: Request, res: Response) => {
         extern: true,
         profilePicture: 'https://storage.googleapis.com/ps-profile-pictures/empty.png',
         displayName: req.body.displayName ? req.body.displayName : email,
+        deleted: false,
       });
 
       return transaction;

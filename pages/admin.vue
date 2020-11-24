@@ -4,7 +4,7 @@
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentProjects', :maxCount='statistics.currentMaxStudents') Žáci kteří mají zadání
     ps-admin-stats(:loading='statsLoading', :currentCount='0', :maxCount='statistics.currentMaxStudents') Vložené práce
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentReviews', :maxCount='statistics.currentMaxReviews') Odevzdaná hodnocení
-  ps-tabs.mt-4.w-full(:tabs='["aktuální projekty", "ostatní projekty", "externí učitelé"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
+  ps-tabs.mt-4.w-full(:tabs='["aktuální projekty", "ostatní projekty", "žáci", "učitelé", "externí učitelé", "vyhledávání"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
     ps-tab(:active='selectedTab == "aktuální projekty"')
       span.text-ps-white.text-xl.mt-2 Aktuální školní rok
       ps-admin-project.mt-2(
@@ -24,9 +24,9 @@
         :teachers='teachers'
       )
     ps-tab(:active='selectedTab == "ostatní projekty"')
-      span.text-ps-white.text-xl.mt-2 Všechny práce
+      span.text-ps-white.text-xl.mt-2 Ostatní projekty
       ps-admin-project.mt-2(
-        v-for='project in allProjects',
+        v-for='project in olderProjects',
         :key='project.projectId',
         :projectId='project.projectId',
         :currentYear='project.currentYear',
@@ -41,12 +41,31 @@
         :profilePicture='project.profilePicture',
         :teachers='teachers'
       )
+    ps-tab(:active='selectedTab == "žáci"')
+      ps-student.mt-4(
+        v-for='student in students',
+        :key='student.id',
+        :studentId='student.id',
+        :displayName='student.displayName',
+        :profilePicture='student.profilePicture',
+        :currentYear='student.currentYear'
+      )
+    ps-tab(:active='selectedTab == "učitelé"')
+      ps-teacher.mt-4(
+        v-for='teacher in internTeachers',
+        :key='teacher.teacherId',
+        :teacherId='teacher.teacherId',
+        :displayName='teacher.displayName',
+        :profilePicture='teacher.profilePicture',
+        :admin='teacher.admin'
+      )
     ps-tab(:active='selectedTab == "externí učitelé"')
       .flex.flex-col
         ps-btn.self-end(@click='displayTeacherModal = !displayTeacherModal') založit účet
           template(#icon-right)
             plus-icon/
-        ps-extern-teacher.mt-4(
+        ps-teacher.mt-4(
+          extern,
           v-for='teacher in externTeachers',
           :key='teacher.teacherId',
           :teacherId='teacher.teacherId',
@@ -60,6 +79,7 @@
             ps-text-field.mt-8(v-model='email', type='email', label='Email', name='email')
             ps-text-field.mt-8(v-model='password', type='text', label='Heslo', name='password')
             ps-btn.mt-8.self-end(@click='createTeacher', :disabled='teacherBtn', :loading='teacherBtn') vytvořit účet
+    ps-tab(:active='selectedTab == "vyhledávání"')
   ps-snackbar(v-model='displaySnack', :delay='5000') {{ message }}
 </template>
 
@@ -88,10 +108,18 @@ type Project = {
   profilePicture: String;
 };
 
-type ExternTeacher = {
+type Teacher = {
   teacherId: String;
   displayName: String;
   profilePicture: String;
+  admin: Boolean | undefined;
+};
+
+type Student = {
+  id: String;
+  displayName: String;
+  profilePicture: String;
+  currentYear: firebase.firestore.Timestamp;
 };
 
 export default defineComponent({
@@ -119,12 +147,21 @@ export default defineComponent({
           break;
         }
         case 'ostatní projekty': {
-          if (allProjects.value.length === 0) getAllProjects();
-          window.onscroll = allLazyLoading;
+          if (olderProjects.value.length === 0) getOlderProjects();
+          window.onscroll = olderLazyLoading;
           break;
         }
         case 'externí učitelé': {
-          if (externTeachersListener === null) getExternTeachers();
+          if (teachersListener === null) getTeachers();
+          break;
+        }
+        case 'učitelé': {
+          if (teachersListener === null) getTeachers();
+          break;
+        }
+        case 'žáci': {
+          if (students.value.length === 0) getStudents();
+          window.scroll = studentsLazyLoading;
           break;
         }
       }
@@ -240,10 +277,10 @@ export default defineComponent({
     };
 
     // Older projects
-    const allProjects = ref([] as Array<Project>);
+    const olderProjects = ref([] as Array<Project>);
     let lastOfAll: any = null;
 
-    const getAllProjects = () => {
+    const getOlderProjects = () => {
       listeners.push(
         firebase
           .firestore()
@@ -261,17 +298,17 @@ export default defineComponent({
             const projects = formatProjectArray(projectDocs, usersDocs);
 
             projects.forEach((project: Project) => {
-              allProjects.value = allProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
-              allProjects.value.push(project);
+              olderProjects.value = olderProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
+              olderProjects.value.push(project);
             });
           }),
       );
     };
 
-    const allLazyLoading = () => {
+    const olderLazyLoading = () => {
       if (!(window.innerHeight + Math.ceil(window.pageYOffset) >= document.body.offsetHeight) || !lastOfAll) return;
 
-      console.log('Bottom of all projects');
+      console.log('Bottom of older projects');
 
       listeners.push(
         firebase
@@ -291,31 +328,45 @@ export default defineComponent({
             const projects = formatProjectArray(projectDocs, usersDocs);
 
             projects.forEach((project: Project) => {
-              allProjects.value = allProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
-              allProjects.value.push(project);
+              olderProjects.value = olderProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
+              olderProjects.value.push(project);
             });
           }),
       );
     };
 
     // Extern teachers view
-    const externTeachers = ref([] as Array<ExternTeacher>);
-    let externTeachersListener: (() => void) | null = null;
+    const externTeachers = ref([] as Array<Teacher>);
+    const internTeachers = ref([] as Array<Teacher>);
+    let teachersListener: (() => void) | null = null;
 
-    const getExternTeachers = () => {
+    const getTeachers = () => {
       try {
-        externTeachersListener = firebase
+        teachersListener = firebase
           .firestore()
           .collection('users')
-          .where('extern', '==', true)
-          .where('deleted', '!=', true)
-          .onSnapshot((externTeachersSnap) => {
-            externTeachers.value = externTeachersSnap.docs.map((externTeacher) => {
-              return {
-                teacherId: externTeacher.id,
-                displayName: externTeacher.data()?.displayName,
-                profilePicture: externTeacher.data()?.profilePicture,
-              };
+          .where('teacher', '==', true)
+          .where('deleted', '==', false)
+          .onSnapshot((teachersSnap) => {
+            externTeachers.value = [];
+            internTeachers.value = [];
+
+            teachersSnap.docs.forEach((teacher) => {
+              if (teacher.data()?.extern) {
+                externTeachers.value.push({
+                  teacherId: teacher.id,
+                  displayName: teacher.data()?.displayName,
+                  profilePicture: teacher.data()?.profilePicture,
+                  admin: false,
+                });
+              } else {
+                internTeachers.value.push({
+                  teacherId: teacher.id,
+                  displayName: teacher.data()?.displayName,
+                  profilePicture: teacher.data()?.profilePicture,
+                  admin: teacher.data().admin,
+                });
+              }
             });
           });
       } catch (e) {}
@@ -373,6 +424,76 @@ export default defineComponent({
       teacherBtn.value = false;
     };
 
+    const students = ref([] as Array<Student>);
+    let lastStudent: any = null;
+
+    const getStudents = () => {
+      listeners.push(
+        firebase
+          .firestore()
+          .collection('users')
+          .where('student', '==', true)
+          .where('currentYear', '==', currentSchoolYear.value)
+          .limit(10)
+          .onSnapshot((snapshots) => {
+            const studentsDocs = snapshots.docs;
+
+            lastStudent = studentsDocs[studentsDocs.length - 1];
+
+            const studentsData = studentsDocs.map((studentDoc) => {
+              return {
+                id: studentDoc.id,
+                displayName: studentDoc.data()?.displayName,
+                profilePicture: studentDoc.data()?.profilePicture,
+                currentYear: studentDoc.data()?.currentYear,
+              };
+            });
+
+            studentsData.forEach((student: Student) => {
+              students.value = students.value.filter((currentProject) => currentProject.id !== student.id);
+              students.value.push(student);
+            });
+
+            console.log(students.value);
+          }),
+      );
+    };
+
+    const studentsLazyLoading = () => {
+      if (!(window.innerHeight + Math.ceil(window.pageYOffset) >= document.body.offsetHeight) || !lastStudent) return;
+
+      console.log('Bottom of students');
+
+      listeners.push(
+        firebase
+          .firestore()
+          .collection('users')
+          .where('student', '==', true)
+          .where('currentYear', '==', currentSchoolYear.value)
+          .startAfter(lastOfAll)
+          .limit(10)
+          .onSnapshot((snapshots) => {
+            const studentsDocs = snapshots.docs;
+
+            lastStudent = studentsDocs[studentsDocs.length - 1];
+
+            const studentsData = studentsDocs.map((studentDoc) => {
+              return {
+                id: studentDoc.id,
+                displayName: studentDoc.data()?.displayName,
+                profilePicture: studentDoc.data()?.profilePicture,
+                currentYear: studentDoc.data()?.currentYear,
+              };
+            });
+
+            studentsData.forEach((student: Student) => {
+              students.value = students.value.filter((currentProject) => currentProject.id !== student.id);
+              students.value.push(student);
+            });
+          }),
+      );
+    };
+
     return {
       message,
       displaySnack,
@@ -387,9 +508,11 @@ export default defineComponent({
       createTeacher,
       displayName,
       teacherBtn,
-      allProjects,
+      olderProjects,
       currentYearProjects,
       teachers,
+      internTeachers,
+      students,
     };
   },
 });
