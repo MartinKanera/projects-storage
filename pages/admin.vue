@@ -6,8 +6,15 @@
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentReviews', :maxCount='statistics.currentMaxReviews') Odevzdaná hodnocení
   ps-tabs.mt-4.w-full(:tabs='["aktuální projekty", "ostatní projekty", "žáci", "učitelé", "externí učitelé", "vyhledávání"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
     ps-tab(:active='selectedTab == "aktuální projekty"')
-      span.text-ps-white.text-xl.mt-2 Aktuální školní rok
-      ps-admin-project.mt-2(
+      .flex.justify-between.items-center
+        span.text-ps-white.text-xl Aktuální školní rok
+        ps-btn(@click='deadlineModal = !deadlineModal') Termín
+          template(#icon-right)
+            date-icon(:size='20')/
+        ps-modal(v-model='deadlineModal')
+          ps-text-field.mt-4.text-ps-white(v-model='deadline', type='datetime-local', name='deadline', label='Termín odevzdání')
+          ps-btn.mt-4.ml-auto(@click='updateDeadline', :disabled='updatingDeadline', :loading='updatingDeadline') aktualizovat
+      ps-admin-project.mt-4(
         v-for='project in currentYearProjects',
         :key='project.projectId',
         :projectId='project.projectId',
@@ -93,6 +100,7 @@ import 'firebase/firestore';
 import 'firebase/auth';
 
 import plusIcon from 'vue-material-design-icons/Plus.vue';
+import dateIcon from 'vue-material-design-icons/CalendarOutline.vue';
 
 type Project = {
   projectId: String;
@@ -126,6 +134,7 @@ export default defineComponent({
   middleware: 'admin',
   components: {
     plusIcon,
+    dateIcon,
   },
   setup() {
     const message = ref('');
@@ -196,16 +205,57 @@ export default defineComponent({
       });
     };
 
+    // set new global deadline
+    const deadlineModal = ref(false);
+    const deadline = ref('');
+    const updatingDeadline = ref(false);
+
+    const updateDeadline = async () => {
+      console.log(deadline.value);
+      try {
+        updatingDeadline.value = true;
+        // eslint-disable-next-line require-await
+        await firebase.firestore().runTransaction(async (transaction) => {
+          const ref = firebase.firestore().collection('system').doc('schoolYear');
+          transaction.update(ref, {
+            deadline: firebase.firestore.Timestamp.fromDate(new Date(deadline.value)),
+          });
+
+          return transaction;
+        });
+
+        deadlineModal.value = false;
+      } catch (e) {
+        console.error(e);
+      }
+      updatingDeadline.value = false;
+    };
+
     const teachers = ref([]);
 
     const currentYearProjects = ref([] as Array<Project>);
     const listeners = [];
     let lastOfCurrent: any = null;
 
+    // current year projects
+
     onMounted(async () => {
       try {
         statistics.value = (await firebase.firestore().collection('system').doc('statistics').get()).data();
-        currentSchoolYear.value = (await firebase.firestore().collection('system').doc('schoolYear').get()).data()?.currentYear;
+
+        const schoolYear = (await firebase.firestore().collection('system').doc('schoolYear').get()).data();
+
+        currentSchoolYear.value = schoolYear?.currentYear;
+        const date = (schoolYear?.deadline as firebase.firestore.Timestamp).toDate();
+
+        const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}-${date
+          .getDate()
+          .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`;
+        const formattedTime = `${date.getHours().toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}:${date
+          .getMinutes()
+          .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`;
+
+        deadline.value = `${formattedDate}T${formattedTime}`;
 
         // @ts-ignore
         teachers.value = (await firebase.firestore().collection('users').where('teacher', '==', true).get()).docs.map((teacher) => {
@@ -402,7 +452,7 @@ export default defineComponent({
 
         displayTeacherModal.value = false;
       } catch (e) {
-        console.log(e);
+        console.error(e);
 
         switch (e.response.data.code) {
           case 'auth/email-already-exists': {
@@ -453,8 +503,6 @@ export default defineComponent({
               students.value = students.value.filter((currentProject) => currentProject.id !== student.id);
               students.value.push(student);
             });
-
-            console.log(students.value);
           }),
       );
     };
@@ -513,6 +561,10 @@ export default defineComponent({
       teachers,
       internTeachers,
       students,
+      deadline,
+      deadlineModal,
+      updateDeadline,
+      updatingDeadline,
     };
   },
 });

@@ -38,5 +38,6 @@ app.put('/project/:id', async (req, res) => (await import('./project/update')).d
 
 // review
 app.post('/review/upload/:id', uploader.array('files'), async (req, res) => (await import('./review/upload')).default(req, res));
+app.get('/reviews/:id', async (req, res) => (await import('./review/list')).default(req, res));
 
 export default app;
