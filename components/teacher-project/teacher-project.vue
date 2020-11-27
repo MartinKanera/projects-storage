@@ -30,7 +30,7 @@
           pdf-icon(v-else-if='review.fileType == "pdf"')/
           file-icon(v-else)/
           span {{ review.fileName }}
-        ps-btn.justify-self-end(text, @click='removeReview(review.fileUrl)')
+        ps-btn.justify-self-end(text, @click='removeReview(review.filePath)', :loading='reviewDelete', :disabled='reviewDelete')
           bin-icon(:size='20')
 </template>
 
@@ -151,21 +151,24 @@ export default defineComponent({
       });
     });
 
-    const removeReview = async (url: string) => {
+    const reviewDelete = ref(false);
+
+    const removeReview = async (filePath: string) => {
+      reviewDelete.value = true;
+
       const storage = firebase.app().storage('gs://ps-reviews');
-      const fileRef = storage.refFromURL(url);
+      const fileRef = storage.ref(filePath);
 
       try {
-        await fileRef.delete();
-
         const projectRef = firebase.firestore().collection('projects').doc(props.projectId);
 
         await firebase.firestore().runTransaction(async (transaction) => {
           const sfDoc = await transaction.get(projectRef);
+          await fileRef.delete();
 
           const reviews = sfDoc.data()?.reviews ?? [];
 
-          const updatedReviews = reviews.filter((review: any) => review.fileUrl !== url);
+          const updatedReviews = reviews.filter((review: any) => review.filePath !== filePath);
 
           transaction.set(
             projectRef,
@@ -180,6 +183,8 @@ export default defineComponent({
       } catch (e) {
         console.error(e);
       }
+
+      reviewDelete.value = false;
     };
 
     return {
@@ -190,6 +195,7 @@ export default defineComponent({
       uploading,
       uploadedReviews,
       removeReview,
+      reviewDelete,
     };
   },
 });

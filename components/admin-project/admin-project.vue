@@ -32,7 +32,8 @@
       ps-select.mb-4(v-model='projectToUpdate.opponentId', placeholder='Oponent', :options='teachers')
       .flex.flex-col
         span.text-ps-green.text-lg(v-if='reviews.length > 0') Odevzdaná hodnocení
-        span(v-for='review in reviewsView') {{ review.displayName }} - {{ review.fileName }}
+        span(v-for='review in reviewsView') {{ review.displayName }} -
+          a.ml-1(:href='review.publicUrl') {{ review.fileName }}
       ps-btn.self-end(@click='updateProject', :loading='btnLoading', :disabled='btnLoading') Uložit změny
 </template>
 
@@ -40,6 +41,7 @@
 import { defineComponent, ref } from 'nuxt-composition-api';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/auth';
 
 import detailsIcon from 'vue-material-design-icons/AccountDetails.vue';
 import chevronIcon from 'vue-material-design-icons/ChevronRight.vue';
@@ -145,17 +147,31 @@ export default defineComponent({
 
       if (reviewsView.value || reviews.length === 0) return;
 
+      const teacherIds = [teacherId];
+
+      if (opponentId !== '') teacherIds.push(opponentId);
+
       try {
-        const teachers = (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', [teacherId, opponentId]).get()).docs;
+        const teachers = (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', teacherIds).get()).docs;
+
+        const reviewsData = (
+          await axios.get(`/api/reviews/${projectId}`, {
+            headers: {
+              authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
+            },
+          })
+        ).data;
 
         // @ts-ignore
-        reviewsView.value = reviews.map((review) => {
+        reviewsView.value = reviewsData.map((review) => {
           return {
-            // @ts-ignore
             ...review,
+            // @ts-ignore
             displayName: teachers.find((teacher) => review.teacherId === teacher.id || review.opponentId === teacher.id)?.data()?.displayName,
           };
         });
+
+        console.log(reviewsView.value);
       } catch (e) {
         console.error(e);
       }

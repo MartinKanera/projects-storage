@@ -62,12 +62,10 @@ export default async (req: Request, res: Response) => {
 
                 const reviews = sfDoc.data()?.reviews ?? [];
 
-                const fileUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-
-                const updatedReviews = reviews.filter((review: any) => review.fileUrl !== fileUrl);
+                const updatedReviews = reviews.filter((review: any) => review.filePath !== blob.name);
                 updatedReviews.push({
                   fileName: file.originalname,
-                  fileUrl,
+                  filePath: `${blob.name}`,
                   teacherId: user.uid,
                   uploaded: admin.firestore.Timestamp.now(),
                 });

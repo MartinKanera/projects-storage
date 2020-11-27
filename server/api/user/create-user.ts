@@ -51,6 +51,7 @@ export default async (req: Request, res: Response) => {
         displayName: userData.name,
         profilePicture: await saveProfileImage(userData.uid),
         admin: false,
+        deleted: false,
         student: userData.email?.includes('delta-studenti'),
         teacher: userData.email?.includes('delta-skola'),
         currentYear: null,

@@ -7,31 +7,27 @@ export default async (req: Request, res: Response) => {
 
   if (!projectId) return res.status(401).send('Missing params');
 
-  const getReviewsUrls = async (projectId: string, reviewers: Array<string>, isAdmin = false) => {
+  const getReviewsUrls = async (reviews: any, authorized = false) => {
     const storage = admin.app().storage().bucket('ps-reviews');
     const expires = Date.now() + 3600 * 1000;
 
     const response: any = await Promise.all(
-      reviewers.map(async (reviewerId) => {
-        const [pdf] = await storage.file(`${projectId}-${reviewerId}.pdf`).getSignedUrl({
+      reviews.map(async (review: any) => {
+        if (!authorized && review.filePath.includes('.xlsx')) return;
+
+        const [url] = await storage.file(review.filePath).getSignedUrl({
           action: 'read',
           expires,
         });
 
-        if (isAdmin) {
-          const [xlsx] = await storage.file(`${projectId}-${reviewerId}.xlsx`).getSignedUrl({
-            action: 'read',
-            expires,
-          });
-
-          return [pdf, xlsx];
-        }
-
-        return [pdf];
+        return {
+          ...review,
+          publicUrl: url,
+        };
       }),
     );
 
-    return [...response[0], ...response[1]];
+    return response.filter((el: any) => el != null);
   };
 
   try {
@@ -43,26 +39,31 @@ export default async (req: Request, res: Response) => {
 
     const user = await admin.firestore().collection('users').doc(userData.uid).get();
 
-    console.log(await getReviewsUrls(projectId, [project.data()?.teacherId, project.data()?.opponentId]));
+    console.log(await getReviewsUrls(project.data()?.reviews, true));
 
     // User is not logged in and project is not logged in
-    if (!(user.exists && project.data()?.public)) return res.status(403).send('Project is not public');
+    if (!user.exists && !project.data()?.public) {
+      console.log('User is not logged in and project is not logged in');
+      return res.status(403).send('Project is not public');
+    }
 
     // User is not admin but the project is public
     if (!user.data()?.admin && project.data()?.public) {
-      return res.send('You not admin and project is public');
+      console.log('User is not admin but the project is public');
+      return res.send(await getReviewsUrls(project.data()?.reviews));
     }
 
     // User owns this project
     if (project.data()?.studentId === userData.uid) {
-      return res.send('You are project owner');
+      console.log('User owns this project');
+      return res.send(await getReviewsUrls(project.data()?.reviews));
     }
 
     // User is admin
     if (user.data()?.admin) {
+      console.log('User is admin');
+      res.send(await getReviewsUrls(project.data()?.reviews, true));
     }
-
-    return res.send('You admin');
   } catch (e) {
     console.error(e);
     return res.status(500).send();
