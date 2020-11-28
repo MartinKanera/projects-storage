@@ -12,7 +12,7 @@
       :profilePicture='proposal.profilePicture',
       :proposalRef='proposal.proposalRef'
     )
-  ps-tabs(:tabs='["studenti", "předpřipravené zadání"]', :selected='selectedTab', @selected='setTab')
+  ps-tabs(:tabs='["studenti", "předpřipravené zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
     ps-tab(:active='selectedTab == "studenti"')
       .flex.justify-between
         span.text-2xl.text-ps-white.font-medium Moji studenti
@@ -38,6 +38,19 @@
           ps-btn.ml-auto(@click='addProject', :disabled='submitting || disabledBtn', :loading='submitting') Přidat projekt
       .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
         ps-premade-project(v-for='project in premadeProjects', :key='project.projectId', :projectId='project.projectId', :projectTitle='project.projectTitle')
+    ps-tab(:active='selectedTab == "oponent"')
+      .flex.justify-between
+        span.text-2xl.text-ps-white.font-medium
+      .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
+        ps-teacher-project(
+          v-for='project in opponentProjects',
+          :key='project.projectId',
+          :projectId='project.projectId',
+          :projectTitle='project.projectTitle',
+          :displayName='project.displayName',
+          :profilePicture='project.profilePicture',
+          :reviews='project.reviews'
+        )
 </template>
 
 <script lang="ts">
@@ -85,8 +98,33 @@ export default defineComponent({
     const proposals = ref([] as Array<StudentProposal>);
     const projects = ref([] as Array<Project>);
     const premadeProjects = ref([] as Array<PremadeProject>);
+    const opponentProjects = ref([] as Array<Project>);
 
     const mainStore = useMainStore();
+
+    const inArray = async (colRef: firebase.firestore.CollectionReference, inputArray: Array<String>) => {
+      const perCall = 10;
+
+      if (inputArray.length <= perCall) return (await colRef.where(firebase.firestore.FieldPath.documentId(), 'in', inputArray).get()).docs;
+
+      const chunks: Array<Array<String>> = [];
+
+      inputArray.forEach((element, i) => {
+        const chunkIndex = Math.floor(i / perCall);
+
+        if (!chunks[chunkIndex]) chunks[chunkIndex] = [];
+
+        chunks[chunkIndex].push(element);
+      });
+
+      let resultArray: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[] = [];
+
+      chunks.forEach(async (array) => {
+        resultArray = [...resultArray, ...(await colRef.where(firebase.firestore.FieldPath.documentId(), 'in', array).get()).docs];
+      });
+
+      return resultArray;
+    };
 
     if (process.client) {
       try {
@@ -171,31 +209,39 @@ export default defineComponent({
             });
           });
       } catch (_) {}
+
+      try {
+        firebase
+          .firestore()
+          .collection('projects')
+          .where('currentYear', '>=', new firebase.firestore.Timestamp(new Date().getSeconds(), 0))
+          .where('opponentId', '==', mainStore.state.user.id)
+          .onSnapshot(async (projectSnap) => {
+            const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
+
+            if (!studentIds.length) {
+              projects.value = [];
+              return;
+            }
+
+            const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
+
+            opponentProjects.value = projectSnap.docs.map((projectDoc) => {
+              const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
+
+              return {
+                projectId: projectDoc.id,
+                projectTitle: projectDoc.data().title,
+                displayName: currentStudent?.data().displayName,
+                profilePicture: currentStudent?.data().profilePicture,
+                reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+              };
+            });
+          });
+      } catch (e) {
+        console.error(e);
+      }
     }
-
-    const inArray = async (colRef: firebase.firestore.CollectionReference, inputArray: Array<String>) => {
-      const perCall = 10;
-
-      if (inputArray.length <= perCall) return (await colRef.where(firebase.firestore.FieldPath.documentId(), 'in', inputArray).get()).docs;
-
-      const chunks: Array<Array<String>> = [];
-
-      inputArray.forEach((element, i) => {
-        const chunkIndex = Math.floor(i / perCall);
-
-        if (!chunks[chunkIndex]) chunks[chunkIndex] = [];
-
-        chunks[chunkIndex].push(element);
-      });
-
-      let resultArray: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[] = [];
-
-      chunks.forEach(async (array) => {
-        resultArray = [...resultArray, ...(await colRef.where(firebase.firestore.FieldPath.documentId(), 'in', array).get()).docs];
-      });
-
-      return resultArray;
-    };
 
     const projectModalDisplay = ref(false);
 
@@ -243,6 +289,7 @@ export default defineComponent({
       submitting,
       disabledBtn,
       premadeProjects,
+      opponentProjects,
     };
   },
 });

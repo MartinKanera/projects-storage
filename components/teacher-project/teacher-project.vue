@@ -38,6 +38,8 @@
 import { defineComponent, ref, watch, toRefs } from 'nuxt-composition-api';
 import axios from 'axios';
 
+import { useMainStore } from '@/store';
+
 import firebase from 'firebase/app';
 import 'firebase/storage';
 import 'firebase/auth';
@@ -90,6 +92,8 @@ export default defineComponent({
     binIcon,
   },
   setup(props) {
+    const mainStore = useMainStore();
+
     const displayModal = ref(false);
     const openModal = () => {
       displayModal.value = true;
@@ -196,6 +200,7 @@ export default defineComponent({
       uploadedReviews,
       removeReview,
       reviewDelete,
+      userId: mainStore.state.user.id,
     };
   },
 });
