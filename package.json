@@ -34,7 +34,7 @@
     "@nuxtjs/eslint-config-typescript": "4.0.0",
     "@nuxtjs/storybook": "3.0.0",
     "@nuxtjs/tailwindcss": "3.0.2",
-    "@prettier/plugin-pug": "1.10.1",
+    "@prettier/plugin-pug": "1.13.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.1.0",
     "cross-env": "7.0.2",
