@@ -1,6 +1,18 @@
 import { Request, Response } from 'express';
 import admin from 'firebase-admin';
 
+const removeReviews = async (filePaths: Array<string>) => {
+  try {
+    return await Promise.all(
+      filePaths.map((filePath: string) => {
+        return admin.storage().bucket('ps-reviews').file(filePath).delete();
+      }),
+    );
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
 export default async (req: Request, res: Response) => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
 
@@ -28,14 +40,49 @@ export default async (req: Request, res: Response) => {
   const projectRef = admin.firestore().collection('projects').doc(req.params.id);
 
   try {
-    // eslint-disable-next-line require-await
     await admin.firestore().runTransaction(async (transaction) => {
-      transaction.update(projectRef, {
+      const sfDoc = await transaction.get(projectRef);
+
+      let projectToUpload = {
         opponentId: updatedProject.opponentId,
         public: updatedProject.public,
         teacherId: updatedProject.teacherId,
         title: updatedProject.title,
-      });
+      };
+
+      if (sfDoc.data()?.teacherId !== updatedProject.teacherId) {
+        removeReviews(
+          sfDoc
+            .data()
+            ?.reviews.filter((review: any) => review.teacherId === sfDoc.data()?.teacherId)
+            .map((review: any) => review.filePath),
+        );
+        const filteredReviews = sfDoc.data()?.reviews.filter((review: any) => review.teacherId !== sfDoc.data()?.teacherId);
+
+        projectToUpload = {
+          ...projectToUpload,
+          // @ts-ignore
+          reviews: filteredReviews,
+        };
+      }
+
+      if (sfDoc.data()?.opponentId !== updatedProject.opponentId) {
+        removeReviews(
+          sfDoc
+            .data()
+            ?.reviews.filter((review: any) => review.teacherId === sfDoc.data()?.opponentId)
+            .map((review: any) => review.filePath),
+        );
+        const filteredReviews = sfDoc.data()?.reviews.filter((review: any) => review.teacherId !== sfDoc.data()?.opponentId);
+
+        projectToUpload = {
+          ...projectToUpload,
+          // @ts-ignore
+          reviews: filteredReviews,
+        };
+      }
+
+      transaction.update(projectRef, projectToUpload);
 
       return transaction;
     });

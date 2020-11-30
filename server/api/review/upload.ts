@@ -24,13 +24,14 @@ export default async (req: Request, res: Response) => {
 
     console.log(reviewsCount);
 
-    // @ts-ignore
-    if (projectDoc.data()?.teacherId === user.uid && projectDoc.data()?.opponentId === user.uid && !(reviewsCount + req.files.length <= 4)) {
-      console.log('You are teacher and opponent');
-      return res.status(400).send('Reviews limit exceeded');
+    if (projectDoc.data()?.teacherId === user.uid && projectDoc.data()?.opponentId === user.uid) {
       // @ts-ignore
-    } else if (!(reviewsCount + req.files.length <= 2)) {
-      console.log(reviewsCount + req.files.length);
+      if (reviewsCount + req.files.length > 4) {
+        console.log('You are teacher and opponent');
+        return res.status(400).send('Reviews limit exceeded');
+      }
+      // @ts-ignore
+    } else if (reviewsCount + req.files.length > 2) {
       return res.status(400).send('Reviews limit exceeded');
     }
   } catch (_) {

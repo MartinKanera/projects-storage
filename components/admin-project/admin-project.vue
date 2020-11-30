@@ -170,8 +170,6 @@ export default defineComponent({
             displayName: teachers.find((teacher) => review.teacherId === teacher.id || review.opponentId === teacher.id)?.data()?.displayName,
           };
         });
-
-        console.log(reviewsView.value);
       } catch (e) {
         console.error(e);
       }

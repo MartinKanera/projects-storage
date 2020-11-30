@@ -24,3 +24,15 @@ function validProjectMod(request) {
     request.resource.data.title is string &&
     request.resource.data.teacherId != null;
 }
+
+function isProjectOwner(request) {
+  return request.auth.uid == resource.data.studentId;
+}
+
+function isMyStudent(request) {
+  return resource.data.teacherId == request.auth.uid;
+}
+
+function isProjectPublic(request) {
+  return resource.data.public;
+}

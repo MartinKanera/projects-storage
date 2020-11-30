@@ -39,8 +39,6 @@ export default async (req: Request, res: Response) => {
 
     const user = await admin.firestore().collection('users').doc(userData.uid).get();
 
-    console.log(await getReviewsUrls(project.data()?.reviews, true));
-
     // User is not logged in and project is not logged in
     if (!user.exists && !project.data()?.public) {
       console.log('User is not logged in and project is not logged in');
