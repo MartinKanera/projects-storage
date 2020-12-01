@@ -10,18 +10,21 @@
       ps-btn.text-ps-white(text) Projekt
         template(#icon-right)
           arrow-right.text-ps-white(:size='32')/
-    ps-btn.text-ps-white(text, @click='openModal') Nastavení
+    ps-btn.text-ps-red(v-if='unreviewed && pastDeadline', text) Po termínu
       template(#icon-right)
-        arrow-right.text-ps-white(:size='32')/
-  //- .flex(v-else)
-  //-   span.text-ps-white.mr-1 Hodnoceno
-  //-   check-icon.text-ps-white/
+        cross-icon/
+    ps-btn.text-ps-white(v-else-if='unreviewed', text, @click='openModal') Nastavení
+      template(#icon-right)
+        arrow-right(:size='32')/
+    ps-btn.text-ps-green(v-else, text, @click='openModal') Hodnoceno
+      template(#icon-right)
+        check-icon/
   ps-modal(v-model='displayModal')
     .flex.flex-col
       span.text-2xl.text-ps-white {{ projectTitle }}
       span.text-lg.text-ps-green {{ displayName }}
       span.mt-4.mb-1.text-ps-white Nahraj posudky
-      ps-drag-drop(v-model='reviewsFiles', tile, multiple, accept='.pdf,.xlsx')
+      ps-drag-drop(v-model='reviewsFiles', tile, multiple, accept='.pdf,.xlsx', :disabled='pastDeadline || !unreviewed')
       ps-btn.self-end(v-if='reviewsFiles.length > 0', @click='uploadReviews', :disabled='uploading', :loading='uploading') Odeslat posudek
       span.mt-8.text-ps-green Odevzdané posudky:
       .text-ps-white.flex.items-center.justify-between(v-for='review in uploadedReviews')
@@ -35,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, toRefs } from 'nuxt-composition-api';
+import { defineComponent, ref, watch, toRefs, computed } from 'nuxt-composition-api';
 import axios from 'axios';
 
 import { useMainStore } from '@/store';
@@ -47,6 +50,7 @@ import 'firebase/firestore';
 
 import arrowRight from 'vue-material-design-icons/ChevronRight.vue';
 import checkIcon from 'vue-material-design-icons/Check.vue';
+import crossIcon from 'vue-material-design-icons/Close.vue';
 
 import wordIcon from 'vue-material-design-icons/FileWord.vue';
 import pdfIcon from 'vue-material-design-icons/PdfBox.vue';
@@ -82,6 +86,18 @@ export default defineComponent({
     reviews: {
       default: () => [],
     },
+    pastDeadline: {
+      type: Boolean,
+      required: true,
+    },
+    teacher: {
+      type: Boolean,
+      required: true,
+    },
+    opponent: {
+      type: Boolean,
+      required: true,
+    },
   },
   components: {
     arrowRight,
@@ -90,6 +106,7 @@ export default defineComponent({
     pdfIcon,
     fileIcon,
     binIcon,
+    crossIcon,
   },
   setup(props) {
     const mainStore = useMainStore();
@@ -191,6 +208,10 @@ export default defineComponent({
       reviewDelete.value = false;
     };
 
+    const unreviewed = computed(() => props.teacher && props.opponent && props.reviews.length < 4) || props.teacher || (props.opponent && props.reviews.length < 2);
+
+    console.log(unreviewed.value);
+
     return {
       displayModal,
       openModal,
@@ -201,6 +222,7 @@ export default defineComponent({
       removeReview,
       reviewDelete,
       userId: mainStore.state.user.id,
+      unreviewed,
     };
   },
 });

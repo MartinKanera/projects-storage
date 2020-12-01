@@ -12,7 +12,9 @@
           template(#icon-right)
             date-icon(:size='20')/
         ps-modal(v-model='deadlineModal')
-          ps-text-field.mt-4.text-ps-white(v-model='deadline', type='datetime-local', name='deadline', label='Termín odevzdání')
+          span.text-ps-white.text-lg Termíny
+          ps-text-field.mt-8.text-ps-white(v-model='projectDeadline', type='datetime-local', name='project-deadline', label='Termín odevzdání projektu')
+          ps-text-field.mt-8.text-ps-white(v-model='reviewDeadline', type='datetime-local', name='review-deadline', label='Termín odevzdání posudků')
           ps-btn.mt-4.ml-auto(@click='updateDeadline', :disabled='updatingDeadline', :loading='updatingDeadline') aktualizovat
       ps-admin-project.mt-4(
         v-for='project in currentYearProjects',
@@ -205,20 +207,36 @@ export default defineComponent({
       });
     };
 
+    const formatDate = (timestamp: firebase.firestore.Timestamp) => {
+      const date = timestamp.toDate();
+
+      const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}-${date
+        .getDate()
+        .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`;
+      const formattedTime = `${date.getHours().toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}:${date
+        .getMinutes()
+        .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`;
+
+      return `${formattedDate}T${formattedTime}`;
+    };
+
     // set new global deadline
     const deadlineModal = ref(false);
-    const deadline = ref('');
+
+    const projectDeadline = ref('');
+    const reviewDeadline = ref('');
+
     const updatingDeadline = ref(false);
 
     const updateDeadline = async () => {
-      console.log(deadline.value);
       try {
         updatingDeadline.value = true;
         // eslint-disable-next-line require-await
         await firebase.firestore().runTransaction(async (transaction) => {
           const ref = firebase.firestore().collection('system').doc('schoolYear');
           transaction.update(ref, {
-            deadline: firebase.firestore.Timestamp.fromDate(new Date(deadline.value)),
+            projectDeadline: firebase.firestore.Timestamp.fromDate(new Date(projectDeadline.value)),
+            reviewDeadline: firebase.firestore.Timestamp.fromDate(new Date(reviewDeadline.value)),
           });
 
           return transaction;
@@ -246,16 +264,9 @@ export default defineComponent({
         const schoolYear = (await firebase.firestore().collection('system').doc('schoolYear').get()).data();
 
         currentSchoolYear.value = schoolYear?.currentYear;
-        const date = (schoolYear?.deadline as firebase.firestore.Timestamp).toDate();
 
-        const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}-${date
-          .getDate()
-          .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`;
-        const formattedTime = `${date.getHours().toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}:${date
-          .getMinutes()
-          .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`;
-
-        deadline.value = `${formattedDate}T${formattedTime}`;
+        projectDeadline.value = formatDate(schoolYear?.projectDeadline as firebase.firestore.Timestamp);
+        reviewDeadline.value = formatDate(schoolYear?.reviewDeadline as firebase.firestore.Timestamp);
 
         // @ts-ignore
         teachers.value = (await firebase.firestore().collection('users').where('teacher', '==', true).get()).docs.map((teacher) => {
@@ -561,7 +572,8 @@ export default defineComponent({
       teachers,
       internTeachers,
       students,
-      deadline,
+      projectDeadline,
+      reviewDeadline,
       deadlineModal,
       updateDeadline,
       updatingDeadline,

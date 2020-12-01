@@ -8,6 +8,10 @@ export default async (req: Request, res: Response) => {
   // @ts-ignore
   if (req.files.length > 2) return res.status(400).send('You can only upload 2 files at once');
 
+  try {
+    if ((await admin.firestore().collection('system').doc('schoolYear').get()).data()?.reviewDeadline < admin.firestore.Timestamp.now()) return res.status(400).send();
+  } catch (_) {}
+
   const projectId = req.params.id;
 
   let user: admin.auth.DecodedIdToken;

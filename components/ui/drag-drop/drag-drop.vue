@@ -52,6 +52,10 @@ export default defineComponent({
       type: String,
       default: '',
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props, { emit }) {
     const files = ref([]);
@@ -72,7 +76,7 @@ export default defineComponent({
     const handleFileDrop = (e: any) => {
       const droppedFiles = e.dataTransfer.files;
 
-      if (!droppedFiles) return;
+      if (!droppedFiles || props.disabled) return;
 
       if (!props.multiple) {
         files.value = [];
@@ -90,7 +94,7 @@ export default defineComponent({
     const handleFileInput = (e: any) => {
       const currentFiles = e.target.files;
 
-      if (!currentFiles) return;
+      if (!currentFiles || props.disabled) return;
 
       if (!props.multiple) {
         files.value = [];

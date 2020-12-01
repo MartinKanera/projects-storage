@@ -24,7 +24,10 @@
           :projectTitle='project.projectTitle',
           :displayName='project.displayName',
           :profilePicture='project.profilePicture',
-          :reviews='project.reviews'
+          :reviews='project.reviews',
+          :pastDeadline='pastDeadline',
+          :teacher='project.teacher',
+          :opponent='project.opponent'
         )
     ps-tab(:active='selectedTab == "předpřipravené zadání"')
       .flex.flex-col.justify-between(class='md:flex-row')
@@ -49,12 +52,15 @@
           :projectTitle='project.projectTitle',
           :displayName='project.displayName',
           :profilePicture='project.profilePicture',
-          :reviews='project.reviews'
+          :reviews='project.reviews',
+          :pastDeadline='pastDeadline',
+          :teacher='project.teacher',
+          :opponent='project.opponent'
         )
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'nuxt-composition-api';
+import { defineComponent, ref, watchEffect, onMounted } from 'nuxt-composition-api';
 
 import { useMainStore } from '@/store';
 import firebase from 'firebase/app';
@@ -76,6 +82,8 @@ type Project = {
   displayName: String;
   profilePicture: String;
   reviews: [];
+  teacher: Boolean;
+  opponent: Boolean;
 };
 
 type PremadeProject = {
@@ -126,7 +134,12 @@ export default defineComponent({
       return resultArray;
     };
 
-    if (process.client) {
+    const pastDeadline = ref(true);
+
+    onMounted(async () => {
+      try {
+        pastDeadline.value = firebase.firestore.Timestamp.now() > (await firebase.firestore().collection('system').doc('schoolYear').get()).data()?.reviewDeadline;
+      } catch (_) {}
       try {
         firebase
           .firestore()
@@ -186,6 +199,8 @@ export default defineComponent({
                 displayName: currentStudent?.data().displayName,
                 profilePicture: currentStudent?.data().profilePicture,
                 reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
               };
             });
           });
@@ -235,13 +250,15 @@ export default defineComponent({
                 displayName: currentStudent?.data().displayName,
                 profilePicture: currentStudent?.data().profilePicture,
                 reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
               };
             });
           });
       } catch (e) {
         console.error(e);
       }
-    }
+    });
 
     const projectModalDisplay = ref(false);
 
@@ -290,6 +307,7 @@ export default defineComponent({
       disabledBtn,
       premadeProjects,
       opponentProjects,
+      pastDeadline,
     };
   },
 });
