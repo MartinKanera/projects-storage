@@ -19,8 +19,8 @@ export default async (req: Request, res: Response) => {
     return res.status(401).send('Unauthorized');
   }
 
-  await admin.firestore().runTransaction(async (transaction) => {
-    try {
+  try {
+    await admin.firestore().runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(proposalRef);
 
       const schoolYear = (await transaction.get(admin.firestore().collection('system').doc('schoolYear'))).data();
@@ -31,6 +31,7 @@ export default async (req: Request, res: Response) => {
 
       transaction.set(projectRef, {
         title: sfDoc.data()?.title,
+        titleLower: sfDoc.data()?.title.toLowerCase(),
         description: '',
         studentId: sfDoc.data()?.studentId,
         teacherId: sfDoc.data()?.teacherId,
@@ -43,10 +44,10 @@ export default async (req: Request, res: Response) => {
       transaction.delete(proposalRef);
 
       return transaction;
-    } catch (e) {
-      return res.status(500).send(e);
-    }
-  });
+    });
+  } catch (e) {
+    return res.status(500).send(e);
+  }
 
   return res.status(200).send('Proposal accepted');
 };

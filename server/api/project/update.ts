@@ -48,6 +48,7 @@ export default async (req: Request, res: Response) => {
         public: updatedProject.public,
         teacherId: updatedProject.teacherId,
         title: updatedProject.title,
+        titleLower: updatedProject.title.toLowerCase(),
       };
 
       if (sfDoc.data()?.teacherId !== updatedProject.teacherId) {

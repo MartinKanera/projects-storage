@@ -6,6 +6,7 @@
       ps-select.flex-grow.md-mr-6(v-model='currentYear', placeholder='Rok maturity', :options='graduationYears')
       ps-btn.mt-4.float-right(:disabled='btnLoading', :loading='btnLoading', @click='sumbitSchoolYear') 
         span.px-10 uložit
+  ps-search-bar(v-model='kekw')
 </template>
 
 <script lang="ts">
@@ -72,6 +73,10 @@ export default defineComponent({
       btnLoading.value = false;
     };
 
+    const kekw = ref('');
+
+    watchEffect(() => console.log(kekw.value));
+
     return {
       yearModalDisplay: yearModalDisplay.value,
       currentYear,
@@ -80,6 +85,7 @@ export default defineComponent({
       sumbitSchoolYear,
       btnLoading,
       closeModal,
+      kekw,
     };
   },
 });

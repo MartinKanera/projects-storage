@@ -89,11 +89,30 @@
             ps-text-field.mt-8(v-model='password', type='text', label='Heslo', name='password')
             ps-btn.mt-8.self-end(@click='createTeacher', :disabled='teacherBtn', :loading='teacherBtn') vytvořit účet
     ps-tab(:active='selectedTab == "vyhledávání"')
+      ps-search-bar(v-model='query')
+      ps-admin-project.mt-2(
+        v-for='project in searchedProjects',
+        :key='project.projectId',
+        :projectId='project.projectId',
+        :currentYear='project.currentYear',
+        :opponentId='project.opponentId',
+        :publicProject='project.publicProject',
+        :reviews='project.reviews',
+        :studentId='project.studentId',
+        :submittedDate='project.submittedDate',
+        :teacherId='project.teacherId',
+        :title='project.title',
+        :displayName='project.displayName',
+        :profilePicture='project.profilePicture',
+        :teachers='teachers'
+      )
   ps-snackbar(v-model='displaySnack', :delay='5000') {{ message }}
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'nuxt-composition-api';
+import { defineComponent, ref, onMounted, watch } from 'nuxt-composition-api';
+
+import { debounce } from 'ts-debounce';
 
 import axios from 'axios';
 
@@ -553,6 +572,37 @@ export default defineComponent({
       );
     };
 
+    // Title based search
+
+    const query = ref('');
+    const searchedProjects = ref([] as Array<Project>);
+
+    const getDocuments = async () => {
+      try {
+        const projectDocs = (
+          await firebase
+            .firestore()
+            .collection('projects')
+            .where('titleLower', '>=', query.value.toLowerCase())
+            .where('titleLower', '<=', query.value.toLowerCase() + '\uF8FF')
+            .get()
+        ).docs;
+
+        const usersDocs = await getUserDocs(projectDocs);
+
+        searchedProjects.value = formatProjectArray(projectDocs, usersDocs);
+      } catch (_) {}
+    };
+    const fetch = debounce(getDocuments, 1000);
+
+    watch(query, (query) => {
+      if (query === '') {
+        searchedProjects.value = [];
+        fetch.cancel();
+        return;
+      }
+      fetch();
+    });
     return {
       message,
       displaySnack,
@@ -577,6 +627,8 @@ export default defineComponent({
       deadlineModal,
       updateDeadline,
       updatingDeadline,
+      query,
+      searchedProjects,
     };
   },
 });
