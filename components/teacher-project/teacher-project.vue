@@ -33,7 +33,7 @@
           pdf-icon(v-else-if='review.fileType == "pdf"')/
           file-icon(v-else)/
           span {{ review.fileName }}
-        ps-btn.justify-self-end(text, @click='removeReview(review.filePath)', :loading='reviewDelete', :disabled='reviewDelete')
+        ps-btn.justify-self-end(v-if='!pastDeadline', text, @click='removeReview(review.filePath)', :loading='reviewDelete', :disabled='reviewDelete')
           bin-icon(:size='20')
 </template>
 
