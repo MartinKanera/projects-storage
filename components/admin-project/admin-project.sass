@@ -1,0 +1,28 @@
+.admin-project
+  @apply p-4 leading-5
+  @apply bg-ps-secondary shadow w-full rounded-lg
+  @apply flex flex-col
+
+  @screen lg
+    @apply flex-row items-center
+
+  a:link
+    @apply text-ps-mint
+
+  a:hover
+    @apply text-ps-green    
+
+  .info
+    @apply flex items-center
+
+    .profile-picture
+      @apply rounded-full border-2 border-solid border-ps-green mr-2
+
+  .actions
+    @apply mt-2
+    @apply flex justify-between flex-row-reverse
+    @apply text-ps-white capitalize
+
+    @screen lg
+      @apply m-0
+      @apply items-center

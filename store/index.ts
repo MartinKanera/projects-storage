@@ -1,4 +1,5 @@
 import { createStore } from 'pinia';
+import firebase from 'firebase/app';
 
 type State = {
   user: {
@@ -9,7 +10,7 @@ type State = {
     student: Boolean;
     teacher: Boolean;
     admin: Boolean;
-    year: Number;
+    currentYear: firebase.firestore.Timestamp | null;
   };
   project: {
     id: String;
@@ -27,7 +28,7 @@ export const useMainStore = createStore({
       student: false,
       teacher: false,
       admin: false,
-      year: 0,
+      currentYear: null,
     },
     project: {
       id: '',

@@ -8,32 +8,59 @@
       :key='proposal.studentId',
       :studentId='proposal.studentId',
       :displayName='proposal.displayName',
-      :projectName='proposal.projectName',
+      :projectTitle='proposal.projectTitle',
       :profilePicture='proposal.profilePicture',
       :proposalRef='proposal.proposalRef'
     )
-  .flex.justify-between
-    span.text-2xl.text-ps-white.font-medium Moji studenti
-    ps-btn(@click='projectModal') Přidat zadání
-      template(#icon-right)
-        plus-icon/
-    ps-modal(v-model='projectModalDisplay')
-      span.text-2xl.text-ps-white.font-medium Přidat zadání projektu
-      ps-text-field.my-8(name='project-name', label='Název projektu', v-model='projectName')
-      ps-btn.ml-auto(@click='addProject', :disabled='submitting || disabledBtn', :loading='submitting') Přidat projekt
-  .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
-    ps-teacher-project(
-      v-for='project in projects',
-      :key='project.projectId',
-      :projectId='project.projectId',
-      :projectName='project.projectName',
-      :displayName='project.displayName',
-      :profilePicture='project.profilePicture'
-    )
+  ps-tabs(:tabs='["studenti", "předpřipravené zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
+    ps-tab(:active='selectedTab == "studenti"')
+      .flex.justify-between
+        span.text-2xl.text-ps-white.font-medium Moji studenti
+      .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
+        ps-teacher-project(
+          v-for='project in projects',
+          :key='project.projectId',
+          :projectId='project.projectId',
+          :projectTitle='project.projectTitle',
+          :displayName='project.displayName',
+          :profilePicture='project.profilePicture',
+          :reviews='project.reviews',
+          :pastDeadline='pastDeadline',
+          :teacher='project.teacher',
+          :opponent='project.opponent'
+        )
+    ps-tab(:active='selectedTab == "předpřipravené zadání"')
+      .flex.flex-col.justify-between(class='md:flex-row')
+        span.text-2xl.text-ps-white.font-medium Předpřipravené projekty
+        ps-btn.self-start(@click='projectModal', class='md:self-center') Přidat zadání
+          template(#icon-right)
+            plus-icon/
+        ps-modal(v-model='projectModalDisplay')
+          span.text-2xl.text-ps-white.font-medium Přidat zadání projektu
+          ps-text-field.my-8(name='project-name', label='Název projektu', v-model='projectTitle')
+          ps-btn.ml-auto(@click='addProject', :disabled='submitting || disabledBtn', :loading='submitting') Přidat projekt
+      .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
+        ps-premade-project(v-for='project in premadeProjects', :key='project.projectId', :projectId='project.projectId', :projectTitle='project.projectTitle')
+    ps-tab(:active='selectedTab == "oponent"')
+      .flex.justify-between
+        span.text-2xl.text-ps-white.font-medium
+      .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
+        ps-teacher-project(
+          v-for='project in opponentProjects',
+          :key='project.projectId',
+          :projectId='project.projectId',
+          :projectTitle='project.projectTitle',
+          :displayName='project.displayName',
+          :profilePicture='project.profilePicture',
+          :reviews='project.reviews',
+          :pastDeadline='pastDeadline',
+          :teacher='project.teacher',
+          :opponent='project.opponent'
+        )
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'nuxt-composition-api';
+import { defineComponent, ref, watchEffect, onMounted } from 'nuxt-composition-api';
 
 import { useMainStore } from '@/store';
 import firebase from 'firebase/app';
@@ -44,16 +71,24 @@ import plusIcon from 'vue-material-design-icons/Plus.vue';
 type StudentProposal = {
   studentId: String;
   displayName: String;
-  projectName: String;
+  projectTitle: String;
   profilePicture: String;
   proposalRef: firebase.firestore.DocumentReference;
 };
 
 type Project = {
   projectId: String;
-  projectName: String;
+  projectTitle: String;
   displayName: String;
   profilePicture: String;
+  reviews: [];
+  teacher: Boolean;
+  opponent: Boolean;
+};
+
+type PremadeProject = {
+  projectId: String;
+  projectTitle: String;
 };
 
 export default defineComponent({
@@ -62,13 +97,49 @@ export default defineComponent({
     plusIcon,
   },
   setup() {
-    const proposals = ref([] as Array<StudentProposal>);
+    const selectedTab = ref('studenti');
 
+    const setTab = (tab: string) => {
+      selectedTab.value = tab;
+    };
+
+    const proposals = ref([] as Array<StudentProposal>);
     const projects = ref([] as Array<Project>);
+    const premadeProjects = ref([] as Array<PremadeProject>);
+    const opponentProjects = ref([] as Array<Project>);
 
     const mainStore = useMainStore();
 
-    if (process.client) {
+    const inArray = async (colRef: firebase.firestore.CollectionReference, inputArray: Array<String>) => {
+      const perCall = 10;
+
+      if (inputArray.length <= perCall) return (await colRef.where(firebase.firestore.FieldPath.documentId(), 'in', inputArray).get()).docs;
+
+      const chunks: Array<Array<String>> = [];
+
+      inputArray.forEach((element, i) => {
+        const chunkIndex = Math.floor(i / perCall);
+
+        if (!chunks[chunkIndex]) chunks[chunkIndex] = [];
+
+        chunks[chunkIndex].push(element);
+      });
+
+      let resultArray: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[] = [];
+
+      chunks.forEach(async (array) => {
+        resultArray = [...resultArray, ...(await colRef.where(firebase.firestore.FieldPath.documentId(), 'in', array).get()).docs];
+      });
+
+      return resultArray;
+    };
+
+    const pastDeadline = ref(true);
+
+    onMounted(async () => {
+      try {
+        pastDeadline.value = firebase.firestore.Timestamp.now() > (await firebase.firestore().collection('system').doc('schoolYear').get()).data()?.reviewDeadline;
+      } catch (_) {}
       try {
         firebase
           .firestore()
@@ -95,7 +166,7 @@ export default defineComponent({
               return {
                 studentId: studentDoc.id,
                 displayName: studentDoc.data().displayName,
-                projectName: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().name,
+                projectTitle: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().title,
                 profilePicture: studentDoc.data().profilePicture,
                 proposalRef: proposalsRefs.find((proposalRef) => proposalRef.studentId === studentDoc.id)!.ref,
               };
@@ -107,8 +178,8 @@ export default defineComponent({
         firebase
           .firestore()
           .collection('projects')
+          .where('currentYear', '>=', new firebase.firestore.Timestamp(new Date().getSeconds(), 0))
           .where('teacherId', '==', mainStore.state.user.id)
-          .where('year', '==', new Date().getFullYear())
           .onSnapshot(async (projectSnap) => {
             const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
 
@@ -124,40 +195,70 @@ export default defineComponent({
 
               return {
                 projectId: projectDoc.id,
-                projectName: projectDoc.data().name,
+                projectTitle: projectDoc.data().title,
                 displayName: currentStudent?.data().displayName,
                 profilePicture: currentStudent?.data().profilePicture,
+                reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
               };
             });
           });
       } catch (e) {
         console.error(e);
       }
-    }
 
-    const inArray = async (colRef: firebase.firestore.CollectionReference, inputArray: Array<String>) => {
-      const perCall = 10;
+      try {
+        firebase
+          .firestore()
+          .collection('proposals')
+          .where('teacherId', '==', mainStore.state.user.id)
+          .where('studentId', '==', null)
+          .where('premade', '==', true)
+          .onSnapshot((premadeSnap) => {
+            premadeProjects.value = premadeSnap.docs.map((premadeDoc) => {
+              return {
+                projectId: premadeDoc.id,
+                projectTitle: premadeDoc.data()?.title,
+              };
+            });
+          });
+      } catch (_) {}
 
-      if (inputArray.length <= perCall) return (await colRef.where(firebase.firestore.FieldPath.documentId(), 'in', inputArray).get()).docs;
+      try {
+        firebase
+          .firestore()
+          .collection('projects')
+          .where('currentYear', '>=', new firebase.firestore.Timestamp(new Date().getSeconds(), 0))
+          .where('opponentId', '==', mainStore.state.user.id)
+          .onSnapshot(async (projectSnap) => {
+            const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
 
-      const chunks: Array<Array<String>> = [];
+            if (!studentIds.length) {
+              projects.value = [];
+              return;
+            }
 
-      inputArray.forEach((element, i) => {
-        const chunkIndex = Math.floor(i / perCall);
+            const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
 
-        if (!chunks[chunkIndex]) chunks[chunkIndex] = [];
+            opponentProjects.value = projectSnap.docs.map((projectDoc) => {
+              const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
 
-        chunks[chunkIndex].push(element);
-      });
-
-      let resultArray: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[] = [];
-
-      chunks.forEach(async (array) => {
-        resultArray = [...resultArray, ...(await colRef.where(firebase.firestore.FieldPath.documentId(), 'in', array).get()).docs];
-      });
-
-      return resultArray;
-    };
+              return {
+                projectId: projectDoc.id,
+                projectTitle: projectDoc.data().title,
+                displayName: currentStudent?.data().displayName,
+                profilePicture: currentStudent?.data().profilePicture,
+                reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+              };
+            });
+          });
+      } catch (e) {
+        console.error(e);
+      }
+    });
 
     const projectModalDisplay = ref(false);
 
@@ -165,13 +266,13 @@ export default defineComponent({
       projectModalDisplay.value = !projectModalDisplay.value;
     };
 
-    const projectName = ref('');
+    const projectTitle = ref('');
 
     const submitting = ref(false);
     const disabledBtn = ref(true);
 
     watchEffect(() => {
-      disabledBtn.value = projectName.value === '';
+      disabledBtn.value = projectTitle.value === '';
     });
 
     const addProject = async () => {
@@ -181,7 +282,7 @@ export default defineComponent({
       try {
         await docRef.set({
           premade: true,
-          name: projectName.value,
+          title: projectTitle.value,
           teacherId: mainStore.state.user.id,
           studentId: null,
         });
@@ -194,14 +295,19 @@ export default defineComponent({
     };
 
     return {
+      selectedTab,
+      setTab,
       proposals,
       projects,
       projectModal,
       projectModalDisplay,
-      projectName,
+      projectTitle,
       addProject,
       submitting,
       disabledBtn,
+      premadeProjects,
+      opponentProjects,
+      pastDeadline,
     };
   },
 });

@@ -23,6 +23,8 @@
     "nuxt": "2.14.6",
     "nuxt-composition-api": "0.11.0",
     "pinia": "0.0.7",
+    "short-uuid": "^4.1.0",
+    "ts-debounce": "^2.1.0",
     "vue-clickaway": "2.2.2",
     "vue-material-design-icons": "4.11.0"
   },
@@ -32,7 +34,6 @@
     "@nuxt/types": "2.14.3",
     "@nuxt/typescript-build": "2.0.3",
     "@nuxtjs/eslint-config-typescript": "4.0.0",
-    "@nuxtjs/storybook": "3.0.0",
     "@nuxtjs/tailwindcss": "3.0.2",
     "@prettier/plugin-pug": "1.10.1",
     "babel-core": "7.0.0-bridge.0",

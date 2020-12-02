@@ -4,12 +4,12 @@ service cloud.firestore {
     // match /{document=**} {
     //   allow read, write: if true;
     // }
-    include "functions/functions.rules";
-
-    // TODO firestore rules for users
+    include "functions.rules";
     // Users
     match /users/{studentId} {
-      allow read, write: if true;
+      allow read: if true;
+
+      allow list: if isAdmin(request);
     }
     // Proposals
     match /proposals/{proposalId} {
@@ -23,7 +23,9 @@ service cloud.firestore {
 
       allow update: if (isStudent(request) &&
         resource.data.studentId == null &&
-        request.resource.data.studentId == request.auth.uid) ||
+        request.resource.data.studentId == request.auth.uid && 
+        request.resource.data.teacherId == resource.data.teacherId && 
+        request.resource.data.title == resource.data.title) ||
         isTeacher(request) ||
         isAdmin(request) &&
         validProposalMod(request);
@@ -32,7 +34,6 @@ service cloud.firestore {
         resource.data.teacherId == request.auth.uid) ||
         isAdmin(request);
     }
-    // TODO firestore rules for projects
     // Projects
     match /projects/{projectId} {
       allow create: if (isTeacher(request) &&
@@ -40,7 +41,25 @@ service cloud.firestore {
         isAdmin(request) &&
         validProjectMod(request);
 
-      allow read, list: if true;
+      allow update: if (isTeacher(request) && 
+        isMyStudent(request)) ||
+        (isStudent(request) && isProjectOwner(request)) ||
+        isAdmin(request);
+
+      allow delete: if isAdmin(request);
+
+      allow read: if request.auth != null ||
+        (request.auth == null &&
+        isProjectPublic(request));
+
+      allow list: if isAdmin(request) ||
+        (isTeacher(request) && isMyStudent(request)) || 
+        (request.auth == null && isProjectPublic(request));
+    }
+
+    match /system/{systemDoc} {
+      allow read: if isAdmin(request);
+      allow update: if isAdmin(request);
     }
   }
 }

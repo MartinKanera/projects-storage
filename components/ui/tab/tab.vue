@@ -1,5 +1,5 @@
 <template lang="pug">
-.tab(v-if='active')
+.tab(v-show='active')
   slot
 </template>
 

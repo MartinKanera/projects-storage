@@ -7,5 +7,8 @@
   "storage": {
     "rules": "firebase/storage.rules",
     "predeploy": ["node firebase/rules.js"]
+  },
+  "functions": {
+    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
   }
 }
