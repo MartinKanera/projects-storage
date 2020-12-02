@@ -1,0 +1,21 @@
+.login-form
+  @apply text-ps-white
+  @apply flex flex-col w-full
+
+  .header
+    @apply text-ps-green text-2xl
+    @apply self-center
+    @apply mb-4
+
+  button
+    @apply text-ps-primary
+    @apply bg-ps-white #{!important}
+    
+    &.shrink
+      @apply py-0 #{!important}
+
+    .blank
+      content: ''
+      width: 24px
+      height: 24px
+
