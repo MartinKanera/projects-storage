@@ -26,14 +26,18 @@ export default async (req: Request, res: Response) => {
   // Teacher cant submit proposal
   if (userData?.teacher) return res.status(403).send('Teacher cannot submit proposal');
 
-  const teachersData = (await admin.firestore().collection('users').where('teacher', '==', true).get()).docs;
+  try {
+    const teachersData = (await admin.firestore().collection('users').where('teacher', '==', true).where('extern', '==', false).where('deleted', '==', false).get()).docs;
 
-  const teachersList = teachersData.map((teacherDoc) => {
-    return {
-      placeholder: teacherDoc.data().displayName,
-      value: teacherDoc.id,
-    };
-  });
+    const teachersList = teachersData.map((teacherDoc) => {
+      return {
+        placeholder: teacherDoc.data().displayName,
+        value: teacherDoc.id,
+      };
+    });
 
-  return res.status(200).json(teachersList);
+    return res.status(200).json(teachersList);
+  } catch (e) {
+    return res.status(500).send(e);
+  }
 };

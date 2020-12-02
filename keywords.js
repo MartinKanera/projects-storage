@@ -1,30 +1,11 @@
-const projectName = 'Úložiště maturitních projektů';
+const projectName = 'Úložiště maturitních projektů kekw';
 const displayName = 'Martin Kaněra';
 
 const fs = require('fs');
 
-const charLimit = 10;
-
-const generateKeywords = (string) => {
-  const resultArr = [];
-  let currentString = '';
-
-  string.split('').forEach((letter) => {
-    currentString += letter;
-    resultArr.push(currentString);
-  });
-
-  // for (let i = 0; i < charLimit; i++) {
-  //   currentString += string[i];
-  //   resultArr.push(currentString);
-  // }
-
-  return resultArr;
-};
-
 function permute(permutation) {
   const length = permutation.length;
-  const result = [permutation.slice()];
+  const result = permutation.slice();
   const c = new Array(length).fill(0);
   let i = 1;
   let k;
@@ -38,7 +19,7 @@ function permute(permutation) {
       permutation[k] = p;
       ++c[i];
       i = 1;
-      result.push(permutation.slice());
+      result.push(permutation.slice().join(' '));
     } else {
       c[i] = 0;
       ++i;
@@ -47,13 +28,8 @@ function permute(permutation) {
   return result;
 }
 
-let finalProduct = [];
 const names = `${displayName} ${projectName}`.split(' ');
 
-const cases = permute(names);
-cases.forEach((nameCase) => {
-  finalProduct = [...finalProduct, ...generateKeywords(nameCase.join(' '))];
-});
+fs.writeFileSync('keywords.txt', permute(names));
 
-// fs.writeFileSync('keywords.text', finalProduct);
-console.log(finalProduct);
+// console.log(permute(names).length);

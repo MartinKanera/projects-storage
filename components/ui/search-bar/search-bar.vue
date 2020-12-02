@@ -1,5 +1,5 @@
 <template lang="pug">
-input(type='text', @input='onChange($event.target.value)', placeholder='Zační psát...')
+input(type='text', @input='onChange($event.target.value)', placeholder='Jméno projektu')
 </template>
 
 <script lang="ts">

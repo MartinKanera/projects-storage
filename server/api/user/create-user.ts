@@ -52,6 +52,7 @@ export default async (req: Request, res: Response) => {
         profilePicture: await saveProfileImage(userData.uid),
         admin: false,
         deleted: false,
+        extern: false,
         student: userData.email?.includes('delta-studenti'),
         teacher: userData.email?.includes('delta-skola'),
         currentYear: null,
@@ -81,8 +82,6 @@ export default async (req: Request, res: Response) => {
         },
       });
     } catch (_) {}
-
-    console.log(responseData);
 
     return res.status(200).send(responseData);
   } catch (e) {

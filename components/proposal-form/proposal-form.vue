@@ -115,8 +115,6 @@ export default defineComponent({
             teacherId: selectedTeacherId.value,
           };
 
-          console.log(proposal);
-
           if (studentsProjectTitle.value !== '') proposal = { ...proposal, ...{ title: studentsProjectTitle.value } };
 
           const collectionRef = firebase.firestore().collection('proposals');
