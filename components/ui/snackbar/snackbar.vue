@@ -9,8 +9,8 @@ import { defineComponent, ref, watch } from 'nuxt-composition-api';
 
 export default defineComponent({
   props: {
-    display: {
-      default: true,
+    value: {
+      default: false,
       type: Boolean,
     },
     delay: {
@@ -18,15 +18,16 @@ export default defineComponent({
       default: 2000,
     },
   },
-  setup(props) {
-    const displayValue = ref(props.display);
+  setup(props, { emit }) {
+    const displayValue = ref(props.value);
 
     watch(props, (props) => {
-      displayValue.value = props.display;
+      displayValue.value = props.value;
 
       if (displayValue.value) {
         setTimeout(() => {
           displayValue.value = false;
+          emit('input', displayValue.value);
         }, props.delay);
       }
     });

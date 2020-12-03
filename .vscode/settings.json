@@ -39,5 +39,6 @@
   "eslint.alwaysShowStatus": true,
   "eslint.lintTask.enable": true,
   "eslint.packageManager": "yarn",
-  "vetur.experimental.templateInterpolationService": true
+  "vetur.experimental.templateInterpolationService": true,
+  "compile-hero.disable-compile-files-on-did-save-code": true
 }

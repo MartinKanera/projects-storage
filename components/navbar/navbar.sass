@@ -1,3 +1,15 @@
+.drop
+  @apply ml-2 cursor-pointer
+
+  transition: all .3s ease-in-out
+
+  @screen md
+    @apply px-3
+
+
+  &.active-drop
+    transform: rotate(180deg)
+  
 .navbar
   @apply h-20 w-full bg-ps-linear-gradient shadow flex items-center text-ps-primary
   @apply fixed z-999 px-3
@@ -7,18 +19,6 @@
 
     border-bottom-right-radius: 2rem
     padding: 0 1.35rem
-
-  .drop
-    @apply ml-2 cursor-pointer
-
-    transition: all .3s ease-in-out
-
-    @screen md
-      @apply px-3
-
-
-    &.active-drop
-      transform: rotate(180deg)
 
   .menu-btn
     @apply relative flex justify-center items-center

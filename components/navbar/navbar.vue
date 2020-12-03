@@ -10,16 +10,21 @@
           span.user-role(v-if='mainStore.isTeacher && !mainStore.isAdmin') Učitel
           span.user-role(v-else-if='mainStore.isAdmin && !mainStore.isTeacher') Admin
           span.user-role(v-else-if='mainStore.isTeacher && mainStore.isAdmin') Admin/Učitel
-        div(v-else)
-          ps-btn(text, @click='loginWithMicrosoft', :disabled='awaitingLogin')
-            template(#default)
-              span.microsoft-btn microsoft login
-            template(#icon-left)
-              microsoft-logo(v-if='!awaitingLogin')/
-              ps-microsoft-loader.mt-2(v-else)
+        .flex.items-center(v-else)
+          //- ps-btn(text, @click='loginWithMicrosoft', :disabled='awaitingLogin')
+          //-   template(#default)
+          //-     span.microsoft-btn microsoft login
+          //-   template(#icon-left)
+          //-     microsoft-logo(v-if='!awaitingLogin')/
+          //-     ps-microsoft-loader.mt-2(v-else)
+          ps-btn(text, @click='loginModal = !loginModal') Přihlášení
+            template(#icon-right)
+              arrow-right/
+          ps-modal(v-model='loginModal')
+            .flex.justify-center 
+              ps-login-form
       .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeSettings')
         drop-down.drop(:class='{ "active-drop": displaySettings }', @click='toggleSettings')/
-
         ps-dropdown(:value='displaySettings')
           ps-btn.text-ps-red(block, text, @click='logOut') Odhlásit
             template(#icon-left)
@@ -38,11 +43,13 @@ import { defineComponent, ref, onMounted, computed, watchEffect } from 'nuxt-com
 import axios from 'axios';
 
 import { useMainStore } from '@/store';
+
 import dropDown from 'vue-material-design-icons/ChevronDown.vue';
 import bell from 'vue-material-design-icons/BellOutline.vue';
 import user from 'vue-material-design-icons/Account.vue';
 import logout from 'vue-material-design-icons/Logout.vue';
 import microsoftLogo from 'vue-material-design-icons/Microsoft.vue';
+import arrowRight from 'vue-material-design-icons/ChevronRight.vue';
 
 import { directive as onClickaway } from 'vue-clickaway';
 
@@ -59,6 +66,7 @@ export default defineComponent({
     user,
     logout,
     microsoftLogo,
+    arrowRight,
   },
 
   props: {
@@ -149,7 +157,6 @@ export default defineComponent({
           mainStore.patch(userData);
         }
       } catch (e) {
-        // TODO Error handling
         console.error(e);
       }
       awaitingLogin.value = false;
@@ -167,6 +174,8 @@ export default defineComponent({
       } catch (e) {}
     };
 
+    const loginModal = ref(false);
+
     return {
       burger,
       toggleBurger,
@@ -181,6 +190,7 @@ export default defineComponent({
       logOut,
       awaitingLogin,
       mainStore,
+      loginModal,
     };
   },
 });
