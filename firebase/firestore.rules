@@ -57,7 +57,11 @@ service cloud.firestore {
         (request.auth == null && isProjectPublic(request));
     }
 
-    match /system/{systemDoc} {
+    match /system/schoolYear {
+      allow read: if request.auth != null;
+    }
+
+    match /system/statistics {
       allow read: if isAdmin(request);
       allow update: if isAdmin(request);
     }

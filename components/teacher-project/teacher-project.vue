@@ -208,7 +208,7 @@ export default defineComponent({
       reviewDelete.value = false;
     };
 
-    const unreviewed = computed(() => props.teacher && props.opponent && props.reviews.length < 4) || ((props.teacher || props.opponent) && props.reviews.length < 2);
+    const unreviewed = computed(() => (props.teacher && props.opponent && props.reviews.length < 4) || ((props.teacher || props.opponent) && props.reviews.length < 2));
 
     return {
       displayModal,

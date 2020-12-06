@@ -11,6 +11,7 @@ type State = {
     teacher: Boolean;
     admin: Boolean;
     currentYear: firebase.firestore.Timestamp | null;
+    extern: Boolean;
   };
   project: {
     id: String;
@@ -29,6 +30,7 @@ export const useMainStore = createStore({
       teacher: false,
       admin: false,
       currentYear: null,
+      extern: true,
     },
     project: {
       id: '',

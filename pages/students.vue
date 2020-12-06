@@ -12,8 +12,8 @@
       :profilePicture='proposal.profilePicture',
       :proposalRef='proposal.proposalRef'
     )
-  ps-tabs(:tabs='["studenti", "předpřipravené zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
-    ps-tab(:active='selectedTab == "studenti"')
+  ps-tabs(:tabs='extern ? ["oponent"] : ["studenti", "předpřipravené zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
+    ps-tab(v-if='!extern', :active='selectedTab == "studenti"')
       .flex.justify-between
         span.text-2xl.text-ps-white.font-medium Moji studenti
       .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
@@ -29,7 +29,7 @@
           :teacher='project.teacher',
           :opponent='project.opponent'
         )
-    ps-tab(:active='selectedTab == "předpřipravené zadání"')
+    ps-tab(v-if='!extern', :active='selectedTab == "předpřipravené zadání"')
       .flex.flex-col.justify-between(class='md:flex-row')
         span.text-2xl.text-ps-white.font-medium Předpřipravené projekty
         ps-btn.self-start(@click='projectModal', class='md:self-center') Přidat zadání
@@ -97,7 +97,9 @@ export default defineComponent({
     plusIcon,
   },
   setup() {
-    const selectedTab = ref('studenti');
+    const mainStore = useMainStore();
+
+    const selectedTab = ref(mainStore.state.user.extern ? 'oponent' : 'studenti');
 
     const setTab = (tab: string) => {
       selectedTab.value = tab;
@@ -107,8 +109,6 @@ export default defineComponent({
     const projects = ref([] as Array<Project>);
     const premadeProjects = ref([] as Array<PremadeProject>);
     const opponentProjects = ref([] as Array<Project>);
-
-    const mainStore = useMainStore();
 
     const inArray = async (colRef: firebase.firestore.CollectionReference, inputArray: Array<String>) => {
       const perCall = 10;
@@ -138,7 +138,8 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        pastDeadline.value = firebase.firestore.Timestamp.now() > (await firebase.firestore().collection('system').doc('schoolYear').get()).data()?.reviewDeadline;
+        const reviewDeadline = (await firebase.firestore().collection('system').doc('schoolYear').get()).data()?.reviewDeadline;
+        pastDeadline.value = firebase.firestore.Timestamp.now() > reviewDeadline;
       } catch (_) {}
       try {
         firebase
@@ -308,6 +309,7 @@ export default defineComponent({
       premadeProjects,
       opponentProjects,
       pastDeadline,
+      extern: mainStore.state.user.extern,
     };
   },
 });

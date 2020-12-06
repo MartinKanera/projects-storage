@@ -9,6 +9,7 @@
       ps-microsoft-loader.mt-2(v-else)
     template(#icon-right)
       .blank
+  ps-snackbar(v-model='displayErr', :delay='5000') {{ error }}
   span.mt-8.self-center nebo
   ps-text-field.mt-8(v-model='email', label='Email', name='email')
   ps-text-field.mt-8(v-model='password', type='password', label='Heslo', name='password')
@@ -78,11 +79,14 @@ export default defineComponent({
     const email = ref('');
     const password = ref('');
 
+    const error = ref('');
+    const displayErr = ref(false);
+
     const loginWithEmail = async () => {
       awaitingLogin.value = true;
 
       try {
-        const authUser = await firebase.auth().signInWithEmailAndPassword(email.value, password.value);
+        const authUser = await firebase.auth().signInWithEmailAndPassword(email.value.trim(), password.value);
 
         const userData = (
           await axios.request({
@@ -100,7 +104,26 @@ export default defineComponent({
           mainStore.patch(userData);
         }
       } catch (e) {
-        console.error(e);
+        switch (e.code) {
+          case 'auth/invalid-email': {
+            error.value = 'Špatně zformátovaný email';
+            break;
+          }
+          case 'auth/user-not-found': {
+            error.value = 'Uživatel neexistuje';
+            break;
+          }
+          case 'auth/wrong-password': {
+            error.value = 'Špatné heslo';
+            break;
+          }
+          default: {
+            error.value = 'Něco se pokazilo';
+            break;
+          }
+        }
+
+        displayErr.value = true;
       }
 
       awaitingLogin.value = false;
@@ -112,6 +135,8 @@ export default defineComponent({
       email,
       password,
       loginWithEmail,
+      error,
+      displayErr,
     };
   },
 });
