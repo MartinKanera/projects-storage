@@ -64,7 +64,7 @@ export default defineComponent({
       document.getElementById('chooseFiles')?.click();
     };
 
-    const extensions = props.accept.replaceAll('.', '').split(',');
+    const extensions = props.accept.replace(/\./g, '').split(',');
 
     const checkType = (file: any) => {
       if (props.accept === '') return true;
