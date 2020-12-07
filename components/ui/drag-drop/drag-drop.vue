@@ -2,7 +2,7 @@
 .drag-drop(@dragover.prevent, @drop.prevent, @drop='handleFileDrop', :class='{ tile: tile }')
   .list-wrap.w-full.mb-4(:class='{ "mt-2": files.length > 0 }')
     .text-ps-white.flex.justify-between(v-for='file in files')
-      .flex
+      .flex.items-center
         word-icon(v-if='file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"')
         pdf-icon(v-else-if='file.type == "application/pdf"')
         zip-icon(v-else-if='file.type == "application/x-zip-compressed"')
@@ -14,7 +14,7 @@
   .input-wrap
     ps-btn(@click='btnTrigger') Vyber soubory
     span.ml-3.text-ps-white nebo je sem přetáhni
-    input#chooseFiles(type='file', name='file-input', :multiple='multiple', @change='handleFileInput', style='display: none', :accept='accept')
+    input(:id='id', type='file', name='file-input', :multiple='multiple', @change='handleFileInput', style='display: none', :accept='accept')
 </template>
 
 <script lang="ts">
@@ -56,12 +56,16 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    id: {
+      type: String,
+      default: 'chooseFiles',
+    },
   },
   setup(props, { emit }) {
     const files = ref([]);
 
     const btnTrigger = () => {
-      document.getElementById('chooseFiles')?.click();
+      document.getElementById(props.id)?.click();
     };
 
     const extensions = props.accept.replace(/\./g, '').split(',');
