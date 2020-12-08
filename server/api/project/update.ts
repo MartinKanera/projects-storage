@@ -51,7 +51,7 @@ export default async (req: Request, res: Response) => {
         titleLower: updatedProject.title.toLowerCase(),
       };
 
-      if (sfDoc.data()?.teacherId !== updatedProject.teacherId) {
+      if (sfDoc.data()?.teacherId !== updatedProject.teacherId && sfDoc.data()?.reviews) {
         removeReviews(
           sfDoc
             .data()
@@ -67,7 +67,7 @@ export default async (req: Request, res: Response) => {
         };
       }
 
-      if (sfDoc.data()?.opponentId !== updatedProject.opponentId) {
+      if (sfDoc.data()?.opponentId !== updatedProject.opponentId && sfDoc.data()?.reviews) {
         removeReviews(
           sfDoc
             .data()

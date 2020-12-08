@@ -24,6 +24,12 @@ const plugin: Plugin = (context: Context) => {
         mainStore.reset();
       }
     }
+
+    if (process.client) {
+      firebase.auth().onAuthStateChanged(async (user) => {
+        mainStore.state.user.idToken = await user?.getIdToken();
+      });
+    }
   });
 };
 

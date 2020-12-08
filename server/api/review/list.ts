@@ -11,6 +11,8 @@ export default async (req: Request, res: Response) => {
     const storage = admin.app().storage().bucket('ps-reviews');
     const expires = Date.now() + 3600 * 1000;
 
+    if (!reviews) return [];
+
     const response: any = await Promise.all(
       reviews.map(async (review: any) => {
         if (!authorized && review.filePath.includes('.xlsx')) return;
