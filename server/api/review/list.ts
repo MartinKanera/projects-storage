@@ -41,9 +41,9 @@ export default async (req: Request, res: Response) => {
 
     const user = await admin.firestore().collection('users').doc(userData.uid).get();
 
-    // User is not logged in and project is not logged in
+    // User is not logged in and project is not public
     if (!user.exists && !project.data()?.public) {
-      console.log('User is not logged in and project is not logged in');
+      console.log('User is not logged in and project is not public');
       return res.status(403).send('Project is not public');
     }
 
@@ -64,6 +64,10 @@ export default async (req: Request, res: Response) => {
       console.log('User is admin');
       res.send(await getReviewsUrls(project.data()?.reviews, true));
     }
+
+    // TODO user is teacher from this project
+
+    return res.status(403).send();
   } catch (e) {
     console.error(e);
     return res.status(500).send();

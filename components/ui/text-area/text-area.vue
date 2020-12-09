@@ -5,7 +5,7 @@
     .text-ps-white.text-sm(v-if='')
       span {{ areaLength }}/
       span.text-ps-green {{ maxLength }}
-  textarea(:value='editedValue', @input='areaInput', :placeholder='`${placeholder}...`', :name='name', :maxlength='maxLength')
+  textarea(:value='value', @input='areaInput', :placeholder='`${placeholder}...`', :name='name', :maxlength='maxLength')
 </template>
 
 <script lang="ts">
@@ -39,8 +39,7 @@ export default defineComponent({
     },
   },
   setup({ value, maxLength }, { emit }) {
-    const editedValue = ref(value.toString());
-    const areaLength = ref(editedValue.value.length);
+    const areaLength = ref(value.toString().length);
 
     const areaInput = (e: any) => {
       const newValue = e.target.value;
@@ -48,12 +47,10 @@ export default defineComponent({
 
       areaLength.value = newValue.length;
 
-      editedValue.value = newValue;
-      emit('input', editedValue.value);
+      emit('input', newValue);
     };
 
     return {
-      editedValue,
       areaLength,
       areaInput,
     };

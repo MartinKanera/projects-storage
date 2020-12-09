@@ -35,6 +35,7 @@ app.put('/student/update/:id', async (req, res) => (await import('./student/upda
 
 // project
 app.put('/project/:id', async (req, res) => (await import('./project/update')).default(req, res));
+app.get('/project/:id', async (req, res) => (await import('./project/get')).default(req, res));
 
 // review
 app.post('/review/upload/:id', uploader.array('files'), async (req, res) => (await import('./review/upload')).default(req, res));

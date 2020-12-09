@@ -1,11 +1,24 @@
+.my-project-info
+  @apply bg-ps-secondary shadow rounded-lg p-4
+  @apply mt-6
+  @apply flex flex-col
+
+  flex: 0 1 100%
+
+  @screen lg
+    @apply m-0
+
+    flex: 0 1 64%
+  
+  .title
+    @apply text-2xl text-ps-white
+
 .my-project-user
   @apply bg-ps-secondary shadow rounded-lg p-2
   @apply flex flex-col
+  @apply p-4
 
   flex: 0 1 33%
-
-  @screen lg
-    max-width: 33%
 
   .user-info
     @apply flex items-center

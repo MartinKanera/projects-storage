@@ -6,7 +6,7 @@
       add-icon.text-ps-white(@click='openModal', :size='20')/
   .flex.flex-col.ml-2
     .flex.justify-between.items-center(v-for='(link, index) in editableValue', :key='index')
-      a.break-all(:href='link.url') {{ link.placeholder }}
+      a.break-all(:href='link.url', target='_blank') {{ link.placeholder }}
       ps-btn.rounded-full(v-if='editable', text) 
         bin-icon.text-ps-white(@click='removeLink(index)', :size='16')/
   ps-modal(v-model='linksModal')
@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'nuxt-composition-api';
+import { defineComponent, ref, unref, watch } from 'nuxt-composition-api';
 
 import addIcon from 'vue-material-design-icons/Plus.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
@@ -43,8 +43,13 @@ export default defineComponent({
       default: true,
     },
   },
-  setup({ value }, { emit }) {
-    const editableValue = ref(value);
+  setup(props, { emit }) {
+    const editableValue = ref(unref(props.value));
+
+    watch(props, (newProps) => {
+      // @ts-ignore
+      editableValue.value = newProps.value;
+    });
 
     const removeLink = (index: number) => {
       editableValue.value.splice(index, 1);

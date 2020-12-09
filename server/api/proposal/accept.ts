@@ -39,6 +39,7 @@ export default async (req: Request, res: Response) => {
         currentYear: schoolYear?.currentYear,
         public: false,
         submittedDate: null,
+        links: [],
       });
 
       transaction.delete(proposalRef);

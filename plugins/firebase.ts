@@ -27,7 +27,10 @@ const plugin: Plugin = (context: Context) => {
 
     if (process.client) {
       firebase.auth().onAuthStateChanged(async (user) => {
-        mainStore.state.user.idToken = await user?.getIdToken();
+        if (user) mainStore.state.user.idToken = await user?.getIdToken();
+        else {
+          mainStore.reset();
+        }
       });
     }
   });

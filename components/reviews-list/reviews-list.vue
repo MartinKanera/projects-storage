@@ -1,7 +1,7 @@
 <template lang="pug">
 .reviews-list(v-if='reviews.length > 0')
   span.text-ps-green.text-lg Posudky
-  .mt-1.flex(v-for='(review, index) in reviews', :key='index')
+  .mt-1.flex.items-center(v-for='(review, index) in reviews', :key='index')
     img.profile-picture(:src='review.profilePicture', :width='52')
     .teacher-review-info
       .display-name {{ review.displayName }}
@@ -14,6 +14,7 @@ import { defineComponent, ref, onMounted } from 'nuxt-composition-api';
 
 import axios from 'axios';
 import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 type ReviewRaw = {
   filePath: String;
