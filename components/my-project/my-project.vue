@@ -27,7 +27,7 @@
 <script lang="ts">
 import { useMainStore } from '@/store';
 
-import { defineComponent, ref, reactive, useFetch } from 'nuxt-composition-api';
+import { defineComponent, ref, useFetch } from 'nuxt-composition-api';
 
 import chevronRight from 'vue-material-design-icons/ChevronRight.vue';
 
@@ -65,12 +65,6 @@ export default defineComponent({
         console.error(e);
       }
     });
-
-    // const saveChanges = async () => {
-    //   console.log({
-
-    //   })
-    // }
 
     return {
       displayName: mainStore.state.user.displayName,

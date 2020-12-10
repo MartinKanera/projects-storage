@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'nuxt-composition-api';
+import { defineComponent, ref, unref } from 'nuxt-composition-api';
 
 export default defineComponent({
   props: {
@@ -38,12 +38,12 @@ export default defineComponent({
       default: 250,
     },
   },
-  setup({ value, maxLength }, { emit }) {
-    const areaLength = ref(value.toString().length);
+  setup(props, { emit }) {
+    const areaLength = ref(unref(props.value).toString().length);
 
     const areaInput = (e: any) => {
       const newValue = e.target.value;
-      if (newValue.length > maxLength) return;
+      if (newValue.length > props.maxLength) return;
 
       areaLength.value = newValue.length;
 
