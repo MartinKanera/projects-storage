@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, unref } from 'nuxt-composition-api';
+import { defineComponent, ref, unref } from '@nuxtjs/composition-api';
 
 export default defineComponent({
   props: {

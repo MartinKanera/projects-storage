@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed, watchEffect } from 'nuxt-composition-api';
+import { defineComponent, ref, onMounted, computed, watchEffect } from '@nuxtjs/composition-api';
 
 import axios from 'axios';
 
@@ -69,16 +69,16 @@ export default defineComponent({
     arrowRight,
   },
 
+  // @ts-ignore
+
+  directives: { onClickaway },
+
   props: {
     value: {
       type: Boolean,
       default: false,
     },
   },
-
-  // @ts-ignore
-
-  directives: { onClickaway },
 
   setup(props: Props, { emit, root }) {
     const mainStore = useMainStore();

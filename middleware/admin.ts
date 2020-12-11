@@ -1,10 +1,8 @@
-import { Middleware } from '@nuxt/types';
+import { defineNuxtMiddleware } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
-const proposalMiddleware: Middleware = ({ redirect }) => {
+export default defineNuxtMiddleware(({ redirect }) => {
   const mainStore = useMainStore();
 
-  if (!mainStore.isLoggedIn || !mainStore.isAdmin.value) return redirect('/');
-};
-
-export default proposalMiddleware;
+  if (!mainStore.isLoggedIn || !mainStore.isAdmin) return redirect('/');
+});

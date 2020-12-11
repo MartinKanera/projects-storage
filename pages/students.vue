@@ -60,7 +60,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, onMounted } from 'nuxt-composition-api';
+import { defineComponent, ref, watchEffect, onMounted } from '@nuxtjs/composition-api';
 
 import { useMainStore } from '@/store';
 import firebase from 'firebase/app';

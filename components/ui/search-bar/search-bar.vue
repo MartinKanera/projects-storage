@@ -3,7 +3,7 @@ input(type='text', @input='onChange($event.target.value)', placeholder='Jméno p
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'nuxt-composition-api';
+import { defineComponent } from '@nuxtjs/composition-api';
 
 export default defineComponent({
   setup(_, { emit }) {

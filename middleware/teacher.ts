@@ -1,12 +1,10 @@
-import { Middleware } from '@nuxt/types';
+import { defineNuxtMiddleware } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
-const teacherMiddleware: Middleware = (ctx) => {
+export default defineNuxtMiddleware(({ redirect }) => {
   const mainStore = useMainStore();
 
-  if (!mainStore.isLoggedIn.value || !mainStore.isTeacher.value) {
-    ctx.redirect('/');
+  if (!mainStore.isLoggedIn || !mainStore.isTeacher) {
+    redirect('/');
   }
-};
-
-export default teacherMiddleware;
+});

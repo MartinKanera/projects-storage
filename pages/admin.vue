@@ -110,7 +110,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch } from 'nuxt-composition-api';
+import { defineComponent, ref, onMounted, watch } from '@nuxtjs/composition-api';
 
 import { debounce } from 'ts-debounce';
 

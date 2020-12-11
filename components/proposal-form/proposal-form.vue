@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, useFetch, watch } from 'nuxt-composition-api';
+import { defineComponent, ref, useFetch, watch } from '@nuxtjs/composition-api';
 
 import { useMainStore } from '@/store';
 

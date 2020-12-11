@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'nuxt-composition-api';
+import { defineComponent, ref, watch } from '@nuxtjs/composition-api';
 
 import wordIcon from 'vue-material-design-icons/FileWord.vue';
 import pdfIcon from 'vue-material-design-icons/PdfBox.vue';

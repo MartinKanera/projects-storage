@@ -27,7 +27,7 @@
 <script lang="ts">
 import { useMainStore } from '@/store';
 
-import { defineComponent, ref, useFetch } from 'nuxt-composition-api';
+import { defineComponent, ref, useFetch } from '@nuxtjs/composition-api';
 
 import chevronRight from 'vue-material-design-icons/ChevronRight.vue';
 

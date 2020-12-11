@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, toRefs, computed } from 'nuxt-composition-api';
+import { defineComponent, ref, watch, toRefs, computed } from '@nuxtjs/composition-api';
 import axios from 'axios';
 
 import { useMainStore } from '@/store';

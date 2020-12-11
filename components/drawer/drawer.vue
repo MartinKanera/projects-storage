@@ -32,7 +32,7 @@ transition(name='drawer')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, computed, onMounted } from 'nuxt-composition-api';
+import { defineComponent, ref, watchEffect, computed, onMounted } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import presentationIcon from 'vue-material-design-icons/Presentation.vue';
@@ -42,18 +42,18 @@ import accountsIcon from 'vue-material-design-icons/AccountGroup.vue';
 import adminIcon from 'vue-material-design-icons/AccountCog.vue';
 
 export default defineComponent({
-  props: {
-    value: {
-      type: Boolean,
-      default: false,
-    },
-  },
   components: {
     presentationIcon,
     strategyIcon,
     accountsIcon,
     adminIcon,
     bookIcon,
+  },
+  props: {
+    value: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props, { emit, root }) {
     const mainStore = useMainStore();
@@ -88,7 +88,7 @@ export default defineComponent({
       admin: mainStore.isAdmin,
       student: mainStore.isStudent,
       teacher: mainStore.isTeacher,
-      project: mainStore.projectId.value !== '',
+      project: mainStore.projectId !== '',
     };
   },
 });

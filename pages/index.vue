@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, computed } from 'nuxt-composition-api';
+import { defineComponent, ref, watchEffect, computed } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
@@ -24,7 +24,7 @@ export default defineComponent({
 
     const graduationYears = ref([] as Array<{ placeholder: String; value: String }>);
 
-    const yearModalDisplay = computed(() => mainStore.state.user.currentYear === null && mainStore.isLoggedIn.value && mainStore.isStudent.value);
+    const yearModalDisplay = computed(() => mainStore.state.user.currentYear === null && mainStore.isLoggedIn && mainStore.isStudent);
 
     for (let i = 1; i < 5; i++) {
       const year = (new Date().getFullYear() + i).toString();

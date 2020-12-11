@@ -52,7 +52,7 @@ const config: NuxtConfig = {
   /*
    ** Nuxt.js dev-modules
    */
-  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'nuxt-composition-api', 'pinia/nuxt', '@/modules/firebase'],
+  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'pinia/nuxt', '@/modules/firebase', '@nuxtjs/composition-api'],
   /*
    ** Nuxt.js modules
    */

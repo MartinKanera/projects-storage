@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { useMainStore } from '@/store';
-import { defineComponent, ref, onMounted } from 'nuxt-composition-api';
+import { defineComponent, ref, onMounted } from '@nuxtjs/composition-api';
 
 import axios from 'axios';
 import firebase from 'firebase/app';

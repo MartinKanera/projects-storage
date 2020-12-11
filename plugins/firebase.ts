@@ -1,5 +1,5 @@
 import { Plugin, Context } from '@nuxt/types';
-import { onGlobalSetup } from 'nuxt-composition-api';
+import { onGlobalSetup } from '@nuxtjs/composition-api';
 
 import firebase from 'firebase/app';
 import 'firebase/auth';
