@@ -28,6 +28,10 @@ import 'firebase/auth';
 import axios from 'axios';
 
 export default defineComponent({
+  components: {
+    settingsIcon,
+    binIcon,
+  },
   props: {
     studentId: {
       type: String,
@@ -45,10 +49,6 @@ export default defineComponent({
       type: firebase.firestore.Timestamp,
       required: true,
     },
-  },
-  components: {
-    settingsIcon,
-    binIcon,
   },
   setup({ studentId, displayName, currentYear }) {
     const studentToUpdate = ref({ displayName, year: currentYear.toDate().getFullYear().toString() });

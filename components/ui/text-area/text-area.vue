@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, unref } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watchEffect } from '@nuxtjs/composition-api';
 
 export default defineComponent({
   props: {
@@ -39,13 +39,15 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    const areaLength = ref(unref(props.value).toString().length);
+    const areaLength = ref(props.value.toString().length);
+
+    watchEffect(() => {
+      areaLength.value = props.value.toString().length;
+    });
 
     const areaInput = (e: any) => {
       const newValue = e.target.value;
       if (newValue.length > props.maxLength) return;
-
-      areaLength.value = newValue.length;
 
       emit('input', newValue);
     };

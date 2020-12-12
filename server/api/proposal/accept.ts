@@ -27,7 +27,7 @@ export default async (req: Request, res: Response) => {
 
       const projectRef = admin.firestore().collection('projects').doc();
 
-      // TODO probbably add files and links array + get default deadline from system collection (set by admin)
+      // TODO get default deadline from system collection (set by admin)
 
       transaction.set(projectRef, {
         title: sfDoc.data()?.title,
@@ -40,6 +40,12 @@ export default async (req: Request, res: Response) => {
         public: false,
         submittedDate: null,
         links: [],
+      });
+
+      transaction.set(admin.firestore().collection('projectFiles').doc(), {
+        projectId: projectRef.id,
+        mandatory: [],
+        optional: [],
       });
 
       transaction.delete(proposalRef);

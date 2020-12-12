@@ -34,8 +34,9 @@ app.delete('/user/delete/:id', async (req, res) => (await import('./user/remove'
 app.put('/student/update/:id', async (req, res) => (await import('./student/update')).default(req, res));
 
 // project
-app.put('/project/:id', async (req, res) => (await import('./project/update')).default(req, res));
 app.get('/project/:id', async (req, res) => (await import('./project/get')).default(req, res));
+app.put('/project/:id', async (req, res) => (await import('./project/update')).default(req, res));
+app.put('/student-project/:id', uploader.fields([{ name: 'mandatory' }, { name: 'optional' }]), async (req, res) => (await import('./project/student-update')).default(req, res));
 
 // review
 app.post('/review/upload/:id', uploader.array('files'), async (req, res) => (await import('./review/upload')).default(req, res));

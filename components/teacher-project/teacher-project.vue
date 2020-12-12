@@ -66,6 +66,15 @@ type UploadedReview = {
 };
 
 export default defineComponent({
+  components: {
+    arrowRight,
+    checkIcon,
+    wordIcon,
+    pdfIcon,
+    fileIcon,
+    binIcon,
+    crossIcon,
+  },
   props: {
     projectId: {
       type: String,
@@ -98,15 +107,6 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-  },
-  components: {
-    arrowRight,
-    checkIcon,
-    wordIcon,
-    pdfIcon,
-    fileIcon,
-    binIcon,
-    crossIcon,
   },
   setup(props) {
     const mainStore = useMainStore();
