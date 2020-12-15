@@ -64,6 +64,10 @@ export default defineComponent({
   setup(props, { emit }) {
     const files = ref([]);
 
+    watch(props, (props) => {
+      files.value = props.value;
+    });
+
     const btnTrigger = () => {
       document.getElementById(props.id)?.click();
     };

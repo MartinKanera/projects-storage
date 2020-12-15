@@ -12,11 +12,31 @@
     .my-project-info
       .title {{ titleRef }}
       ps-text-area.mt-2(v-model='descriptionRef', placeholder='Popis projektu', name='project-description')
-      span.mt-6.text-ps-green Povinné soubory
+      .subtitle.mt-2 Povinné soubory
       span.mb-1.text-ps-white.text-sm Dokumentace (docx, PDF), Projekt (zip/rar)
       ps-drag-drop(v-model='mandatoryFilesUpload', tile, multiple, accept='.pdf,.docx,.zip,.rar')
-      span.text-ps-green Soubory navíc
+      .subtitle Nahrané povinné soubory:
+      .row(v-for='file in mandatoryFilesRef')
+        a.flex.items-center(:href='file.url', target='_blank') 
+          word-icon(v-if='file.extension == "docx"')
+          pdf-icon(v-else-if='file.extension == "pdf"')
+          zip-icon(v-else-if='file.extension == "zip" || file.type == "rar"')
+          file-icon(v-else)
+          .ml-2.underline {{ file.fileName }}
+        ps-btn(text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
+          bin-icon(:size='20')
+      .subtitle.mt-2 Soubory navíc
       ps-drag-drop#optionalSelect(v-model='optionalFilesUpload', tile, multiple)
+      .row(v-for='file in optionalFilesRef')
+        a.flex.items-center(:href='file.url', target='_blank')
+          word-icon(v-if='file.extension == "docx"')
+          pdf-icon(v-else-if='file.extension == "pdf"')
+          zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
+          image-icon(v-else-if='file.extension == "jpg" || file.extension == "jpeg" || file.extension == "png" || file.extension == "gif"')
+          file-icon(v-else)
+          .ml-2.underline {{ file.fileName }}
+        ps-btn(text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
+          bin-icon(:size='20')
   .mt-8.w-full.flex.flex.justify-center
     ps-btn.mr-4(@click='saveChanges', :disabled='awaiting', :loading='awaiting') Uložit
     ps-btn.ml-4(:disabled='awaiting', :loading='awaiting') Odevzdat
@@ -30,10 +50,22 @@ import { useMainStore } from '@/store';
 import axios from 'axios';
 
 import chevronRight from 'vue-material-design-icons/ChevronRight.vue';
+import wordIcon from 'vue-material-design-icons/FileWord.vue';
+import pdfIcon from 'vue-material-design-icons/PdfBox.vue';
+import zipIcon from 'vue-material-design-icons/ZipBox.vue';
+import imageIcon from 'vue-material-design-icons/Image.vue';
+import fileIcon from 'vue-material-design-icons/File.vue';
+import binIcon from 'vue-material-design-icons/Delete.vue';
 
 export default defineComponent({
   components: {
     chevronRight,
+    wordIcon,
+    zipIcon,
+    pdfIcon,
+    imageIcon,
+    fileIcon,
+    binIcon,
   },
   setup(_, { root }) {
     const mainStore = useMainStore();
@@ -49,6 +81,17 @@ export default defineComponent({
     const mandatoryFilesUpload = ref([]);
     const optionalFilesUpload = ref([]);
 
+    const getExtensions = (files: Array<any>) => {
+      return files.map((file) => {
+        const splittedName = file.fileName.split('.');
+
+        return {
+          ...file,
+          extension: splittedName[splittedName.length - 1].toLowerCase(),
+        };
+      });
+    };
+
     const { fetch } = useFetch(async () => {
       try {
         // @ts-ignore
@@ -63,8 +106,10 @@ export default defineComponent({
         titleRef.value = title;
         descriptionRef.value = description;
         linksRef.value = links;
-        mandatoryFilesRef.value = mandatoryFiles;
-        optionalFilesRef.value = optionalFiles;
+        // @ts-ignore
+        mandatoryFilesRef.value = getExtensions(mandatoryFiles);
+        // @ts-ignore
+        optionalFilesRef.value = getExtensions(optionalFiles);
       } catch (e) {
         console.error(e);
       }
@@ -93,13 +138,36 @@ export default defineComponent({
             'Content-Type': 'multipart/form-data',
           },
         });
-
-        await fetch;
       } catch (e) {
         console.error(e);
       }
 
-      awaiting.value = false;
+      setTimeout(async () => {
+        await fetch();
+
+        mandatoryFilesUpload.value = [];
+        optionalFilesUpload.value = [];
+
+        awaiting.value = false;
+      }, 5000);
+    };
+
+    const removing = ref(false);
+
+    const removeFile = async (filePath: string) => {
+      removing.value = true;
+
+      try {
+        await axios.delete(`/api/project-file/${filePath}`, {
+          headers: {
+            authorization: `Bearer ${mainStore.state.user.idToken}`,
+          },
+        });
+
+        await fetch();
+      } catch (e) {}
+
+      removing.value = false;
     };
 
     return {
@@ -117,6 +185,8 @@ export default defineComponent({
       optionalFilesUpload,
       saveChanges,
       awaiting,
+      removeFile,
+      removing,
     };
   },
 });

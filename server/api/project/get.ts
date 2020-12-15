@@ -1,6 +1,29 @@
 import { Request, Response } from 'express';
 import admin from 'firebase-admin';
 
+const getFiles = async (files: any) => {
+  const storage = admin.app().storage().bucket('ps-project-files');
+  const expires = Date.now() + 3600 * 1000;
+
+  if (!files) return [];
+
+  const response: any = await Promise.all(
+    files.map(async (file: any) => {
+      const [url] = await storage.file(file.filePath).getSignedUrl({
+        action: 'read',
+        expires,
+      });
+
+      return {
+        ...file,
+        url,
+      };
+    }),
+  );
+
+  return response.filter((el: any) => el != null);
+};
+
 export default async (req: Request, res: Response) => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
   const projectId = req.params.id;
@@ -23,11 +46,12 @@ export default async (req: Request, res: Response) => {
       !(project.data()?.teacherId === userAuth.uid) &&
       !(project.data()?.opponentId === userAuth.uid)
     ) {
-      console.log('Kekw');
       return res.status(403).send();
     }
 
     const projectData = project.data();
+
+    const projectFiles = (await admin.firestore().collection('projectFiles').where('projectId', '==', projectRef.id).get()).docs[0];
 
     // TODO function to fetch all files (mandatory and optional)
 
@@ -35,10 +59,10 @@ export default async (req: Request, res: Response) => {
       title: projectData?.title,
       description: projectData?.description,
       links: projectData?.links,
-      mandatoryFiles: [],
-      optionalFiles: [],
+      mandatoryFiles: await getFiles(projectFiles.data()?.mandatory),
+      optionalFiles: await getFiles(projectFiles.data()?.optional),
     });
   } catch (e) {
-    return res.status(401);
+    return res.status(401).send(e);
   }
 };

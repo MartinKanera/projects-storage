@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import admin from 'firebase-admin';
+import short from 'short-uuid';
 
 const checkLinks = (links: Array<{ url: string; placeholder: string }>) => {
   const regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
@@ -7,10 +8,50 @@ const checkLinks = (links: Array<{ url: string; placeholder: string }>) => {
   return links.every((link) => link.url.match(regex));
 };
 
-const uploadFiles = (files: Array<File>, destination: string) => {
-  if (files.length === 0) return;
+const uploadFiles = async (files: Array<File>, destination: string) => {
+  if (!files || files.length === 0) return;
 
-  console.log(files);
+  const storage = admin.storage().bucket('ps-project-files');
+
+  const updatedFiles = files.map((file: any) => {
+    const splitName = file.originalname.split('.');
+    file.customName = `${short().new()}.${splitName[splitName.length - 1]}`;
+
+    return file;
+  });
+
+  const response = await Promise.all(
+    updatedFiles.map((file: any) => {
+      return new Promise((resolve, reject) => {
+        const blob = storage.file(file.customName);
+
+        const blobStream = blob.createWriteStream({
+          metadata: {
+            contentType: file.mimetype,
+            contentDisposition: `inline; filename="${file.originalname}"`,
+          },
+          resumable: false,
+        });
+
+        blobStream.on('finish', () => {
+          resolve({
+            fileName: file.originalname,
+            filePath: `${blob.name}`,
+            uploaded: admin.firestore.Timestamp.now(),
+          });
+        });
+
+        blobStream.on('error', (e) => {
+          console.error(e);
+          reject(e);
+        });
+
+        blobStream.end(file.buffer);
+      });
+    }),
+  );
+
+  return response ?? [];
 };
 
 export default async (req: Request, res: Response) => {
@@ -40,22 +81,33 @@ export default async (req: Request, res: Response) => {
 
         if (sfDoc.data()?.studentId !== authUser.uid) throw new Error('403');
 
+        const projectFilesRef = (await admin.firestore().collection('projectFiles').where('projectId', '==', sfDoc.id).get()).docs[0].ref;
+
+        const projectFilesDoc = await transaction.get(projectFilesRef);
+
         transaction.update(projectRef, {
           description: body.description.trim(),
           links: body.links,
         });
 
-        // @ts-ignore
-        if (mandatoryFiles) {
-          uploadFiles(mandatoryFiles, 'mandatory');
-        }
-        if (optionalFiles) {
-          uploadFiles(optionalFiles, 'optional');
-        }
+        const mandatoryUploaded = projectFilesDoc.data()?.mandatory as [];
+        const optionalUploaded = projectFilesDoc.data()?.optional as [];
+
+        //  @ts-ignore
+        (await uploadFiles(mandatoryFiles, 'mandatory'))?.forEach((uploadedFle) => mandatoryUploaded.push(uploadedFle));
+        //  @ts-ignore
+        (await uploadFiles(optionalFiles, 'optional'))?.forEach((uploadedFle) => optionalUploaded.push(uploadedFle));
+
+        transaction.update(projectFilesRef, {
+          mandatory: mandatoryUploaded,
+          optional: optionalUploaded,
+        });
 
         return transaction;
       });
     } catch (e) {
+      console.error(e);
+
       switch (e) {
         case '403':
           return res.status(403).send();
