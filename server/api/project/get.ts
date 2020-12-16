@@ -61,6 +61,7 @@ export default async (req: Request, res: Response) => {
       links: projectData?.links,
       mandatoryFiles: await getFiles(projectFiles.data()?.mandatory),
       optionalFiles: await getFiles(projectFiles.data()?.optional),
+      submitted: projectData?.submitted,
     });
   } catch (e) {
     return res.status(401).send(e);

@@ -30,6 +30,10 @@ app.get('/teachers/list', async (req, res) => (await import('./teacher/list')).d
 app.put('/teacher/create', async (req, res) => (await import('./teacher/extern-teacher')).default(req, res));
 app.delete('/user/delete/:id', async (req, res) => (await import('./user/delete')).default(req, res));
 
+// review
+app.post('/review/upload/:id', uploader.array('files'), async (req, res) => (await import('./review/upload')).default(req, res));
+app.get('/reviews/:id', async (req, res) => (await import('./review/list')).default(req, res));
+
 // student
 app.put('/student/update/:id', async (req, res) => (await import('./student/update')).default(req, res));
 
@@ -37,10 +41,7 @@ app.put('/student/update/:id', async (req, res) => (await import('./student/upda
 app.get('/project/:id', async (req, res) => (await import('./project/get')).default(req, res));
 app.put('/project/:id', async (req, res) => (await import('./project/update')).default(req, res));
 app.put('/student-project/:id', uploader.fields([{ name: 'mandatory' }, { name: 'optional' }]), async (req, res) => (await import('./project/student-update')).default(req, res));
-
-// review
-app.post('/review/upload/:id', uploader.array('files'), async (req, res) => (await import('./review/upload')).default(req, res));
-app.get('/reviews/:id', async (req, res) => (await import('./review/list')).default(req, res));
+app.post('/project/:id', async (req, res) => (await import('./project/submit')).default(req, res));
 
 // project files
 app.delete('/project-file/:filePath', async (req, res) => (await import('./project-file/delete')).default(req, res));

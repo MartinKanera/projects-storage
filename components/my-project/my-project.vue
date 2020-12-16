@@ -20,13 +20,14 @@
         a.flex.items-center(:href='file.url', target='_blank') 
           word-icon(v-if='file.extension == "docx"')
           pdf-icon(v-else-if='file.extension == "pdf"')
-          zip-icon(v-else-if='file.extension == "zip" || file.type == "rar"')
+          zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
           file-icon(v-else)
           .ml-2.underline {{ file.fileName }}
         ps-btn(text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
           bin-icon(:size='20')
       .subtitle.mt-2 Soubory navíc
       ps-drag-drop#optionalSelect(v-model='optionalFilesUpload', tile, multiple)
+      .subtitle Nahrané soubory navíc:
       .row(v-for='file in optionalFilesRef')
         a.flex.items-center(:href='file.url', target='_blank')
           word-icon(v-if='file.extension == "docx"')
@@ -39,13 +40,16 @@
           bin-icon(:size='20')
   .mt-8.w-full.flex.flex.justify-center
     ps-btn.mr-4(@click='saveChanges', :disabled='awaiting', :loading='awaiting') Uložit
-    ps-btn.ml-4(:disabled='awaiting', :loading='awaiting') Odevzdat
+    ps-btn.ml-4(@click='checkModal', :disabled='awaiting', :loading='awaiting') Odevzdat
       template(#icon-right)
         chevron-right/
+  ps-modal(v-model='submitCheck')
+    ps-btn(@click='submitProject')
+  ps-snackbar(v-model='snackbar') {{ message }}
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, useFetch, watchEffect } from '@nuxtjs/composition-api';
+import { defineComponent, ref, useFetch } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 import axios from 'axios';
 
@@ -70,6 +74,8 @@ export default defineComponent({
   setup(_, { root }) {
     const mainStore = useMainStore();
 
+    const snackbar = ref(false);
+    const message = ref('');
     const awaiting = ref(false);
 
     const titleRef = ref('');
@@ -77,6 +83,7 @@ export default defineComponent({
     const linksRef = ref([]);
     const mandatoryFilesRef = ref([]);
     const optionalFilesRef = ref([]);
+    const submittedRef = ref(false);
 
     const mandatoryFilesUpload = ref([]);
     const optionalFilesUpload = ref([]);
@@ -101,7 +108,7 @@ export default defineComponent({
           },
         });
 
-        const { title, description, links, mandatoryFiles, optionalFiles } = response.data;
+        const { title, description, links, mandatoryFiles, optionalFiles, submitted } = response.data;
 
         titleRef.value = title;
         descriptionRef.value = description;
@@ -110,6 +117,7 @@ export default defineComponent({
         mandatoryFilesRef.value = getExtensions(mandatoryFiles);
         // @ts-ignore
         optionalFilesRef.value = getExtensions(optionalFiles);
+        submittedRef.value = submitted;
       } catch (e) {
         console.error(e);
       }
@@ -148,6 +156,9 @@ export default defineComponent({
         mandatoryFilesUpload.value = [];
         optionalFilesUpload.value = [];
 
+        snackbar.value = true;
+        message.value = 'Projekt aktualizován';
+
         awaiting.value = false;
       }, 5000);
     };
@@ -170,6 +181,32 @@ export default defineComponent({
       removing.value = false;
     };
 
+    const submitCheck = ref(false);
+
+    const checkModal = () => (submitCheck.value = !submitCheck.value);
+
+    const submitProject = async () => {
+      awaiting.value = true;
+
+      try {
+        await axios.post(`/api/project/${mainStore.state.project.id}`, _, {
+          headers: {
+            authorization: `Bearer ${mainStore.state.user.idToken}`,
+          },
+        });
+
+        snackbar.value = true;
+        message.value = 'Projekt odevzdán k hodnocení';
+      } catch (e) {
+        if (e.response.status === 412) {
+          snackbar.value = true;
+          message.value = 'Chybí ti povinné soubory';
+        }
+      }
+
+      awaiting.value = false;
+    };
+
     return {
       displayName: mainStore.state.user.displayName,
       profilePicture: mainStore.state.user.profilePicture,
@@ -187,6 +224,12 @@ export default defineComponent({
       awaiting,
       removeFile,
       removing,
+      submitProject,
+      snackbar,
+      message,
+      submitCheck,
+      checkModal,
+      submittedRef,
     };
   },
 });

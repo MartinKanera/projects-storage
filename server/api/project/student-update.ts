@@ -108,10 +108,10 @@ export default async (req: Request, res: Response) => {
     } catch (e) {
       console.error(e);
 
-      switch (e) {
-        case '403':
+      switch (e.toString()) {
+        case 'Error: 403':
           return res.status(403).send();
-        case '404':
+        case 'Error: 404':
           return res.status(404).send();
         default:
           return res.status(500).send();

@@ -38,6 +38,7 @@ export default async (req: Request, res: Response) => {
         opponentId: '',
         currentYear: schoolYear?.currentYear,
         public: false,
+        submitted: false,
         submittedDate: null,
         links: [],
       });

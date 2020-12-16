@@ -46,8 +46,8 @@ export default async (req: Request, res: Response) => {
       return res.status(200).send();
     } catch (e) {
       console.error(e);
-      switch (e) {
-        case '403':
+      switch (e.toString()) {
+        case 'Error: 403':
           return res.status(403).send('You do not own this file');
         default:
           return res.status(500).send();
