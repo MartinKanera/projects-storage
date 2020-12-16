@@ -27,6 +27,9 @@ export default async (req: Request, res: Response) => {
       await admin.firestore().runTransaction(async (transaction) => {
         const project = await transaction.get(projectRef);
 
+        if (!project.exists) throw new Error('404');
+        if (project.data()?.submitted) throw new Error('409');
+
         const projectFilesRef = (await admin.firestore().collection('projectFiles').where('projectId', '==', project.id).get()).docs[0].ref;
 
         const sfDoc = await transaction.get(projectFilesRef);
@@ -49,6 +52,10 @@ export default async (req: Request, res: Response) => {
       switch (e.toString()) {
         case 'Error: 403':
           return res.status(403).send('You do not own this file');
+        case 'Error: 404':
+          return res.status(404).send('You do not have any project');
+        case 'Error: 409':
+          return res.status(409).send('You can not delete files after submitting');
         default:
           return res.status(500).send();
       }

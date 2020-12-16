@@ -39,12 +39,16 @@
         ps-btn(text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
           bin-icon(:size='20')
   .mt-8.w-full.flex.flex.justify-center
-    ps-btn.mr-4(@click='saveChanges', :disabled='awaiting', :loading='awaiting') Uložit
-    ps-btn.ml-4(@click='checkModal', :disabled='awaiting', :loading='awaiting') Odevzdat
+    ps-btn.mr-4(@click='saveChanges', :disabled='awaiting || submittedRef', :loading='awaiting') Uložit
+    ps-btn.ml-4(@click='checkModal', :disabled='awaiting || submittedRef', :loading='awaiting') Odevzdat
       template(#icon-right)
         chevron-right/
-  ps-modal(v-model='submitCheck')
-    ps-btn(@click='submitProject')
+  ps-modal(v-model='submitCheck', :disabled='awaiting')
+    .flex.flex-col
+      .title Pokud odešleš projekt, nepůjde to vzít zpět!
+      ps-btn.mt-4(@click='submitProject', :disabled='awaiting', :loading='awaiting') Odevzdat projekt
+        template(#icon-right)
+          chevron-right/
   ps-snackbar(v-model='snackbar') {{ message }}
 </template>
 
@@ -194,6 +198,9 @@ export default defineComponent({
             authorization: `Bearer ${mainStore.state.user.idToken}`,
           },
         });
+
+        await fetch();
+        checkModal();
 
         snackbar.value = true;
         message.value = 'Projekt odevzdán k hodnocení';

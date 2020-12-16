@@ -8,7 +8,7 @@ const checkLinks = (links: Array<{ url: string; placeholder: string }>) => {
   return links.every((link) => link.url.match(regex));
 };
 
-const uploadFiles = async (files: Array<File>, destination: string) => {
+const uploadFiles = async (files: Array<File>) => {
   if (!files || files.length === 0) return;
 
   const storage = admin.storage().bucket('ps-project-files');
@@ -65,6 +65,23 @@ export default async (req: Request, res: Response) => {
 
   // @ts-ignore
   const mandatoryFiles = req.files.mandatory;
+
+  // Checking file type of mandatory files
+  const mandatoryFilesTypes = mandatoryFiles.map((file: any) => {
+    const splitted = file.originalname.split('.');
+
+    return {
+      extension: splitted[splitted.length - 1],
+      type: file.mimetype,
+    };
+  });
+
+  const supportedExtensions = ['docx', 'pdf', 'zip', 'rar'];
+  const supportedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf', 'application/x-zip-compressed', 'application/octet-stream'];
+
+  if (mandatoryFilesTypes.some((fileType: any) => !supportedExtensions.includes(fileType.extension) || !supportedTypes.includes(fileType.type)))
+    return res.status(415).send('Forbidden files provided');
+
   // @ts-ignore
   const optionalFiles = req.files.optional;
 
@@ -74,12 +91,14 @@ export default async (req: Request, res: Response) => {
     try {
       const projectRef = admin.firestore().collection('projects').doc(req.params.id);
 
-      admin.firestore().runTransaction(async (transaction) => {
+      await admin.firestore().runTransaction(async (transaction) => {
         const sfDoc = await transaction.get(projectRef);
 
         if (!sfDoc.exists) throw new Error('404');
 
         if (sfDoc.data()?.studentId !== authUser.uid) throw new Error('403');
+
+        if (sfDoc.data()?.submitted) throw new Error('409');
 
         const projectFilesRef = (await admin.firestore().collection('projectFiles').where('projectId', '==', sfDoc.id).get()).docs[0].ref;
 
@@ -94,9 +113,9 @@ export default async (req: Request, res: Response) => {
         const optionalUploaded = projectFilesDoc.data()?.optional as [];
 
         //  @ts-ignore
-        (await uploadFiles(mandatoryFiles, 'mandatory'))?.forEach((uploadedFle) => mandatoryUploaded.push(uploadedFle));
+        (await uploadFiles(mandatoryFiles))?.forEach((uploadedFle) => mandatoryUploaded.push(uploadedFle));
         //  @ts-ignore
-        (await uploadFiles(optionalFiles, 'optional'))?.forEach((uploadedFle) => optionalUploaded.push(uploadedFle));
+        (await uploadFiles(optionalFiles))?.forEach((uploadedFle) => optionalUploaded.push(uploadedFle));
 
         transaction.update(projectFilesRef, {
           mandatory: mandatoryUploaded,
@@ -113,6 +132,8 @@ export default async (req: Request, res: Response) => {
           return res.status(403).send();
         case 'Error: 404':
           return res.status(404).send();
+        case 'Error: 409':
+          return res.status(409).send('Project already submitted');
         default:
           return res.status(500).send();
       }
