@@ -8,23 +8,23 @@ transition(name='drawer')
             .wrap
               presentation-icon(:size='32')/
               span.item-title Veřejné projekty
-        nuxt-link(v-if='loggedIn && project && student', to='/myproject')
+        nuxt-link(v-if='mainStore.state.user.loggedIn && mainStore.state.project.id !== "" && mainStore.state.user.student', to='/myproject')
           .menu-item(@click='closeDrawer')
             .wrap
               strategy-icon(:size='32')/
               span.item-title Můj projekt
         //- TODO Check if has projectId
-        nuxt-link(v-if='loggedIn && !project && student', to='/proposal', @click='closeDrawer')
+        nuxt-link(v-if='mainStore.state.user.loggedIn && !mainStore.state.project.id !== "" && mainStore.state.user.student', to='/proposal', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               book-icon(:size='32')/
               span.item-title Zadání
-        nuxt-link(v-if='loggedIn && teacher', to='/students', @click='closeDrawer')
+        nuxt-link(v-if='mainStore.state.user.loggedIn && mainStore.state.user.teacher', to='/students', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               accounts-icon(:size='32')/
               span.item-title Žáci
-        nuxt-link(v-if='loggedIn && admin', to='/admin', @click='closeDrawer')
+        nuxt-link(v-if='mainStore.state.user.loggedIn && mainStore.state.user.admin', to='/admin', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               admin-icon(:size='32')/
@@ -32,7 +32,7 @@ transition(name='drawer')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, computed, onMounted } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watchEffect, computed, onMounted, toRefs } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import presentationIcon from 'vue-material-design-icons/Presentation.vue';
@@ -84,11 +84,7 @@ export default defineComponent({
       drawerState,
       isDesktop,
       closeDrawer,
-      loggedIn: mainStore.isLoggedIn,
-      admin: mainStore.isAdmin,
-      student: mainStore.isStudent,
-      teacher: mainStore.isTeacher,
-      project: mainStore.projectId !== '',
+      mainStore,
     };
   },
 });
