@@ -57,6 +57,14 @@ export default async (req: Request, res: Response) => {
         if (projectData?.studentId !== userAuth.uid) throw new Error('403');
         if (projectData?.submitted) throw new Error('409');
 
+        if (sfDoc.data()?.deadlineDate != null) {
+          if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
+        } else {
+          const system = await transaction.get(admin.firestore().collection('system').doc('schoolYear'));
+
+          if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
+        }
+
         const projectFiles = await transaction.get((await admin.firestore().collection('projectFiles').where('projectId', '==', sfDoc.id).limit(1).get()).docs[0].ref);
         const projectFilesData = projectFiles.data();
 
@@ -84,6 +92,8 @@ export default async (req: Request, res: Response) => {
           return res.status(409).send('Project already submitted');
         case 'Error: 412':
           return res.status(412).send('Missing mandatory files (docx, pdf, zip/rar)');
+        case 'Error: 423':
+          return res.status(423).send('Past deadline');
         default:
           return res.status(500).send();
       }

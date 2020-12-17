@@ -168,6 +168,7 @@ export default defineComponent({
       try {
         await firebase.auth().signOut();
         await mainStore.reset();
+
         if (root.$route.path !== '/') root.$router.replace('/');
 
         closeSettings();

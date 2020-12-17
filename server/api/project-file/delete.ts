@@ -30,6 +30,14 @@ export default async (req: Request, res: Response) => {
         if (!project.exists) throw new Error('404');
         if (project.data()?.submitted) throw new Error('409');
 
+        if (project.data()?.deadlineDate != null) {
+          if (admin.firestore.Timestamp.now() > project.data()?.deadlineDate) throw new Error('423');
+        } else {
+          const system = await transaction.get(admin.firestore().collection('system').doc('schoolYear'));
+
+          if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
+        }
+
         const projectFilesRef = (await admin.firestore().collection('projectFiles').where('projectId', '==', project.id).get()).docs[0].ref;
 
         const sfDoc = await transaction.get(projectFilesRef);
@@ -56,6 +64,8 @@ export default async (req: Request, res: Response) => {
           return res.status(404).send('You do not have any project');
         case 'Error: 409':
           return res.status(409).send('You can not delete files after submitting');
+        case 'Error: 423':
+          return res.status(423).send('Past deadline');
         default:
           return res.status(500).send();
       }

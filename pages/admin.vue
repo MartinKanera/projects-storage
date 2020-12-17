@@ -30,7 +30,8 @@
         :title='project.title',
         :displayName='project.displayName',
         :profilePicture='project.profilePicture',
-        :teachers='teachers'
+        :teachers='teachers',
+        :deadlineDate='project.deadlineDate'
       )
     ps-tab(:active='selectedTab == "ostatní projekty"')
       span.text-ps-white.text-xl.mt-2 Ostatní projekty
@@ -110,7 +111,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch } from '@nuxtjs/composition-api';
+import { defineComponent, ref, onMounted, watch, onBeforeUnmount } from '@nuxtjs/composition-api';
 
 import { debounce } from 'ts-debounce';
 
@@ -135,6 +136,7 @@ type Project = {
   title: String;
   displayName: String;
   profilePicture: String;
+  deadlineDate: String | null;
 };
 
 type Teacher = {
@@ -152,11 +154,11 @@ type Student = {
 };
 
 export default defineComponent({
-  middleware: 'admin',
   components: {
     plusIcon,
     dateIcon,
   },
+  middleware: 'admin',
   setup() {
     const message = ref('');
     const displaySnack = ref(false);
@@ -182,11 +184,11 @@ export default defineComponent({
           break;
         }
         case 'externí učitelé': {
-          if (teachersListener === null) getTeachers();
+          if (externTeachers.value.length === 0 && internTeachers.value.length === 0) getTeachers();
           break;
         }
         case 'učitelé': {
-          if (teachersListener === null) getTeachers();
+          if (externTeachers.value.length === 0 && internTeachers.value.length === 0) getTeachers();
           break;
         }
         case 'žáci': {
@@ -222,19 +224,22 @@ export default defineComponent({
           title: projectData?.title,
           displayName: userData?.displayName,
           profilePicture: userData?.profilePicture,
+          deadlineDate: formatDate(projectData?.deadlineDate),
         };
       });
     };
 
-    const formatDate = (timestamp: firebase.firestore.Timestamp) => {
+    const formatDate = (timestamp: firebase.firestore.Timestamp | undefined) => {
+      if (!timestamp) return `${new Date().getFullYear()}-01-01T12:00`;
+
       const date = timestamp.toDate();
 
-      const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}-${date
+      const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toLocaleString('cs-CZ', { minimumIntegerDigits: 2, useGrouping: false })}-${date
         .getDate()
-        .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`;
-      const formattedTime = `${date.getHours().toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}:${date
+        .toLocaleString('cs-CZ', { minimumIntegerDigits: 2, useGrouping: false })}`;
+      const formattedTime = `${date.getHours().toLocaleString('cs-CZ', { minimumIntegerDigits: 2, useGrouping: false })}:${date
         .getMinutes()
-        .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`;
+        .toLocaleString('cs-CZ', { minimumIntegerDigits: 2, useGrouping: false })}`;
 
       return `${formattedDate}T${formattedTime}`;
     };
@@ -250,16 +255,19 @@ export default defineComponent({
     const updateDeadline = async () => {
       try {
         updatingDeadline.value = true;
-        // eslint-disable-next-line require-await
-        await firebase.firestore().runTransaction(async (transaction) => {
-          const ref = firebase.firestore().collection('system').doc('schoolYear');
-          transaction.update(ref, {
-            projectDeadline: firebase.firestore.Timestamp.fromDate(new Date(projectDeadline.value)),
-            reviewDeadline: firebase.firestore.Timestamp.fromDate(new Date(reviewDeadline.value)),
-          });
 
-          return transaction;
-        });
+        await axios.put(
+          '/api/system/deadlines',
+          {
+            projectDeadline: projectDeadline.value,
+            reviewDeadline: reviewDeadline.value,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
+            },
+          },
+        );
 
         deadlineModal.value = false;
       } catch (e) {
@@ -271,7 +279,7 @@ export default defineComponent({
     const teachers = ref([]);
 
     const currentYearProjects = ref([] as Array<Project>);
-    const listeners = [];
+    const listeners: Array<Function> = [];
     let lastOfCurrent: any = null;
 
     // current year projects
@@ -418,37 +426,38 @@ export default defineComponent({
     // Extern teachers view
     const externTeachers = ref([] as Array<Teacher>);
     const internTeachers = ref([] as Array<Teacher>);
-    let teachersListener: (() => void) | null = null;
 
     const getTeachers = () => {
       try {
-        teachersListener = firebase
-          .firestore()
-          .collection('users')
-          .where('teacher', '==', true)
-          .where('deleted', '==', false)
-          .onSnapshot((teachersSnap) => {
-            externTeachers.value = [];
-            internTeachers.value = [];
+        listeners.push(
+          firebase
+            .firestore()
+            .collection('users')
+            .where('teacher', '==', true)
+            .where('deleted', '==', false)
+            .onSnapshot((teachersSnap) => {
+              externTeachers.value = [];
+              internTeachers.value = [];
 
-            teachersSnap.docs.forEach((teacher) => {
-              if (teacher.data()?.extern) {
-                externTeachers.value.push({
-                  teacherId: teacher.id,
-                  displayName: teacher.data()?.displayName,
-                  profilePicture: teacher.data()?.profilePicture,
-                  admin: false,
-                });
-              } else {
-                internTeachers.value.push({
-                  teacherId: teacher.id,
-                  displayName: teacher.data()?.displayName,
-                  profilePicture: teacher.data()?.profilePicture,
-                  admin: teacher.data().admin,
-                });
-              }
-            });
-          });
+              teachersSnap.docs.forEach((teacher) => {
+                if (teacher.data()?.extern) {
+                  externTeachers.value.push({
+                    teacherId: teacher.id,
+                    displayName: teacher.data()?.displayName,
+                    profilePicture: teacher.data()?.profilePicture,
+                    admin: false,
+                  });
+                } else {
+                  internTeachers.value.push({
+                    teacherId: teacher.id,
+                    displayName: teacher.data()?.displayName,
+                    profilePicture: teacher.data()?.profilePicture,
+                    admin: teacher.data().admin,
+                  });
+                }
+              });
+            }),
+        );
       } catch (e) {}
     };
 
@@ -603,6 +612,11 @@ export default defineComponent({
       }
       fetch();
     });
+
+    onBeforeUnmount(() => {
+      listeners.forEach((listener: Function) => listener());
+    });
+
     return {
       message,
       displaySnack,

@@ -67,20 +67,22 @@ export default async (req: Request, res: Response) => {
   const mandatoryFiles = req.files.mandatory;
 
   // Checking file type of mandatory files
-  const mandatoryFilesTypes = mandatoryFiles.map((file: any) => {
-    const splitted = file.originalname.split('.');
+  if (mandatoryFiles) {
+    const mandatoryFilesTypes = mandatoryFiles.map((file: any) => {
+      const splitted = file.originalname.split('.');
 
-    return {
-      extension: splitted[splitted.length - 1],
-      type: file.mimetype,
-    };
-  });
+      return {
+        extension: splitted[splitted.length - 1],
+        type: file.mimetype,
+      };
+    });
 
-  const supportedExtensions = ['docx', 'pdf', 'zip', 'rar'];
-  const supportedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf', 'application/x-zip-compressed', 'application/octet-stream'];
+    const supportedExtensions = ['docx', 'pdf', 'zip', 'rar'];
+    const supportedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf', 'application/x-zip-compressed', 'application/octet-stream'];
 
-  if (mandatoryFilesTypes.some((fileType: any) => !supportedExtensions.includes(fileType.extension) || !supportedTypes.includes(fileType.type)))
-    return res.status(415).send('Forbidden files provided');
+    if (mandatoryFilesTypes.some((fileType: any) => !supportedExtensions.includes(fileType.extension) || !supportedTypes.includes(fileType.type)))
+      return res.status(415).send('Forbidden files provided');
+  }
 
   // @ts-ignore
   const optionalFiles = req.files.optional;
@@ -99,6 +101,14 @@ export default async (req: Request, res: Response) => {
         if (sfDoc.data()?.studentId !== authUser.uid) throw new Error('403');
 
         if (sfDoc.data()?.submitted) throw new Error('409');
+
+        if (sfDoc.data()?.deadlineDate != null) {
+          if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
+        } else {
+          const system = await transaction.get(admin.firestore().collection('system').doc('schoolYear'));
+
+          if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
+        }
 
         const projectFilesRef = (await admin.firestore().collection('projectFiles').where('projectId', '==', sfDoc.id).get()).docs[0].ref;
 
@@ -134,6 +144,8 @@ export default async (req: Request, res: Response) => {
           return res.status(404).send();
         case 'Error: 409':
           return res.status(409).send('Project already submitted');
+        case 'Error: 423':
+          return res.status(423).send('Past deadline');
         default:
           return res.status(500).send();
       }

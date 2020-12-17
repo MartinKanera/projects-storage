@@ -12,7 +12,7 @@
       ps-btn.justify-self-end(text, @click='removeFile(file.name)')
         bin-icon(:size='20')
   .input-wrap
-    ps-btn(@click='btnTrigger') Vyber soubory
+    ps-btn(@click='btnTrigger', :disabled='disabled') Vyber soubory
     span.ml-3.text-ps-white nebo je sem přetáhni
     input(:id='id', type='file', name='file-input', :multiple='multiple', @change='handleFileInput', style='display: none', :accept='accept')
 </template>

@@ -1,20 +1,25 @@
 <template lang="pug">
-.h-auto.m-4
-  .flex.flex-col.justify-between.items-stretch(class='lg:flex-row-reverse md:m-12 lg:items-start')
+.h-auto.m-4(class='md:mx-12')
+  ps-loader(:value='loading')
+  .flex.justify-center.mb-4
+    .rounded-lg.shadow.bg-ps-secondary.flex.px-2
+      .text-ps-white.mr-2 Termín odevzdání:
+      .text-ps-green.text-lg {{ `${deadlineFormatted}` }}
+  .flex.flex-col.justify-between.items-stretch(class='lg:flex-row-reverse lg:items-start')
     .my-project-user
       .user-info
         img.profile-picture(:src='profilePicture', width='52')
         .flex.flex-col
           .display-name {{ displayName }}
           .text-ps-green.text-sm {{ year }}
-      ps-project-links(v-model='linksRef')
+      ps-project-links(v-model='linksRef', :editable='modificable')
       ps-reviews-list.mt-2(:projectId='projectId')
     .my-project-info
       .title {{ titleRef }}
-      ps-text-area.mt-2(v-model='descriptionRef', placeholder='Popis projektu', name='project-description')
+      ps-text-area.mt-2(v-model='descriptionRef', placeholder='Popis projektu', name='project-description', :readonly='!modificable')
       .subtitle.mt-2 Povinné soubory
       span.mb-1.text-ps-white.text-sm Dokumentace (docx, PDF), Projekt (zip/rar)
-      ps-drag-drop(v-model='mandatoryFilesUpload', tile, multiple, accept='.pdf,.docx,.zip,.rar')
+      ps-drag-drop(v-model='mandatoryFilesUpload', tile, multiple, accept='.pdf,.docx,.zip,.rar', :disabled='!modificable')
       .subtitle Nahrané povinné soubory:
       .row(v-for='file in mandatoryFilesRef')
         a.flex.items-center(:href='file.url', target='_blank') 
@@ -23,11 +28,11 @@
           zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
           file-icon(v-else)
           .ml-2.underline {{ file.fileName }}
-        ps-btn(text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
+        ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
           bin-icon(:size='20')
       .subtitle.mt-2 Soubory navíc
-      ps-drag-drop#optionalSelect(v-model='optionalFilesUpload', tile, multiple)
-      .subtitle Nahrané soubory navíc:
+      ps-drag-drop#optionalSelect(v-model='optionalFilesUpload', tile, multiple, :disabled='!modificable')
+      .subtitle Nahrané soubory navíc: {{ modificable }}
       .row(v-for='file in optionalFilesRef')
         a.flex.items-center(:href='file.url', target='_blank')
           word-icon(v-if='file.extension == "docx"')
@@ -36,11 +41,11 @@
           image-icon(v-else-if='file.extension == "jpg" || file.extension == "jpeg" || file.extension == "png" || file.extension == "gif"')
           file-icon(v-else)
           .ml-2.underline {{ file.fileName }}
-        ps-btn(text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
+        ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
           bin-icon(:size='20')
   .mt-8.w-full.flex.flex.justify-center
-    ps-btn.mr-4(@click='saveChanges', :disabled='awaiting || submittedRef', :loading='awaiting') Uložit
-    ps-btn.ml-4(@click='checkModal', :disabled='awaiting || submittedRef', :loading='awaiting') Odevzdat
+    ps-btn.mr-4(@click='saveChanges', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Uložit
+    ps-btn.ml-4(@click='checkModal', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Odevzdat
       template(#icon-right)
         chevron-right/
   ps-modal(v-model='submitCheck', :disabled='awaiting')
@@ -53,9 +58,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, useFetch } from '@nuxtjs/composition-api';
+import { computed, defineComponent, onBeforeMount, onMounted, ref, useFetch, watchEffect } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 import axios from 'axios';
+
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 import chevronRight from 'vue-material-design-icons/ChevronRight.vue';
 import wordIcon from 'vue-material-design-icons/FileWord.vue';
@@ -64,6 +72,7 @@ import zipIcon from 'vue-material-design-icons/ZipBox.vue';
 import imageIcon from 'vue-material-design-icons/Image.vue';
 import fileIcon from 'vue-material-design-icons/File.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
+import { Timestamp } from '@google-cloud/firestore';
 
 export default defineComponent({
   components: {
@@ -75,8 +84,10 @@ export default defineComponent({
     fileIcon,
     binIcon,
   },
-  setup(_, { root }) {
+  setup() {
     const mainStore = useMainStore();
+
+    const loading = ref(true);
 
     const snackbar = ref(false);
     const message = ref('');
@@ -88,11 +99,14 @@ export default defineComponent({
     const mandatoryFilesRef = ref([]);
     const optionalFilesRef = ref([]);
     const submittedRef = ref(false);
+    const deadlineDateRef = ref(new firebase.firestore.Timestamp(0, 0));
 
     const mandatoryFilesUpload = ref([]);
     const optionalFilesUpload = ref([]);
 
     const getExtensions = (files: Array<any>) => {
+      if (!files) return [];
+
       return files.map((file) => {
         const splittedName = file.fileName.split('.');
 
@@ -103,16 +117,16 @@ export default defineComponent({
       });
     };
 
-    const { fetch } = useFetch(async () => {
+    const fetch = async () => {
       try {
         // @ts-ignore
-        const response = await root.$nuxt.$axios.get(`/api/project/${mainStore.state.project.id}`, {
+        const response = await axios.get(`/api/project/${mainStore.state.project.id}`, {
           headers: {
             authorization: `Bearer ${mainStore.state.user.idToken}`,
           },
         });
 
-        const { title, description, links, mandatoryFiles, optionalFiles, submitted } = response.data;
+        const { title, description, links, mandatoryFiles, optionalFiles, submitted, deadlineDate } = response.data;
 
         titleRef.value = title;
         descriptionRef.value = description;
@@ -122,9 +136,16 @@ export default defineComponent({
         // @ts-ignore
         optionalFilesRef.value = getExtensions(optionalFiles);
         submittedRef.value = submitted;
+
+        deadlineDateRef.value = new firebase.firestore.Timestamp(deadlineDate._seconds, 0);
       } catch (e) {
         console.error(e);
       }
+    };
+
+    onBeforeMount(async () => {
+      await fetch();
+      loading.value = false;
     });
 
     const saveChanges = async () => {
@@ -150,21 +171,23 @@ export default defineComponent({
             'Content-Type': 'multipart/form-data',
           },
         });
+
+        setTimeout(async () => {
+          await fetch();
+
+          mandatoryFilesUpload.value = [];
+          optionalFilesUpload.value = [];
+
+          snackbar.value = true;
+          message.value = 'Projekt aktualizován';
+
+          awaiting.value = false;
+        }, 5000);
       } catch (e) {
         console.error(e);
-      }
-
-      setTimeout(async () => {
-        await fetch();
-
-        mandatoryFilesUpload.value = [];
-        optionalFilesUpload.value = [];
-
-        snackbar.value = true;
-        message.value = 'Projekt aktualizován';
 
         awaiting.value = false;
-      }, 5000);
+      }
     };
 
     const removing = ref(false);
@@ -193,11 +216,15 @@ export default defineComponent({
       awaiting.value = true;
 
       try {
-        await axios.post(`/api/project/${mainStore.state.project.id}`, _, {
-          headers: {
-            authorization: `Bearer ${mainStore.state.user.idToken}`,
+        await axios.post(
+          `/api/project/${mainStore.state.project.id}`,
+          {},
+          {
+            headers: {
+              authorization: `Bearer ${mainStore.state.user.idToken}`,
+            },
           },
-        });
+        );
 
         await fetch();
         checkModal();
@@ -213,6 +240,10 @@ export default defineComponent({
 
       awaiting.value = false;
     };
+
+    const deadlineFormatted = computed(() => deadlineDateRef.value.toDate().toLocaleDateString('cs-CZ'));
+
+    const modificable = computed(() => !submittedRef.value && deadlineDateRef.value > firebase.firestore.Timestamp.now());
 
     return {
       displayName: mainStore.state.user.displayName,
@@ -237,6 +268,9 @@ export default defineComponent({
       submitCheck,
       checkModal,
       submittedRef,
+      deadlineFormatted,
+      modificable,
+      loading,
     };
   },
 });

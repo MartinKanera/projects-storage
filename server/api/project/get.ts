@@ -51,6 +51,12 @@ export default async (req: Request, res: Response) => {
 
     const projectData = project.data();
 
+    let deadlineDate = projectData?.deadlineDate;
+
+    if (deadlineDate == null) {
+      deadlineDate = (await admin.firestore().collection('system').doc('schoolYear').get())?.data()?.projectDeadline;
+    }
+
     const projectFiles = (await admin.firestore().collection('projectFiles').where('projectId', '==', projectRef.id).get()).docs[0];
 
     // TODO function to fetch all files (mandatory and optional)
@@ -62,6 +68,7 @@ export default async (req: Request, res: Response) => {
       mandatoryFiles: await getFiles(projectFiles.data()?.mandatory),
       optionalFiles: await getFiles(projectFiles.data()?.optional),
       submitted: projectData?.submitted,
+      deadlineDate,
     });
   } catch (e) {
     return res.status(401).send(e);

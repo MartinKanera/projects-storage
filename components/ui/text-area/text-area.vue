@@ -5,7 +5,7 @@
     .text-ps-white.text-sm(v-if='')
       span {{ areaLength }}/
       span.text-ps-green {{ maxLength }}
-  textarea(:value='value', @input='areaInput', :placeholder='`${placeholder}...`', :name='name', :maxlength='maxLength')
+  textarea(:value='value', @input='areaInput', :placeholder='`${placeholder}...`', :name='name', :maxlength='maxLength', :readonly='readonly')
 </template>
 
 <script lang="ts">
@@ -36,6 +36,10 @@ export default defineComponent({
     maxLength: {
       type: Number,
       default: 250,
+    },
+    readonly: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props, { emit }) {
