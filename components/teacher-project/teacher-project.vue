@@ -6,7 +6,7 @@
       span.text-ps-green.font-bold.block {{ displayName }}
       span.text-ps-white {{ projectTitle }}
   .actions.justify-self-end
-    nuxt-link(to='idk')
+    nuxt-link(:to='`/project/${projectId}`')
       ps-btn.text-ps-white(text) Projekt
         template(#icon-right)
           arrow-right.text-ps-white(:size='32')/

@@ -58,7 +58,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onBeforeMount, onMounted, ref, useFetch, watchEffect } from '@nuxtjs/composition-api';
+import { computed, defineComponent, onBeforeMount, ref } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 import axios from 'axios';
 
@@ -72,7 +72,6 @@ import zipIcon from 'vue-material-design-icons/ZipBox.vue';
 import imageIcon from 'vue-material-design-icons/Image.vue';
 import fileIcon from 'vue-material-design-icons/File.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
-import { Timestamp } from '@google-cloud/firestore';
 
 export default defineComponent({
   components: {
@@ -172,7 +171,7 @@ export default defineComponent({
           },
         });
 
-        setTimeout(async () => {
+        if (mandatoryFilesUpload.value.length === 0 && optionalFilesUpload.value.length === 0) {
           await fetch();
 
           mandatoryFilesUpload.value = [];
@@ -182,7 +181,19 @@ export default defineComponent({
           message.value = 'Projekt aktualizován';
 
           awaiting.value = false;
-        }, 5000);
+        } else {
+          setTimeout(async () => {
+            await fetch();
+
+            mandatoryFilesUpload.value = [];
+            optionalFilesUpload.value = [];
+
+            snackbar.value = true;
+            message.value = 'Projekt aktualizován';
+
+            awaiting.value = false;
+          }, 5000);
+        }
       } catch (e) {
         console.error(e);
 

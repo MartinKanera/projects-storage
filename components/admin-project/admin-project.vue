@@ -12,7 +12,7 @@
         span(v-if='submittedDate') {{ getDate(submittedDate) }}
         span(v-else) není odevzdán
   .actions
-    nuxt-link(to='idk')
+    nuxt-link(:to='`/project/${projectId}`')
       ps-btn.self-start(text) projekt
         template(#icon-right)
           chevron-icon(:size='18')/
@@ -113,10 +113,6 @@ export default defineComponent({
   // { projectId, currentYear, opponentId, publicProject, reviews, studentId, submittedDate, teacherId, title, displayName, profilePicture, teachers }
   setup({ projectId, opponentId, publicProject, teacherId, title, teachers, reviews, deadlineDate }) {
     const projectToUpdate = ref({ opponentId, publicProject: publicProject.toString(), teacherId, title, deadlineDate });
-
-    watch(projectToUpdate.value, (kekw) => {
-      console.log(kekw.deadlineDate);
-    });
 
     const deadlineSwitch = ref((!(projectToUpdate.value.deadlineDate === `${new Date().getFullYear()}-01-01T12:00`)).toString());
     const displayPicker = computed(() => JSON.parse(deadlineSwitch.value));

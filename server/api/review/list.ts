@@ -22,7 +22,6 @@ const getReviewsUrls = async (reviews: any, authorized = false) => {
       };
     }),
   );
-
   return response.filter((el: any) => el != null);
 };
 

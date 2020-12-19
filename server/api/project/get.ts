@@ -39,17 +39,17 @@ export default async (req: Request, res: Response) => {
 
     if (!project.exists) return res.status(404).send('Project does not exist');
 
+    const projectData = project.data();
+
     if (
       !user.data()?.admin &&
-      !project.data()?.public &&
-      !(project.data()?.studentId === userAuth.uid) &&
-      !(project.data()?.teacherId === userAuth.uid) &&
-      !(project.data()?.opponentId === userAuth.uid)
+      !projectData?.public &&
+      !(projectData?.studentId === userAuth.uid) &&
+      !(projectData?.teacherId === userAuth.uid) &&
+      !(projectData?.opponentId === userAuth.uid)
     ) {
       return res.status(403).send();
     }
-
-    const projectData = project.data();
 
     let deadlineDate = projectData?.deadlineDate;
 
@@ -57,20 +57,24 @@ export default async (req: Request, res: Response) => {
       deadlineDate = (await admin.firestore().collection('system').doc('schoolYear').get())?.data()?.projectDeadline;
     }
 
-    const projectFiles = (await admin.firestore().collection('projectFiles').where('projectId', '==', projectRef.id).get()).docs[0];
+    const studentData = (await admin.firestore().collection('users').doc(projectData?.studentId).get()).data();
 
-    // TODO function to fetch all files (mandatory and optional)
+    const projectFiles = (await admin.firestore().collection('projectFiles').where('projectId', '==', projectRef.id).get()).docs[0];
 
     return res.status(200).send({
       title: projectData?.title,
       description: projectData?.description,
       links: projectData?.links,
+      currentYear: projectData?.currentYear,
       mandatoryFiles: await getFiles(projectFiles.data()?.mandatory),
       optionalFiles: await getFiles(projectFiles.data()?.optional),
       submitted: projectData?.submitted,
       deadlineDate,
+      studentProfilePicture: studentData?.profilePicture,
+      studentDisplayName: studentData?.displayName,
     });
   } catch (e) {
+    console.error(e);
     return res.status(401).send(e);
   }
 };

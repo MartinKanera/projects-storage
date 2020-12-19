@@ -1,11 +1,11 @@
 <template lang="pug">
 .reviews-list(v-if='reviews.length > 0')
   span.text-ps-green.text-lg Posudky
-  .mt-1.flex.items-center(v-for='(review, index) in reviews', :key='index')
-    img.profile-picture(:src='review.profilePicture', :width='52')
+  .my-1.flex.items-center(v-for='(teacher, index) in reviews', :key='index')
+    img.profile-picture(:src='teacher.profilePicture', :width='52')
     .teacher-review-info
-      .display-name {{ review.displayName }}
-      a(:href='review.publicUrl', target='_blank') {{ review.fileName }}
+      .display-name {{ teacher.displayName }}
+      a(v-for='review in teacher.reviews', :href='review.publicUrl', target='_blank') {{ review.fileName }}
 </template>
 
 <script lang="ts">
@@ -26,8 +26,7 @@ type ReviewRaw = {
 type ReviewDisplay = {
   profilePicture: String;
   displayName: String;
-  publicUrl: String;
-  fileName: String;
+  reviews: Array<ReviewRaw>;
 };
 
 export default defineComponent({
@@ -58,13 +57,12 @@ export default defineComponent({
         const teachersDocs = (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', teachersIds).get()).docs;
 
         reviews.value = teachersDocs.map((teacher) => {
-          const currentReview: ReviewRaw = reviewsRaw.find((review: ReviewRaw) => review.teacherId === teacher.id);
+          const currentReviews: Array<ReviewRaw> = reviewsRaw.filter((review: ReviewRaw) => review.teacherId === teacher.id);
 
           return {
             displayName: teacher.data()?.displayName,
             profilePicture: teacher.data()?.profilePicture,
-            publicUrl: currentReview.publicUrl,
-            fileName: currentReview.fileName,
+            reviews: currentReviews,
           };
         });
       } catch (e) {

@@ -1,5 +1,5 @@
 <template lang="pug">
-.project-links
+.project-links(v-if='editableValue.length > 0')
   .flex.items-center.justify-between
     span.text-ps-green.text-lg Externí odkazy
     ps-btn.rounded-full(v-if='editable', text)
