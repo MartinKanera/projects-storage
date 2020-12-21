@@ -20,7 +20,7 @@
       .subtitle.mt-2 Povinné soubory
       span.mb-1.text-ps-white.text-sm Dokumentace (docx, PDF), Projekt (zip/rar)
       ps-drag-drop(v-model='mandatoryFilesUpload', tile, multiple, accept='.pdf,.docx,.zip,.rar', :disabled='!modificable')
-      .subtitle Nahrané povinné soubory:
+      .subtitle(v-if='mandatoryFilesRef.length > 0') Nahrané povinné soubory:
       .row(v-for='file in mandatoryFilesRef')
         a.flex.items-center(:href='file.url', target='_blank') 
           word-icon(v-if='file.extension == "docx"')
@@ -32,7 +32,7 @@
           bin-icon(:size='20')
       .subtitle.mt-2 Soubory navíc
       ps-drag-drop#optionalSelect(v-model='optionalFilesUpload', tile, multiple, :disabled='!modificable')
-      .subtitle Nahrané soubory navíc: {{ modificable }}
+      .subtitle(v-if='optionalFilesRef.length > 0') Nahrané soubory navíc:
       .row(v-for='file in optionalFilesRef')
         a.flex.items-center(:href='file.url', target='_blank')
           word-icon(v-if='file.extension == "docx"')
@@ -238,7 +238,6 @@ export default defineComponent({
         );
 
         await fetch();
-        checkModal();
 
         snackbar.value = true;
         message.value = 'Projekt odevzdán k hodnocení';
@@ -249,6 +248,7 @@ export default defineComponent({
         }
       }
 
+      checkModal();
       awaiting.value = false;
     };
 

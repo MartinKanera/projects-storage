@@ -46,6 +46,7 @@ export default async (req: Request, res: Response) => {
 
     try {
       const projectRef = admin.firestore().collection('projects').doc(projectId);
+      const systemRef = admin.firestore().collection('system');
 
       await admin.firestore().runTransaction(async (transaction) => {
         const sfDoc = await transaction.get(projectRef);
@@ -60,10 +61,12 @@ export default async (req: Request, res: Response) => {
         if (sfDoc.data()?.deadlineDate != null) {
           if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
         } else {
-          const system = await transaction.get(admin.firestore().collection('system').doc('schoolYear'));
+          const system = await transaction.get(systemRef.doc('schoolYear'));
 
           if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
         }
+
+        const statisticsDoc = await transaction.get(systemRef.doc('statistics'));
 
         const projectFiles = await transaction.get((await admin.firestore().collection('projectFiles').where('projectId', '==', sfDoc.id).limit(1).get()).docs[0].ref);
         const projectFilesData = projectFiles.data();
@@ -77,6 +80,18 @@ export default async (req: Request, res: Response) => {
           submitted: true,
           submittedDate: admin.firestore.Timestamp.now(),
         });
+
+        const newSubmittedProjects = (statisticsDoc.data()?.currentSubmittedProjects ?? 0) + 1;
+
+        transaction.set(
+          statisticsDoc.ref,
+          {
+            currentSubmittedProjects: newSubmittedProjects,
+          },
+          {
+            merge: true,
+          },
+        );
 
         return transaction;
       });

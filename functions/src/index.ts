@@ -118,10 +118,10 @@ exports.usersHooks = functions.firestore.document('users/{userId}').onWrite(asyn
   return;
 });
 
-// TODO Yearly function set school currentSchoolYear, reset all system fields and update maxStudents count 
+// Function ran annually on 25/5, prepares system for new school year
 exports.newSchoolYear = functions.pubsub.schedule('0 0 25 5 *').timeZone('Europe/Prague').onRun(async () => {
   // UTC+2
-  const newSchoolYear = admin.firestore.Timestamp.fromDate(new Date(new Date().getFullYear(), 4, 24, 22));
+  const newSchoolYear = admin.firestore.Timestamp.fromDate(new Date(Date.UTC(new Date().getFullYear(), 4, 25)));
 
   const statisticsRef = db.collection('system').doc('statistics');
 
@@ -136,6 +136,7 @@ exports.newSchoolYear = functions.pubsub.schedule('0 0 25 5 *').timeZone('Europe
       currentProjects: 0,
       currentReviews: 0,
       currentMaxReviews: 0,
+      currentSubmittedProjects: 0,
     }, { merge: true })
   } catch (_) {};
 

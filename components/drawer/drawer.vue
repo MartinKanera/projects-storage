@@ -13,8 +13,7 @@ transition(name='drawer')
             .wrap
               strategy-icon(:size='32')/
               span.item-title Můj projekt
-        //- TODO Check if has projectId
-        nuxt-link(v-if='mainStore.state.user.loggedIn && !mainStore.state.project.id !== "" && mainStore.state.user.student', to='/proposal', @click='closeDrawer')
+        nuxt-link(v-if='mainStore.state.user.loggedIn && mainStore.state.project.id === "" && mainStore.state.user.student', to='/proposal', @click='closeDrawer')
           .menu-item(@click='closeDrawer')
             .wrap
               book-icon(:size='32')/
@@ -32,7 +31,7 @@ transition(name='drawer')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, computed, onMounted, toRefs } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watchEffect, computed, onMounted } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import presentationIcon from 'vue-material-design-icons/Presentation.vue';

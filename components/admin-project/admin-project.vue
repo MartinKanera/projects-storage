@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from '@nuxtjs/composition-api';
+import { defineComponent, ref, computed } from '@nuxtjs/composition-api';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';

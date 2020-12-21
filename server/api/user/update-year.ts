@@ -12,7 +12,7 @@ export default async (req: Request, res: Response) => {
 
     if (!year && year <= year + yearTolerance) return res.status(400).send('Missing parameters');
 
-    const currentYearTimestamp = admin.firestore.Timestamp.fromDate(new Date(year, 4, 25));
+    const currentYearTimestamp = admin.firestore.Timestamp.fromDate(new Date(Date.UTC(year, 4, 25)));
 
     try {
       await admin.firestore().collection('users').doc(user.uid).update({

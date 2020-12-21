@@ -10,13 +10,13 @@
       ps-btn.text-ps-white(text) Projekt
         template(#icon-right)
           arrow-right.text-ps-white(:size='32')/
-    ps-btn.text-ps-red(v-if='unreviewed && pastDeadline', text) Po termínu
+    ps-btn.text-ps-red(v-if='unreviewed && pastDeadline && submitted', text) Po termínu
       template(#icon-right)
         cross-icon/
-    ps-btn.text-ps-white(v-else-if='unreviewed', text, @click='openModal') Nastavení
+    ps-btn.text-ps-white(v-else-if='unreviewed && submitted', text, @click='openModal') Nastavení
       template(#icon-right)
         arrow-right(:size='32')/
-    ps-btn.text-ps-green(v-else, text, @click='openModal') Hodnoceno
+    ps-btn.text-ps-green(v-else-if='submitted', text, @click='openModal') Hodnoceno
       template(#icon-right)
         check-icon/
   ps-modal(v-model='displayModal')
@@ -106,6 +106,10 @@ export default defineComponent({
     opponent: {
       type: Boolean,
       required: true,
+    },
+    submitted: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props) {

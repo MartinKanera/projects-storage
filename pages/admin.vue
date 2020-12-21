@@ -2,7 +2,7 @@
 .min-h-screen.flex.flex-col.justify-center.m-4(class='md:m-20')
   .flex.flex-col(class='lg:flex-row')
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentProjects', :maxCount='statistics.currentMaxStudents') Žáci kteří mají zadání
-    ps-admin-stats(:loading='statsLoading', :currentCount='0', :maxCount='statistics.currentMaxStudents') Vložené práce
+    ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentSubmittedProjects', :maxCount='statistics.currentMaxStudents') Vložené práce
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentReviews', :maxCount='statistics.currentMaxReviews') Odevzdaná hodnocení
   ps-tabs.mt-4.w-full(:tabs='["aktuální projekty", "ostatní projekty", "žáci", "učitelé", "externí učitelé", "vyhledávání"]', :selected='selectedTab', @selected='setTab', class='md:w-auto')
     ps-tab(:active='selectedTab == "aktuální projekty"')

@@ -27,8 +27,6 @@ export default async (req: Request, res: Response) => {
 
       const projectRef = admin.firestore().collection('projects').doc();
 
-      // TODO get default deadline from system collection (set by admin)
-
       transaction.set(projectRef, {
         title: sfDoc.data()?.title,
         titleLower: sfDoc.data()?.title.toLowerCase(),

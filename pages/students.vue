@@ -29,6 +29,22 @@
           :teacher='project.teacher',
           :opponent='project.opponent'
         )
+      .flex.justify-between.mt-2
+        span.text-2xl.text-ps-white.font-medium Projekty k hodnocení
+      .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
+        ps-teacher-project(
+          v-for='project in submittedProjects',
+          :key='project.projectId',
+          :projectId='project.projectId',
+          :projectTitle='project.projectTitle',
+          :displayName='project.displayName',
+          :profilePicture='project.profilePicture',
+          :reviews='project.reviews',
+          :pastDeadline='pastDeadline',
+          :teacher='project.teacher',
+          :opponent='project.opponent',
+          :submitted='true'
+        )
     ps-tab(v-if='!extern', :active='selectedTab == "předpřipravené zadání"')
       .flex.flex-col.justify-between(class='md:flex-row')
         span.text-2xl.text-ps-white.font-medium Předpřipravené projekty
@@ -60,7 +76,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, onMounted } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watchEffect, onMounted, onBeforeUnmount } from '@nuxtjs/composition-api';
 
 import { useMainStore } from '@/store';
 import firebase from 'firebase/app';
@@ -92,10 +108,10 @@ type PremadeProject = {
 };
 
 export default defineComponent({
-  middleware: 'teacher',
   components: {
     plusIcon,
   },
+  middleware: 'teacher',
   setup() {
     const mainStore = useMainStore();
 
@@ -105,8 +121,11 @@ export default defineComponent({
       selectedTab.value = tab;
     };
 
+    const listeners: Array<Function> = [];
+
     const proposals = ref([] as Array<StudentProposal>);
     const projects = ref([] as Array<Project>);
+    const submittedProjects = ref([] as Array<Project>);
     const premadeProjects = ref([] as Array<PremadeProject>);
     const opponentProjects = ref([] as Array<Project>);
 
@@ -135,127 +154,184 @@ export default defineComponent({
     };
 
     const pastDeadline = ref(true);
+    const currentYear = ref(new firebase.firestore.Timestamp(0, 0));
 
     onMounted(async () => {
+      // get system values - schoolYear and reviewsDeadline
       try {
-        const reviewDeadline = (await firebase.firestore().collection('system').doc('schoolYear').get()).data()?.reviewDeadline;
-        pastDeadline.value = firebase.firestore.Timestamp.now() > reviewDeadline;
+        const systemData = (await firebase.firestore().collection('system').doc('schoolYear').get()).data();
+        pastDeadline.value = firebase.firestore.Timestamp.now() > systemData?.reviewDeadline;
+        currentYear.value = systemData?.currentYear;
+      } catch (_) {
+        console.error('Error getting system values');
+      }
+
+      // add snapshot listener for proposals
+      try {
+        listeners.push(
+          firebase
+            .firestore()
+            .collection('proposals')
+            .where('teacherId', '==', mainStore.state.user.id)
+            .where('studentId', '!=', null)
+            .onSnapshot(async (proposalsSnap) => {
+              const studentIds = proposalsSnap.docs.map((proposal) => proposal.data().studentId);
+              const proposalsRefs = proposalsSnap.docs.map((proposal) => {
+                return {
+                  studentId: proposal.data().studentId,
+                  ref: proposal.ref,
+                };
+              });
+
+              if (!studentIds.length) {
+                proposals.value = [];
+                return;
+              }
+
+              const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
+
+              proposals.value = studentsColection.map((studentDoc) => {
+                return {
+                  studentId: studentDoc.id,
+                  displayName: studentDoc.data().displayName,
+                  projectTitle: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().title,
+                  profilePicture: studentDoc.data().profilePicture,
+                  proposalRef: proposalsRefs.find((proposalRef) => proposalRef.studentId === studentDoc.id)!.ref,
+                };
+              });
+            }),
+        );
       } catch (_) {}
+
+      // add snapshot listener for unsubmitted projects
       try {
-        firebase
-          .firestore()
-          .collection('proposals')
-          .where('teacherId', '==', mainStore.state.user.id)
-          .where('studentId', '!=', null)
-          .onSnapshot(async (proposalsSnap) => {
-            const studentIds = proposalsSnap.docs.map((proposal) => proposal.data().studentId);
-            const proposalsRefs = proposalsSnap.docs.map((proposal) => {
-              return {
-                studentId: proposal.data().studentId,
-                ref: proposal.ref,
-              };
-            });
+        listeners.push(
+          firebase
+            .firestore()
+            .collection('projects')
+            .where('currentYear', '==', currentYear.value)
+            .where('submitted', '==', false)
+            .where('teacherId', '==', mainStore.state.user.id)
+            .onSnapshot(async (projectSnap) => {
+              const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
 
-            if (!studentIds.length) {
-              proposals.value = [];
-              return;
-            }
+              if (!studentIds.length) {
+                projects.value = [];
+                return;
+              }
 
-            const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
+              const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
 
-            proposals.value = studentsColection.map((studentDoc) => {
-              return {
-                studentId: studentDoc.id,
-                displayName: studentDoc.data().displayName,
-                projectTitle: proposalsSnap.docs.find((proposalDoc) => proposalDoc.data().studentId === studentDoc.id)?.data().title,
-                profilePicture: studentDoc.data().profilePicture,
-                proposalRef: proposalsRefs.find((proposalRef) => proposalRef.studentId === studentDoc.id)!.ref,
-              };
-            });
-          });
+              projects.value = projectSnap.docs.map((projectDoc) => {
+                const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
+
+                return {
+                  projectId: projectDoc.id,
+                  projectTitle: projectDoc.data().title,
+                  displayName: currentStudent?.data().displayName,
+                  profilePicture: currentStudent?.data().profilePicture,
+                  reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                  teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                  opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+                };
+              });
+            }),
+        );
       } catch (_) {}
 
+      // add snapshot listener for submitted projects
       try {
-        firebase
-          .firestore()
-          .collection('projects')
-          .where('currentYear', '>=', new firebase.firestore.Timestamp(new Date().getSeconds(), 0))
-          .where('teacherId', '==', mainStore.state.user.id)
-          .onSnapshot(async (projectSnap) => {
-            const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
+        listeners.push(
+          firebase
+            .firestore()
+            .collection('projects')
+            .where('currentYear', '==', currentYear.value)
+            .where('submitted', '==', true)
+            .where('teacherId', '==', mainStore.state.user.id)
+            .onSnapshot(async (projectSnap) => {
+              console.log(projectSnap.docs);
+              const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
 
-            if (!studentIds.length) {
-              projects.value = [];
-              return;
-            }
+              if (!studentIds.length) {
+                submittedProjects.value = [];
+                return;
+              }
 
-            const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
+              const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
 
-            projects.value = projectSnap.docs.map((projectDoc) => {
-              const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
+              submittedProjects.value = projectSnap.docs.map((projectDoc) => {
+                const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
 
-              return {
-                projectId: projectDoc.id,
-                projectTitle: projectDoc.data().title,
-                displayName: currentStudent?.data().displayName,
-                profilePicture: currentStudent?.data().profilePicture,
-                reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
-                teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
-                opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
-              };
-            });
-          });
+                return {
+                  projectId: projectDoc.id,
+                  projectTitle: projectDoc.data().title,
+                  displayName: currentStudent?.data().displayName,
+                  profilePicture: currentStudent?.data().profilePicture,
+                  reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                  teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                  opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+                };
+              });
+            }),
+        );
       } catch (e) {
         console.error(e);
       }
 
+      // add snapshot listener for teacher's premade projects
       try {
-        firebase
-          .firestore()
-          .collection('proposals')
-          .where('teacherId', '==', mainStore.state.user.id)
-          .where('studentId', '==', null)
-          .where('premade', '==', true)
-          .onSnapshot((premadeSnap) => {
-            premadeProjects.value = premadeSnap.docs.map((premadeDoc) => {
-              return {
-                projectId: premadeDoc.id,
-                projectTitle: premadeDoc.data()?.title,
-              };
-            });
-          });
+        listeners.push(
+          firebase
+            .firestore()
+            .collection('proposals')
+            .where('teacherId', '==', mainStore.state.user.id)
+            .where('studentId', '==', null)
+            .where('premade', '==', true)
+            .onSnapshot((premadeSnap) => {
+              premadeProjects.value = premadeSnap.docs.map((premadeDoc) => {
+                return {
+                  projectId: premadeDoc.id,
+                  projectTitle: premadeDoc.data()?.title,
+                };
+              });
+            }),
+        );
       } catch (_) {}
 
+      // add snapshot listener for opponent projects
       try {
-        firebase
-          .firestore()
-          .collection('projects')
-          .where('currentYear', '>=', new firebase.firestore.Timestamp(new Date().getSeconds(), 0))
-          .where('opponentId', '==', mainStore.state.user.id)
-          .onSnapshot(async (projectSnap) => {
-            const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
+        listeners.push(
+          firebase
+            .firestore()
+            .collection('projects')
+            .where('currentYear', '==', currentYear.value)
+            .where('submitted', '==', true)
+            .where('opponentId', '==', mainStore.state.user.id)
+            .onSnapshot(async (projectSnap) => {
+              const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
 
-            if (!studentIds.length) {
-              projects.value = [];
-              return;
-            }
+              if (!studentIds.length) {
+                projects.value = [];
+                return;
+              }
 
-            const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
+              const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
 
-            opponentProjects.value = projectSnap.docs.map((projectDoc) => {
-              const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
+              opponentProjects.value = projectSnap.docs.map((projectDoc) => {
+                const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
 
-              return {
-                projectId: projectDoc.id,
-                projectTitle: projectDoc.data().title,
-                displayName: currentStudent?.data().displayName,
-                profilePicture: currentStudent?.data().profilePicture,
-                reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
-                teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
-                opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
-              };
-            });
-          });
+                return {
+                  projectId: projectDoc.id,
+                  projectTitle: projectDoc.data().title,
+                  displayName: currentStudent?.data().displayName,
+                  profilePicture: currentStudent?.data().profilePicture,
+                  reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                  teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                  opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+                };
+              });
+            }),
+        );
       } catch (e) {
         console.error(e);
       }
@@ -295,11 +371,17 @@ export default defineComponent({
       projectModal();
     };
 
+    // Unsubscribe all snapshot listeners
+    onBeforeUnmount(() => {
+      listeners.forEach((listener) => listener());
+    });
+
     return {
       selectedTab,
       setTab,
       proposals,
       projects,
+      submittedProjects,
       projectModal,
       projectModalDisplay,
       projectTitle,

@@ -46,22 +46,22 @@ export default async (req: Request, res: Response) => {
       return res.status(403).send('Project is not public');
     }
 
+    // User is admin
+    else if (user.data()?.admin) {
+      console.log('User is admin');
+      res.send(await getReviewsUrls(project.data()?.reviews, true));
+    }
+
     // User is not admin but the project is public
-    if (!user.data()?.admin && project.data()?.public) {
+    else if (!user.data()?.admin && project.data()?.public) {
       console.log('User is not admin but the project is public');
       return res.send(await getReviewsUrls(project.data()?.reviews));
     }
 
     // User owns this project
-    if (project.data()?.studentId === userData.uid) {
+    else if (project.data()?.studentId === userData.uid) {
       console.log('User owns this project');
       return res.send(await getReviewsUrls(project.data()?.reviews));
-    }
-
-    // User is admin
-    if (user.data()?.admin) {
-      console.log('User is admin');
-      res.send(await getReviewsUrls(project.data()?.reviews, true));
     }
 
     // TODO user is teacher from this project
