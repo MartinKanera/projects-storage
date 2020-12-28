@@ -59,7 +59,7 @@
         ps-premade-project(v-for='project in premadeProjects', :key='project.projectId', :projectId='project.projectId', :projectTitle='project.projectTitle')
     ps-tab(:active='selectedTab == "oponent"')
       .flex.justify-between
-        span.text-2xl.text-ps-white.font-medium
+        span.text-2xl.text-ps-white.font-medium Projekty k hodnocení
       .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
         ps-teacher-project(
           v-for='project in opponentProjects',
@@ -71,7 +71,8 @@
           :reviews='project.reviews',
           :pastDeadline='pastDeadline',
           :teacher='project.teacher',
-          :opponent='project.opponent'
+          :opponent='project.opponent',
+          :submitted='true'
         )
 </template>
 
@@ -249,7 +250,6 @@ export default defineComponent({
             .where('submitted', '==', true)
             .where('teacherId', '==', mainStore.state.user.id)
             .onSnapshot(async (projectSnap) => {
-              console.log(projectSnap.docs);
               const studentIds = projectSnap.docs.map((projectDoc) => projectDoc.data().studentId);
 
               if (!studentIds.length) {

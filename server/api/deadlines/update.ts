@@ -6,7 +6,6 @@ export default async (req: Request, res: Response) => {
 
   const timeNow = admin.firestore.Timestamp.now();
 
-  // possible difference
   let { projectDeadline, reviewDeadline } = req.body;
 
   try {
@@ -39,8 +38,8 @@ export default async (req: Request, res: Response) => {
 
       return res.status(200).send();
     } catch (e) {
-      switch (e) {
-        case 'Error 403':
+      switch (e.toString()) {
+        case 'Error: 403':
           return res.status(403).send('Only admin can update deadlines');
         default:
           return res.status(500).send();

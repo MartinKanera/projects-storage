@@ -181,30 +181,18 @@ export default defineComponent({
     const removeReview = async (filePath: string) => {
       reviewDelete.value = true;
 
-      const storage = firebase.app().storage('gs://ps-reviews');
-      const fileRef = storage.ref(filePath);
-
       try {
-        const projectRef = firebase.firestore().collection('projects').doc(props.projectId);
-
-        await firebase.firestore().runTransaction(async (transaction) => {
-          const sfDoc = await transaction.get(projectRef);
-          await fileRef.delete();
-
-          const reviews = sfDoc.data()?.reviews ?? [];
-
-          const updatedReviews = reviews.filter((review: any) => review.filePath !== filePath);
-
-          transaction.set(
-            projectRef,
-            {
-              reviews: updatedReviews,
+        await axios.post(
+          `/api/review/delete/${filePath}`,
+          {
+            projectId: props.projectId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${mainStore.state.user.idToken}`,
             },
-            { merge: true },
-          );
-
-          return transaction;
-        });
+          },
+        );
       } catch (e) {
         console.error(e);
       }

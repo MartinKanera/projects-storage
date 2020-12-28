@@ -33,6 +33,7 @@ app.delete('/user/delete/:id', async (req, res) => (await import('./user/delete'
 // review
 app.post('/review/upload/:id', uploader.array('files'), async (req, res) => (await import('./review/upload')).default(req, res));
 app.get('/reviews/:id', async (req, res) => (await import('./review/list')).default(req, res));
+app.post('/review/delete/:filePath', async (req, res) => (await import('./review/delete')).default(req, res));
 
 // student
 app.put('/student/update/:id', async (req, res) => (await import('./student/update')).default(req, res));
