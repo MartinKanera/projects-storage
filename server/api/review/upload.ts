@@ -5,11 +5,9 @@ import short from 'short-uuid';
 export default async (req: Request, res: Response) => {
   const tokenId = req.headers.authorization?.split(' ')[1] ?? '';
 
-  // @ts-ignore
-  if (req.files.length > 2) return res.status(400).send('You can only upload 2 files at once');
-
+  // Check if is past review deadline
   try {
-    if ((await admin.firestore().collection('system').doc('schoolYear').get()).data()?.reviewDeadline < admin.firestore.Timestamp.now()) return res.status(400).send();
+    if ((await admin.firestore().collection('system').doc('schoolYear').get()).data()?.reviewDeadline < admin.firestore.Timestamp.now()) return res.status(429).send('Past deadline');
   } catch (_) {}
 
   const projectId = req.params.id;
@@ -22,11 +20,10 @@ export default async (req: Request, res: Response) => {
 
     if (!(await admin.firestore().collection('users').doc(user.uid).get()).data()?.teacher) return res.status(403).send('Only teacher can upload reviews');
     if (projectDoc.data()?.teacherId !== user.uid && projectDoc.data()?.opponentId !== user.uid) return res.status(403).send('You cannot submit review for this project');
+    if (!projectDoc.data()?.submitted) return res.status(412).send('Project has to be submitted before reviewing');
 
     // Check how many reviews does project from current user have + files that are being uploaded
     const reviewsCount = (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === user.uid || review.opponentId === user.uid).length;
-
-    console.log(reviewsCount);
 
     if (projectDoc.data()?.teacherId === user.uid && projectDoc.data()?.opponentId === user.uid) {
       // @ts-ignore

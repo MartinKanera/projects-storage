@@ -38,6 +38,7 @@ export default async (req: Request, res: Response) => {
         public: false,
         submitted: false,
         submittedDate: null,
+        reviews: [],
         links: [],
         deadlineDate: null,
       });
