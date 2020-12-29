@@ -18,11 +18,17 @@ const config: NuxtConfig = {
    ** See https://nuxtjs.org/api/configuration-head
    */
   head: {
-    title: 'Úložiště maturitních projektů',
+    htmlAttrs: {
+      lang: 'cs',
+    },
+    title,
     meta: [
       { charset: 'utf-8' },
+      { name: 'theme-color', content: '#202020' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: title },
+      { hid: 'description', name: 'description', content: description },
+      // { name: 'keywords', content: 'úložiště maturitních projektů, střední škola delta' },
+      { hid: 'og:site_name', name: 'og:site_name', content: title },
       { hid: 'og:title', property: 'og:title', content: title },
       { hid: 'og:description', property: 'og:description', content: description },
     ],
