@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, useContext, ref, reactive, useMeta, useFetch } from '@nuxtjs/composition-api';
+import { defineComponent, useContext, ref, reactive, useMeta, useFetch, ssrRef } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
@@ -98,7 +98,7 @@ export default defineComponent({
       });
     };
 
-    const project = reactive({
+    const project = ssrRef({
       id: ctx.params.value.id,
       title: '',
       description: '',
@@ -111,27 +111,27 @@ export default defineComponent({
     });
 
     const setMeta = () => {
-      meta.title.value = project.title;
+      meta.title.value = `Projekt - ${project.value.title}`;
       meta.meta.value = [
         {
           hid: 'title',
           property: 'title',
-          content: project.title,
+          content: project.value.title,
         },
         {
           hid: 'description',
           property: 'description',
-          content: project.description,
+          content: project.value.description,
         },
         {
           hid: 'og:title',
           property: 'og:title',
-          content: project.title,
+          content: project.value.title,
         },
         {
           hid: 'og:description',
           property: 'og:description',
-          content: project.description,
+          content: project.value.description,
         },
       ];
     };
@@ -146,14 +146,14 @@ export default defineComponent({
 
         const { title, description, links, currentYear, mandatoryFiles, optionalFiles, studentProfilePicture, studentDisplayName } = response.data;
 
-        project.title = title;
-        project.description = description;
-        project.links = links;
-        project.currentYear = new firebase.firestore.Timestamp(currentYear._seconds, 0).toDate().getFullYear();
-        project.mandatoryFiles = getExtensions(mandatoryFiles);
-        project.optionalFiles = getExtensions(optionalFiles);
-        project.studentProfilePicture = studentProfilePicture;
-        project.studentDisplayName = studentDisplayName;
+        project.value.title = title;
+        project.value.description = description;
+        project.value.links = links;
+        project.value.currentYear = new firebase.firestore.Timestamp(currentYear._seconds, 0).toDate().getFullYear();
+        project.value.mandatoryFiles = getExtensions(mandatoryFiles);
+        project.value.optionalFiles = getExtensions(optionalFiles);
+        project.value.studentProfilePicture = studentProfilePicture;
+        project.value.studentDisplayName = studentDisplayName;
 
         setMeta();
 
@@ -163,7 +163,7 @@ export default defineComponent({
       }
     });
 
-    setMeta();
+    if (process.client) setMeta();
 
     return {
       loading,

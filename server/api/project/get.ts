@@ -31,24 +31,19 @@ export default async (req: Request, res: Response) => {
   if (!projectId) return res.status(400).send('Missing parameters');
 
   try {
-    const userAuth = idToken ? await admin.auth().verifyIdToken(idToken) : { uid: 'public' };
-    const user = await admin.firestore().collection('users').doc(userAuth.uid).get();
-
     const projectRef = admin.firestore().collection('projects').doc(projectId);
     const project = await projectRef.get();
 
-    if (!project.exists) return res.status(404).send('Project does not exist');
-
     const projectData = project.data();
 
-    if (
-      !user.data()?.admin &&
-      !projectData?.public &&
-      !(projectData?.studentId === userAuth.uid) &&
-      !(projectData?.teacherId === userAuth.uid) &&
-      !(projectData?.opponentId === userAuth.uid)
-    ) {
-      return res.status(403).send();
+    if (!project.exists) return res.status(404).send('Project does not exist');
+
+    if (!projectData?.public) {
+      const userAuth = !idToken ? { uid: 'public' } : await admin.auth().verifyIdToken(idToken);
+      const user = await admin.firestore().collection('users').doc(userAuth.uid).get();
+
+      if (!user.data()?.admin && !(projectData?.studentId === userAuth.uid) && !(projectData?.teacherId === userAuth.uid) && !(projectData?.opponentId === userAuth.uid))
+        return res.status(403).send();
     }
 
     let deadlineDate = projectData?.deadlineDate;
