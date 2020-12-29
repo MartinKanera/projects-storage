@@ -36,39 +36,18 @@ export default async (req: Request, res: Response) => {
 
     if (!project.exists) return res.status(404).send('Project does not exist');
 
-    const userData = idToken ? await admin.auth().verifyIdToken(idToken) : { uid: 'public' };
+    const projectData = project.data();
 
-    const user = await admin.firestore().collection('users').doc(userData.uid).get();
+    try {
+      // Check auth
+      const userAuth = await admin.auth().verifyIdToken(idToken);
+      const userData = (await admin.firestore().collection('users').doc(userAuth.uid).get()).data();
 
-    // User is not logged in and project is not public
-    if (!user.exists && !project.data()?.public) {
-      console.log('User is not logged in and project is not public');
-      return res.status(403).send('Project is not public');
+      return res.send(await getReviewsUrls(projectData?.reviews, userData?.admin || projectData?.teacherId === userAuth.uid || projectData?.opponentId === userAuth.uid));
+    } catch (_) {
+      return res.send(await getReviewsUrls(projectData?.reviews));
     }
-
-    // User is admin
-    else if (user.data()?.admin) {
-      console.log('User is admin');
-      res.send(await getReviewsUrls(project.data()?.reviews, true));
-    }
-
-    // User is not admin but the project is public
-    else if (!user.data()?.admin && project.data()?.public) {
-      console.log('User is not admin but the project is public');
-      return res.send(await getReviewsUrls(project.data()?.reviews));
-    }
-
-    // User owns this project
-    else if (project.data()?.studentId === userData.uid) {
-      console.log('User owns this project');
-      return res.send(await getReviewsUrls(project.data()?.reviews));
-    }
-
-    // TODO user is teacher from this project
-
-    return res.status(403).send();
-  } catch (e) {
-    console.error(e);
+  } catch (_) {
     return res.status(500).send();
   }
 };
