@@ -119,8 +119,6 @@ export default defineComponent({
           },
         });
 
-        console.log(response.data);
-
         const { title, description, links, currentYear, mandatoryFiles, optionalFiles, studentProfilePicture, studentDisplayName } = response.data;
 
         project.title = title;

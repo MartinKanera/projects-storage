@@ -51,7 +51,7 @@ export default defineComponent({
 
         const reviewsRaw = response.data;
 
-        if (reviewsRaw === []) return;
+        if (reviewsRaw.length === 0) return;
 
         const teachersIds = reviewsRaw.map((review: ReviewRaw) => review.teacherId);
         const teachersDocs = (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', teachersIds).get()).docs;
