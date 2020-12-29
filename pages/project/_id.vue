@@ -33,11 +33,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, useContext, onBeforeMount, ref, reactive, useMeta } from '@nuxtjs/composition-api';
+import { defineComponent, useContext, ref, reactive, useMeta, useFetch } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
-import axios from 'axios';
 
 import chevronRight from 'vue-material-design-icons/ChevronRight.vue';
 import wordIcon from 'vue-material-design-icons/FileWord.vue';
@@ -111,9 +110,35 @@ export default defineComponent({
       studentDisplayName: '',
     });
 
-    onBeforeMount(async () => {
+    const setMeta = () => {
+      meta.title.value = project.title;
+      meta.meta.value = [
+        {
+          hid: 'title',
+          property: 'title',
+          content: project.title,
+        },
+        {
+          hid: 'description',
+          property: 'description',
+          content: project.description,
+        },
+        {
+          hid: 'og:title',
+          property: 'og:title',
+          content: project.title,
+        },
+        {
+          hid: 'og:description',
+          property: 'og:description',
+          content: project.description,
+        },
+      ];
+    };
+
+    useFetch(async () => {
       try {
-        const response = await axios.get(`/api/project/${ctx.params.value.id}`, {
+        const response = await ctx.app.$axios.get(`/api/project/${ctx.params.value.id}`, {
           headers: {
             Authorization: `Bearer ${mainStore.state.user.idToken}`,
           },
@@ -130,25 +155,15 @@ export default defineComponent({
         project.studentProfilePicture = studentProfilePicture;
         project.studentDisplayName = studentDisplayName;
 
-        meta.title.value = project.title;
-        meta.meta.value = [
-          {
-            name: 'title',
-            content: project.title,
-          },
-          {
-            name: 'description',
-            content: project.description,
-          },
-          { hid: 'og:title', property: 'og:title', content: title },
-          { hid: 'og:description', property: 'og:description', content: description },
-        ];
+        setMeta();
 
         loading.value = false;
       } catch (e) {
         console.error(e);
       }
     });
+
+    setMeta();
 
     return {
       loading,
