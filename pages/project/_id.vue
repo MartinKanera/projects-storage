@@ -142,6 +142,8 @@ export default defineComponent({
             name: 'description',
             content: project.description,
           },
+          { hid: 'og:title', property: 'og:title', content: title },
+          { hid: 'og:description', property: 'og:description', content: description },
         ];
 
         loading.value = false;
