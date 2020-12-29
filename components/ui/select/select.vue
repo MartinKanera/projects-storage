@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, toRefs } from 'nuxt-composition-api';
+import { defineComponent, ref, watch, toRefs } from '@nuxtjs/composition-api';
 
 export default defineComponent({
   props: {

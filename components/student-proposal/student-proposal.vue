@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'nuxt-composition-api';
+import { defineComponent, ref } from '@nuxtjs/composition-api';
 
 import checkIcon from 'vue-material-design-icons/Check.vue';
 import closeIcon from 'vue-material-design-icons/CloseCircle.vue';

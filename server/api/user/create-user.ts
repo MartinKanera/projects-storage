@@ -19,7 +19,7 @@ export default async (req: Request, res: Response) => {
     if (!userDoc) {
       let newUserDoc = {
         displayName: userData.name,
-        profilePicture: await saveProfileImage(userData.uid),
+        profilePicture: await saveProfileImage(userData.uid, req.body.accessToken),
         admin: false,
         deleted: false,
         extern: false,
@@ -59,14 +59,14 @@ export default async (req: Request, res: Response) => {
   }
 };
 
-const saveProfileImage = async (userId: string) => {
+const saveProfileImage = async (userId: string, accessToken: string) => {
   try {
     const photoData = await axios.request({
       url: 'https://graph.microsoft.com/v1.0/me/photo/$value',
       method: 'get',
       responseType: 'arraybuffer',
       headers: {
-        authorization: req.body.accessToken,
+        authorization: accessToken,
       },
     });
 

@@ -12,7 +12,7 @@
         span(v-if='submittedDate') {{ getDate(submittedDate) }}
         span(v-else) není odevzdán
   .actions
-    nuxt-link(to='idk')
+    nuxt-link(:to='`/project/${projectId}`')
       ps-btn.self-start(text) projekt
         template(#icon-right)
           chevron-icon(:size='18')/
@@ -30,6 +30,9 @@
       ps-select.mb-4(v-model='projectToUpdate.teacherId', placeholder='Vedoucí projektu', :options='deltaTeachers')
       span.text-ps-green Oponent
       ps-select.mb-4(v-model='projectToUpdate.opponentId', placeholder='Oponent', :options='teachers')
+      span.text-ps-green.text-lg Nastavení odevzdání
+      ps-select.mb-4(v-model='deadlineSwitch', :options='deadlineOptions')
+      ps-text-field.mt-4.text-ps-white(v-if='displayPicker', v-model='projectToUpdate.deadlineDate', type='datetime-local', name='project-deadline', label='Termín odevzdání projektu')
       .flex.flex-col
         span.text-ps-green.text-lg(v-if='reviews.length > 0') Odevzdaná hodnocení
         span(v-for='review in reviewsView') {{ review.displayName }} -
@@ -38,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'nuxt-composition-api';
+import { defineComponent, ref, computed } from '@nuxtjs/composition-api';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
@@ -102,10 +105,17 @@ export default defineComponent({
       type: Array,
       default: () => [],
     },
+    deadlineDate: {
+      type: String || null,
+      default: undefined,
+    },
   },
   // { projectId, currentYear, opponentId, publicProject, reviews, studentId, submittedDate, teacherId, title, displayName, profilePicture, teachers }
-  setup({ projectId, opponentId, publicProject, teacherId, title, teachers, reviews }) {
-    const projectToUpdate = ref({ opponentId, publicProject: publicProject.toString(), teacherId, title });
+  setup({ projectId, opponentId, publicProject, teacherId, title, teachers, reviews, deadlineDate }) {
+    const projectToUpdate = ref({ opponentId, publicProject: publicProject.toString(), teacherId, title, deadlineDate });
+
+    const deadlineSwitch = ref((!(projectToUpdate.value.deadlineDate === `${new Date().getFullYear()}-01-01T12:00`)).toString());
+    const displayPicker = computed(() => JSON.parse(deadlineSwitch.value));
 
     const getDate = (timeStamp: firebase.firestore.Timestamp) => new Date(timeStamp?.toMillis()).toString().substr(4, 11);
 
@@ -124,6 +134,7 @@ export default defineComponent({
             public: JSON.parse(projectToUpdate.value.publicProject),
             teacherId: projectToUpdate.value.teacherId,
             title: projectToUpdate.value.title,
+            deadlineDate: JSON.parse(deadlineSwitch.value) ? projectToUpdate.value.deadlineDate : null,
           },
           {
             headers: {
@@ -180,6 +191,11 @@ export default defineComponent({
       { placeholder: 'Veřejný', value: 'true' },
     ];
 
+    const deadlineOptions = [
+      { placeholder: 'Řídit se globálním', value: 'false' },
+      { placeholder: 'Speciální termín', value: 'true' },
+    ];
+
     return {
       getDate,
       detailsModal,
@@ -190,6 +206,9 @@ export default defineComponent({
       reviewsView,
       projectPublicity,
       btnLoading,
+      deadlineOptions,
+      deadlineSwitch,
+      displayPicker,
     };
   },
 });

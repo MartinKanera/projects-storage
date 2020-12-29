@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'nuxt-composition-api';
+import { defineComponent, ref } from '@nuxtjs/composition-api';
 
 import axios from 'axios';
 

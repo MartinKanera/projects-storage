@@ -6,7 +6,7 @@ transition(name='popup')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'nuxt-composition-api';
+import { defineComponent, ref, watchEffect } from '@nuxtjs/composition-api';
 
 export default defineComponent({
   props: {

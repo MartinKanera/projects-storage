@@ -13,6 +13,7 @@ const serverMiddleware: ServerMiddleware = async (req, res, next): Promise<void>
         user: {
           id: userAuth.uid,
           ...(await admin.firestore().collection('users').doc(userAuth.uid).get()).data(),
+          idToken,
         },
       };
 

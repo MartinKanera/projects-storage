@@ -12,6 +12,7 @@ type State = {
     admin: Boolean;
     currentYear: firebase.firestore.Timestamp | null;
     extern: Boolean;
+    idToken?: String;
   };
   project: {
     id: String;
@@ -31,6 +32,7 @@ export const useMainStore = createStore({
       admin: false,
       currentYear: null,
       extern: true,
+      idToken: undefined,
     },
     project: {
       id: '',
