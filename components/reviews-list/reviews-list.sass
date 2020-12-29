@@ -1,0 +1,26 @@
+.reviews-list
+  @apply flex flex-col
+
+  .profile-picture
+    @apply rounded-full border-ps-green border-2 border-solid
+
+    width: 52px
+    height: 52px
+
+  .teacher-review-info
+    @apply flex flex-col justify-center
+    @apply leading-5
+    @apply ml-2 break-all
+
+    .display-name
+      @apply text-lg text-ps-white
+      @apply break-words
+
+    a
+      @apply underline
+
+    a:link, a:visited
+      @apply text-ps-mint
+
+    a:hover
+      @apply text-ps-green

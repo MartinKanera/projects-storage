@@ -12,7 +12,7 @@ export default async (req: Request, res: Response) => {
 
   if (!displayName && !year && typeof year === 'number' && year <= year + yearTolerance) return res.status(400).send('Missing parameters');
 
-  const currentYear = admin.firestore.Timestamp.fromDate(new Date(year, 4, 25));
+  const currentYear = admin.firestore.Timestamp.fromDate(new Date(Date.UTC(year, 4, 25)));
 
   try {
     const user = await admin.auth().verifyIdToken(idToken);

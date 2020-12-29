@@ -1,5 +1,5 @@
 import { Plugin, Context } from '@nuxt/types';
-import { onGlobalSetup } from 'nuxt-composition-api';
+import { onGlobalSetup } from '@nuxtjs/composition-api';
 
 import firebase from 'firebase/app';
 import 'firebase/auth';
@@ -23,6 +23,15 @@ const plugin: Plugin = (context: Context) => {
       } else {
         mainStore.reset();
       }
+    }
+
+    if (process.client) {
+      firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) mainStore.state.user.idToken = await user?.getIdToken();
+        else {
+          mainStore.reset();
+        }
+      });
     }
   });
 };

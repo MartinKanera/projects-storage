@@ -20,14 +20,21 @@ export default async (req: Request, res: Response) => {
 
   if (!req.params.id) return res.status(401).send('Missing params');
 
+  try {
+    if (typeof updatedProject.deadlineDate === 'string') admin.firestore.Timestamp.fromDate(new Date(updatedProject.deadlineDate));
+  } catch (_) {
+    return res.status(400).send('Poorly formated date');
+  }
+
   if (
     !(updatedProject.opponentId || updatedProject.public !== undefined || updatedProject.teacherId || updatedProject.title) &&
     typeof updatedProject.opponentId === 'string' &&
     typeof updatedProject.public === 'boolean' &&
     typeof updatedProject.teacherId === 'string' &&
-    typeof updatedProject.title === 'string'
+    typeof updatedProject.title === 'string' &&
+    updatedProject.deadlineDate !== undefined
   )
-    return res.status(401).send('Missing params');
+    return res.status(400).send('Missing params');
 
   try {
     const user = await admin.auth().verifyIdToken(idToken);
@@ -49,9 +56,10 @@ export default async (req: Request, res: Response) => {
         teacherId: updatedProject.teacherId,
         title: updatedProject.title,
         titleLower: updatedProject.title.toLowerCase(),
+        deadlineDate: updatedProject.deadlineDate === null ? null : admin.firestore.Timestamp.fromDate(new Date(updatedProject.deadlineDate)),
       };
 
-      if (sfDoc.data()?.teacherId !== updatedProject.teacherId) {
+      if (sfDoc.data()?.teacherId !== updatedProject.teacherId && sfDoc.data()?.reviews) {
         removeReviews(
           sfDoc
             .data()
@@ -67,7 +75,7 @@ export default async (req: Request, res: Response) => {
         };
       }
 
-      if (sfDoc.data()?.opponentId !== updatedProject.opponentId) {
+      if (sfDoc.data()?.opponentId !== updatedProject.opponentId && sfDoc.data()?.reviews) {
         removeReviews(
           sfDoc
             .data()

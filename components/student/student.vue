@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'nuxt-composition-api';
+import { defineComponent, ref } from '@nuxtjs/composition-api';
 import settingsIcon from 'vue-material-design-icons/Cog.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
 
@@ -28,6 +28,10 @@ import 'firebase/auth';
 import axios from 'axios';
 
 export default defineComponent({
+  components: {
+    settingsIcon,
+    binIcon,
+  },
   props: {
     studentId: {
       type: String,
@@ -45,10 +49,6 @@ export default defineComponent({
       type: firebase.firestore.Timestamp,
       required: true,
     },
-  },
-  components: {
-    settingsIcon,
-    binIcon,
   },
   setup({ studentId, displayName, currentYear }) {
     const studentToUpdate = ref({ displayName, year: currentYear.toDate().getFullYear().toString() });

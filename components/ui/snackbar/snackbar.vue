@@ -5,7 +5,7 @@ transition(name='slide')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'nuxt-composition-api';
+import { defineComponent, ref, watch } from '@nuxtjs/composition-api';
 
 export default defineComponent({
   props: {

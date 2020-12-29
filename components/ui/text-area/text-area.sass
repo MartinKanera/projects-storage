@@ -1,0 +1,17 @@
+.text-area
+  @apply flex flex-col
+
+  .text-area-info
+    @apply w-full flex justify-between
+
+  textarea
+    @apply w-full h-56 box-border resize-none outline-none
+    @apply p-2 rounded-lg
+    @apply bg-ps-primary border-b-2 border-ps-green border-solid
+    @apply text-ps-white
+
+    @screen md
+      @apply h-40
+
+    @screen lg
+      @apply h-32

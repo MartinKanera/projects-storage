@@ -11,7 +11,7 @@ button.btn(v-ripple, :class='{ "btn-block": block, "btn-text": text, shadow: !te
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'nuxt-composition-api';
+import { defineComponent } from '@nuxtjs/composition-api';
 import ripple from '@/directives/ripple';
 
 export default defineComponent({

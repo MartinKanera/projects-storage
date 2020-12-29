@@ -11,36 +11,6 @@ export default async (req: Request, res: Response) => {
 
   const usersCollection = admin.firestore().collection('users');
 
-  const saveProfileImage = async (userId: string) => {
-    try {
-      const photoData = await axios.request({
-        url: 'https://graph.microsoft.com/v1.0/me/photo/$value',
-        method: 'get',
-        responseType: 'arraybuffer',
-        headers: {
-          authorization: req.body.accessToken,
-        },
-      });
-
-      const photoBin = await photoData.data;
-
-      const bucketName = 'ps-profile-pictures';
-      const fileName = `${userId}.jpeg`;
-
-      const bucket = admin.storage().bucket(bucketName);
-
-      const userImage = bucket.file(fileName);
-      const imageStream = userImage.createWriteStream();
-
-      imageStream.write(photoBin);
-      imageStream.end();
-
-      return `https://storage.googleapis.com/${bucketName}/${fileName}`;
-    } catch (_) {
-      return 'https://storage.googleapis.com/ps-profile-pictures/empty.png';
-    }
-  };
-
   try {
     const userData = await admin.auth().verifyIdToken(idToken);
 
@@ -49,7 +19,7 @@ export default async (req: Request, res: Response) => {
     if (!userDoc) {
       let newUserDoc = {
         displayName: userData.name,
-        profilePicture: await saveProfileImage(userData.uid),
+        profilePicture: await saveProfileImage(userData.uid, req.body.accessToken),
         admin: false,
         deleted: false,
         extern: false,
@@ -86,5 +56,35 @@ export default async (req: Request, res: Response) => {
     return res.status(200).send(responseData);
   } catch (e) {
     return res.status(400).send('Bad request');
+  }
+};
+
+const saveProfileImage = async (userId: string, accessToken: string) => {
+  try {
+    const photoData = await axios.request({
+      url: 'https://graph.microsoft.com/v1.0/me/photo/$value',
+      method: 'get',
+      responseType: 'arraybuffer',
+      headers: {
+        authorization: accessToken,
+      },
+    });
+
+    const photoBin = await photoData.data;
+
+    const bucketName = 'ps-profile-pictures';
+    const fileName = `${userId}.jpeg`;
+
+    const bucket = admin.storage().bucket(bucketName);
+
+    const userImage = bucket.file(fileName);
+    const imageStream = userImage.createWriteStream();
+
+    imageStream.write(photoBin);
+    imageStream.end();
+
+    return `https://storage.googleapis.com/${bucketName}/${fileName}`;
+  } catch (_) {
+    return 'https://storage.googleapis.com/ps-profile-pictures/empty.png';
   }
 };

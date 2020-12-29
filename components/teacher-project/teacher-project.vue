@@ -6,17 +6,17 @@
       span.text-ps-green.font-bold.block {{ displayName }}
       span.text-ps-white {{ projectTitle }}
   .actions.justify-self-end
-    nuxt-link(to='idk')
+    nuxt-link(:to='`/project/${projectId}`')
       ps-btn.text-ps-white(text) Projekt
         template(#icon-right)
           arrow-right.text-ps-white(:size='32')/
-    ps-btn.text-ps-red(v-if='unreviewed && pastDeadline', text) Po termínu
+    ps-btn.text-ps-red(v-if='unreviewed && pastDeadline && submitted', text) Po termínu
       template(#icon-right)
         cross-icon/
-    ps-btn.text-ps-white(v-else-if='unreviewed', text, @click='openModal') Nastavení
+    ps-btn.text-ps-white(v-else-if='unreviewed && submitted', text, @click='openModal') Nastavení
       template(#icon-right)
         arrow-right(:size='32')/
-    ps-btn.text-ps-green(v-else, text, @click='openModal') Hodnoceno
+    ps-btn.text-ps-green(v-else-if='submitted', text, @click='openModal') Hodnoceno
       template(#icon-right)
         check-icon/
   ps-modal(v-model='displayModal')
@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, toRefs, computed } from 'nuxt-composition-api';
+import { defineComponent, ref, watch, toRefs, computed } from '@nuxtjs/composition-api';
 import axios from 'axios';
 
 import { useMainStore } from '@/store';
@@ -66,6 +66,15 @@ type UploadedReview = {
 };
 
 export default defineComponent({
+  components: {
+    arrowRight,
+    checkIcon,
+    wordIcon,
+    pdfIcon,
+    fileIcon,
+    binIcon,
+    crossIcon,
+  },
   props: {
     projectId: {
       type: String,
@@ -98,15 +107,10 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-  },
-  components: {
-    arrowRight,
-    checkIcon,
-    wordIcon,
-    pdfIcon,
-    fileIcon,
-    binIcon,
-    crossIcon,
+    submitted: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props) {
     const mainStore = useMainStore();
@@ -177,30 +181,18 @@ export default defineComponent({
     const removeReview = async (filePath: string) => {
       reviewDelete.value = true;
 
-      const storage = firebase.app().storage('gs://ps-reviews');
-      const fileRef = storage.ref(filePath);
-
       try {
-        const projectRef = firebase.firestore().collection('projects').doc(props.projectId);
-
-        await firebase.firestore().runTransaction(async (transaction) => {
-          const sfDoc = await transaction.get(projectRef);
-          await fileRef.delete();
-
-          const reviews = sfDoc.data()?.reviews ?? [];
-
-          const updatedReviews = reviews.filter((review: any) => review.filePath !== filePath);
-
-          transaction.set(
-            projectRef,
-            {
-              reviews: updatedReviews,
+        await axios.post(
+          `/api/review/delete/${filePath}`,
+          {
+            projectId: props.projectId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${mainStore.state.user.idToken}`,
             },
-            { merge: true },
-          );
-
-          return transaction;
-        });
+          },
+        );
       } catch (e) {
         console.error(e);
       }
@@ -208,7 +200,7 @@ export default defineComponent({
       reviewDelete.value = false;
     };
 
-    const unreviewed = computed(() => props.teacher && props.opponent && props.reviews.length < 4) || ((props.teacher || props.opponent) && props.reviews.length < 2);
+    const unreviewed = computed(() => (props.teacher && props.opponent && props.reviews.length < 4) || ((props.teacher || props.opponent) && props.reviews.length < 2));
 
     return {
       displayModal,
