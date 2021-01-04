@@ -129,6 +129,8 @@ export default defineComponent({
 
         const { title, description, links, mandatoryFiles, optionalFiles, submitted, deadlineDate, keywords } = response.data;
 
+        console.log(deadlineDate);
+
         titleRef.value = title;
         descriptionRef.value = description;
         linksRef.value = links;

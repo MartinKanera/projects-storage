@@ -21,7 +21,7 @@ export default async (req: Request, res: Response) => {
   const userData = (await admin.firestore().collection('users').doc(userId).get()).data();
 
   // User doesnt have current year set
-  if (!userData?.currentYear) return res.status(400).send();
+  if (!userData?.currentYear) return res.status(412).send();
 
   // Teacher cant submit proposal
   if (userData?.teacher) return res.status(403).send('Teacher cannot submit proposal');
