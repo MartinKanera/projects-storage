@@ -67,6 +67,7 @@ export default async (req: Request, res: Response) => {
       deadlineDate,
       studentProfilePicture: studentData?.profilePicture,
       studentDisplayName: studentData?.displayName,
+      keywords: projectData?.keywords,
     });
   } catch (e) {
     console.error(e);

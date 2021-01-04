@@ -48,8 +48,6 @@ const config: NuxtConfig = {
   plugins: ['@/plugins/firebase.ts'],
   env: {
     FIREBASE_CONFIG: process.env.FIREBASE_CONFIG!,
-    SERVICE_ACCOUNT: process.env.SERVICE_ACCOUNT!,
-    STORAGE_SERVICE_ACCOUNT: process.env.STORAGE_SERVICE_ACCOUNT!,
     TENANT: process.env.TENANT!,
   },
   firebase: {

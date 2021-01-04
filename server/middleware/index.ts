@@ -25,7 +25,6 @@ const serverMiddleware: ServerMiddleware = async (req, res, next): Promise<void>
           ...{
             project: {
               id: projectData.id,
-              ...projectData.data(),
             },
           },
         };

@@ -43,6 +43,7 @@
           .ml-2.underline {{ file.fileName }}
         ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
           bin-icon(:size='20')
+      ps-chips(v-model='keywordsRef', placeholder='Klíčová slova')
   .mt-8.w-full.flex.flex.justify-center
     ps-btn.mr-4(@click='saveChanges', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Uložit
     ps-btn.ml-4(@click='checkModal', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Odevzdat
@@ -99,6 +100,7 @@ export default defineComponent({
     const optionalFilesRef = ref([]);
     const submittedRef = ref(false);
     const deadlineDateRef = ref(new firebase.firestore.Timestamp(0, 0));
+    const keywordsRef = ref([]);
 
     const mandatoryFilesUpload = ref([]);
     const optionalFilesUpload = ref([]);
@@ -125,7 +127,9 @@ export default defineComponent({
           },
         });
 
-        const { title, description, links, mandatoryFiles, optionalFiles, submitted, deadlineDate } = response.data;
+        const { title, description, links, mandatoryFiles, optionalFiles, submitted, deadlineDate, keywords } = response.data;
+
+        console.log(deadlineDate);
 
         titleRef.value = title;
         descriptionRef.value = description;
@@ -135,8 +139,8 @@ export default defineComponent({
         // @ts-ignore
         optionalFilesRef.value = getExtensions(optionalFiles);
         submittedRef.value = submitted;
-
         deadlineDateRef.value = new firebase.firestore.Timestamp(deadlineDate._seconds, 0);
+        keywordsRef.value = keywords;
       } catch (e) {
         console.error(e);
       }
@@ -160,6 +164,7 @@ export default defineComponent({
         JSON.stringify({
           description: descriptionRef.value,
           links: linksRef.value,
+          keywords: keywordsRef.value,
         }),
       );
 
@@ -282,6 +287,7 @@ export default defineComponent({
       deadlineFormatted,
       modificable,
       loading,
+      keywordsRef,
     };
   },
 });

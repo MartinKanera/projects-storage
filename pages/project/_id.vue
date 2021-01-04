@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, useContext, ref, reactive, useMeta, useFetch, ssrRef } from '@nuxtjs/composition-api';
+import { defineComponent, useContext, ref, useMeta, useFetch, ssrRef } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
@@ -108,6 +108,7 @@ export default defineComponent({
       optionalFiles: [] as Array<File>,
       studentProfilePicture: '',
       studentDisplayName: '',
+      keywords: [],
     });
 
     const setMeta = () => {
@@ -133,6 +134,11 @@ export default defineComponent({
           property: 'og:description',
           content: project.value.description,
         },
+        {
+          hid: 'keywords',
+          property: 'keywords',
+          content: project.value.keywords.join(', '),
+        },
       ];
     };
 
@@ -144,7 +150,7 @@ export default defineComponent({
           },
         });
 
-        const { title, description, links, currentYear, mandatoryFiles, optionalFiles, studentProfilePicture, studentDisplayName } = response.data;
+        const { title, description, links, currentYear, mandatoryFiles, optionalFiles, studentProfilePicture, studentDisplayName, keywords } = response.data;
 
         project.value.title = title;
         project.value.description = description;
@@ -154,6 +160,7 @@ export default defineComponent({
         project.value.optionalFiles = getExtensions(optionalFiles);
         project.value.studentProfilePicture = studentProfilePicture;
         project.value.studentDisplayName = studentDisplayName;
+        project.value.keywords = keywords;
 
         setMeta();
 
