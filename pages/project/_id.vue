@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, useContext, ref, reactive, useMeta, useFetch, ssrRef } from '@nuxtjs/composition-api';
+import { defineComponent, useContext, ref, useMeta, useFetch, ssrRef } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
