@@ -41,6 +41,7 @@ export default async (req: Request, res: Response) => {
         reviews: [],
         links: [],
         deadlineDate: null,
+        keywords: [],
       });
 
       transaction.set(admin.firestore().collection('projectFiles').doc(), {

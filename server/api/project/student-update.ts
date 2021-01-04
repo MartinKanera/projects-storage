@@ -61,7 +61,7 @@ export default async (req: Request, res: Response) => {
 
   // TODO check mandatory files match type
 
-  if (!(typeof body.description === 'string' && Array.isArray(body.links) && req.params.id && checkLinks(body.links))) return res.status(400).send();
+  if (!(typeof body.description === 'string' && Array.isArray(body.links) && req.params.id && checkLinks(body.links) && Array.isArray(body.keywords))) return res.status(400).send();
 
   // @ts-ignore
   const mandatoryFiles = req.files.mandatory;
@@ -114,9 +114,12 @@ export default async (req: Request, res: Response) => {
 
         const projectFilesDoc = await transaction.get(projectFilesRef);
 
+        console.log(body.keywords);
+
         transaction.update(projectRef, {
           description: body.description.trim(),
           links: body.links,
+          keywords: body.keywords,
         });
 
         const mandatoryUploaded = projectFilesDoc.data()?.mandatory as [];

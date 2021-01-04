@@ -127,7 +127,7 @@ export default defineComponent({
           },
         });
 
-        const { title, description, links, mandatoryFiles, optionalFiles, submitted, deadlineDate } = response.data;
+        const { title, description, links, mandatoryFiles, optionalFiles, submitted, deadlineDate, keywords } = response.data;
 
         titleRef.value = title;
         descriptionRef.value = description;
@@ -137,8 +137,8 @@ export default defineComponent({
         // @ts-ignore
         optionalFilesRef.value = getExtensions(optionalFiles);
         submittedRef.value = submitted;
-
         deadlineDateRef.value = new firebase.firestore.Timestamp(deadlineDate._seconds, 0);
+        keywordsRef.value = keywords;
       } catch (e) {
         console.error(e);
       }
@@ -162,6 +162,7 @@ export default defineComponent({
         JSON.stringify({
           description: descriptionRef.value,
           links: linksRef.value,
+          keywords: keywordsRef.value,
         }),
       );
 

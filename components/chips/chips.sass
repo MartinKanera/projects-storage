@@ -1,26 +1,29 @@
-.placeholder
-  @apply text-ps-green
+.wrapper
+  @apply w-full
   
-.chip-container
-  @apply shadow rounded-lg p-2
-  @apply flex flex-wrap
-  @apply bg-ps-primary text-ps-white
-  @apply border-ps-green border-b-2 border-solid
+  .placeholder
+    @apply text-ps-green
+    
+  .chip-container
+    @apply shadow rounded-lg p-2
+    @apply flex flex-wrap
+    @apply bg-ps-primary text-ps-white
+    @apply border-ps-green border-b-2 border-solid
 
-  .chip
-    @apply flex items-center select-none
-    @apply px-2 py-1 m-1
-    @apply bg-ps-secondary rounded-lg
+    .chip
+      @apply flex items-center select-none
+      @apply px-2 py-1 m-1
+      @apply bg-ps-secondary rounded-lg
 
-    .close-btn
-      @apply ml-1 rounded-full
-      @apply cursor-pointer
+      .close-btn
+        @apply ml-1 rounded-full
+        @apply cursor-pointer
 
-      &:hover
-        @apply bg-ps-white text-ps-primary
+        &:hover
+          @apply bg-ps-white text-ps-primary
 
-  input
-    @apply bg-ps-primary rounded-lg
+    input
+      @apply bg-ps-primary rounded-lg
 
-    flex: 1 1 auto
-    width: 30px
+      flex: 1 1 auto
+      width: 30px

@@ -6,11 +6,12 @@
       span {{ chip }}
       .close-btn(@click='removeChip(index)')
         closeIcon(:size='18')/
-    input(v-model='currentInput', @keydown.enter='addChip', @keydown.delete='backspaceRemove')
+    input(v-model='currentInput', @keydown.enter='addChip', @keydown.tab.prevent='addChip', @keydown.delete='backspaceRemove')
+  .mt-1.text-sm.text-ps-white.ml-auto.float-right Klíčové slovo potvrdíš tabem/enterem
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watch } from '@nuxtjs/composition-api';
 import closeIcon from 'vue-material-design-icons/Close.vue';
 
 export default defineComponent({
@@ -20,15 +21,19 @@ export default defineComponent({
   props: {
     value: {
       type: Array,
-      default: () => [],
+      required: true,
     },
     placeholder: {
       type: String,
       default: '',
     },
   },
-  setup({ value }, { emit }) {
-    const chips = ref(value);
+  setup(props, { emit }) {
+    watch(props, (newProps) => {
+      chips.value = newProps.value;
+    });
+
+    const chips = ref(props.value);
     const currentInput = ref('');
 
     const removeChip = (index: number) => {
@@ -39,7 +44,7 @@ export default defineComponent({
     const addChip = () => {
       if (currentInput.value === '') return;
 
-      chips.value.push(currentInput.value);
+      chips.value.push(currentInput.value.trim());
       currentInput.value = '';
       emit('input', chips.value);
     };
