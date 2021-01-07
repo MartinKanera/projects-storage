@@ -22,8 +22,7 @@ export default async (req: Request, res: Response) => {
   try {
     await admin.firestore().runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(proposalRef);
-
-      const schoolYear = (await transaction.get(admin.firestore().collection('system').doc('schoolYear'))).data();
+      const userDoc = await transaction.get(admin.firestore().collection('users').doc(sfDoc.data()?.currentYear));
 
       const projectRef = admin.firestore().collection('projects').doc();
 
@@ -34,7 +33,7 @@ export default async (req: Request, res: Response) => {
         studentId: sfDoc.data()?.studentId,
         teacherId: sfDoc.data()?.teacherId,
         opponentId: '',
-        currentYear: schoolYear?.currentYear,
+        currentYear: userDoc.data()?.currentYear,
         public: false,
         submitted: false,
         submittedDate: null,

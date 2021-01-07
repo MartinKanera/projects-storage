@@ -10,7 +10,7 @@ export default async (req: Request, res: Response) => {
     const yearTolerance = 4;
     const year = req.body?.year;
 
-    if (!year && year <= year + yearTolerance) return res.status(400).send('Missing parameters');
+    if (!year && year <= new Date().getFullYear() + yearTolerance) return res.status(400).send('Missing parameters');
 
     const currentYearTimestamp = admin.firestore.Timestamp.fromDate(new Date(Date.UTC(year, 4, 25)));
 
