@@ -14,7 +14,7 @@
     )
   ps-tabs(:tabs='extern ? ["oponent"] : ["studenti", "předpřipravené zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
     ps-tab(v-if='!extern', :active='selectedTab == "studenti"')
-      .flex.justify-between
+      .flex.justify-between(v-if='projects.length > 0')
         span.text-2xl.text-ps-white.font-medium Moji studenti
       .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
         ps-teacher-project(
@@ -29,7 +29,7 @@
           :teacher='project.teacher',
           :opponent='project.opponent'
         )
-      .flex.justify-between.mt-2
+      .flex.justify-between.mt-2(v-if='submittedProjects.length > 0')
         span.text-2xl.text-ps-white.font-medium Projekty k hodnocení
       .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
         ps-teacher-project(

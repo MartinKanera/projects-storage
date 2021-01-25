@@ -22,7 +22,7 @@ export default async (req: Request, res: Response) => {
   try {
     await admin.firestore().runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(proposalRef);
-      const userDoc = await transaction.get(admin.firestore().collection('users').doc(sfDoc.data()?.currentYear));
+      const userDoc = await transaction.get(admin.firestore().collection('users').doc(sfDoc.data()?.studentId));
 
       const projectRef = admin.firestore().collection('projects').doc();
 

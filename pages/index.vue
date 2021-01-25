@@ -29,8 +29,6 @@ export default defineComponent({
     for (let i = 0; i < 5; i++) {
       const year = (new Date().getFullYear() + i).toString();
 
-      console.log(year);
-
       graduationYears.value.push({
         placeholder: year,
         value: year,

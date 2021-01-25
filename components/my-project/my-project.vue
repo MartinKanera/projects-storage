@@ -43,7 +43,7 @@
           .ml-2.underline {{ file.fileName }}
         ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
           bin-icon(:size='20')
-      ps-chips(v-model='keywordsRef', placeholder='Klíčová slova')
+      ps-chips(v-model='keywordsRef', :edittable='modificable', placeholder='Klíčová slova')
   .mt-8.w-full.flex.flex.justify-center
     ps-btn.mr-4(@click='saveChanges', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Uložit
     ps-btn.ml-4(@click='checkModal', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Odevzdat
