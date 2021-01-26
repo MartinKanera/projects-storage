@@ -130,10 +130,10 @@ export default defineComponent({
 
   .public-projects
     @apply w-full
-    @apply flex flex-col
+    @apply grid grid-cols-1
     @apply p-1
 
     @screen lg
-      @apply flex-row flex-wrap
+      @apply grid-cols-2
       @apply p-10
 </style>
