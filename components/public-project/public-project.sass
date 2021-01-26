@@ -1,0 +1,37 @@
+.public-project
+  @apply shadow rounded-lg
+  @apply bg-ps-secondary
+  @apply m-6 mb-0
+
+  flex: 1 0 46%
+
+  .wrapper
+    @apply h-full
+    @apply flex flex-col
+
+    .title
+      @apply text-ps-mint text-2xl font-semibold
+      @apply px-6 pt-6
+
+    .info > div
+      @apply inline
+      @apply text-ps-white text-lg
+
+    .year
+      @apply font-light
+      @apply pl-6
+
+    .author-name
+      @apply ml-2
+
+    .description
+      @apply my-2 px-6 pb-3 justify-center
+      @apply text-justify leading-5 text-ps-white
+
+    .forward
+      @apply flex justify-center items-center
+      @apply p-3 mt-auto
+      transition: color 500ms ease-in-out
+      transition: background-color 500ms ease-in-out
+
+      border-radius: 0 0 .5rem .5rem
