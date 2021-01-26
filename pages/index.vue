@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, computed, useContext, useFetch } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watchEffect, computed, useContext, useFetch, onMounted, ssrRef } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
@@ -89,27 +89,36 @@ export default defineComponent({
       btnLoading.value = false;
     };
 
-    let lastProjectId: string | null = null;
+    const lastProjectId = ssrRef('');
     const publicProjects = ref([] as Array<PublicProject>);
 
     const { fetch } = useFetch(async () => {
       try {
         const response = await ctx.app.$axios.get(`/api/public-projects`, {
-          data: {
-            lastProjectId,
+          params: {
+            lastProjectId: lastProjectId.value,
           },
         });
 
         const projects: Array<PublicProject> = response.data;
 
-        lastProjectId = projects[projects.length - 1].id;
+        lastProjectId.value = projects[projects.length - 1]?.id;
         publicProjects.value.push(...projects);
       } catch (e) {
         console.error(e);
       }
     });
 
-    // TODO infinity scroll
+    // infinity scroll
+    onMounted(() => {
+      window.onscroll = lazyLoad;
+    });
+
+    const lazyLoad = () => {
+      if (!(window.innerHeight + Math.ceil(window.pageYOffset) >= document.body.offsetHeight) || !lastProjectId.value) return;
+
+      fetch();
+    };
 
     return {
       yearModalDisplay,

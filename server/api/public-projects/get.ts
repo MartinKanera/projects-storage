@@ -30,17 +30,19 @@ const formatProjectsData = async (projects: admin.firestore.QuerySnapshot<admin.
 export default async (req: Request, res: Response) => {
   const { lastProjectId } = req.query;
 
+  const limit = 10;
+
   try {
     const projects = await admin.firestore().runTransaction(async (transaction) => {
       if (!lastProjectId) {
-        const projects = await transaction.get(admin.firestore().collection('projects').where('public', '==', true).orderBy('currentYear', 'desc').limit(10));
+        const projects = await transaction.get(admin.firestore().collection('projects').where('public', '==', true).orderBy('currentYear', 'desc').limit(limit));
 
         if (!projects.docs.length) return [];
 
         return formatProjectsData(projects, transaction);
       } else if (typeof lastProjectId === 'string') {
         const lastDoc = await transaction.get(admin.firestore().collection('projects').doc(lastProjectId));
-        const projects = await transaction.get(admin.firestore().collection('projects').where('public', '==', true).orderBy('currentYear', 'desc').startAfter(lastDoc).limit(10));
+        const projects = await transaction.get(admin.firestore().collection('projects').where('public', '==', true).orderBy('currentYear', 'desc').startAfter(lastDoc).limit(limit));
 
         if (!projects.docs.length) return [];
 
