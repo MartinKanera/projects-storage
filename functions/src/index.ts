@@ -118,6 +118,22 @@ exports.usersHooks = functions.firestore.document('users/{userId}').onWrite(asyn
   return;
 });
 
+// proposals
+exports.proposalsHooks = functions.firestore.document('proposals/{proposalId}').onWrite(async (snap, context) => {
+  if ((!snap.before.data() && snap.after.data()) || (snap.before.data() && snap.after.data())) {
+    await db.runTransaction(async (transaction) => {
+      transaction.set(db.collection('notifications').doc(), {
+        userId: snap.after.data()?.teacherId,
+        message: `Nové zadání projektu s názvem ${snap.after.data()?.title}`
+      })
+
+      return transaction;
+    });
+  }
+
+  return;
+});
+
 // Function ran annually on 25/5, prepares system for new school year
 exports.newSchoolYear = functions.pubsub.schedule('0 0 25 5 *').timeZone('Europe/Prague').onRun(async () => {
   // UTC+2

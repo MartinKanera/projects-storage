@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, computed, useContext, useFetch, onMounted, ssrRef, onBeforeUnmount } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watchEffect, computed, useContext, useFetch, onMounted, ssrRef, onBeforeUnmount, watch } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
@@ -102,8 +102,6 @@ export default defineComponent({
 
         const projects: Array<PublicProject> = response.data;
 
-        console.log(projects);
-
         lastProjectId.value = projects[projects.length - 1]?.id;
         publicProjects.value.push(...projects);
       } catch (e) {
@@ -113,7 +111,6 @@ export default defineComponent({
 
     // infinity scroll
     onMounted(() => {
-      lastProjectId.value = '';
       window.onscroll = lazyLoad;
     });
 
@@ -122,6 +119,8 @@ export default defineComponent({
 
       fetch();
     };
+
+    onBeforeUnmount(() => (lastProjectId.value = ''));
 
     return {
       yearModalDisplay,

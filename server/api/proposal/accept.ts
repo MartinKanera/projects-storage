@@ -53,7 +53,7 @@ export default async (req: Request, res: Response) => {
 
       // add notification for student
       transaction.set(admin.firestore().collection('notifications').doc(), {
-        userId: studentDoc.data()?.displayName,
+        userId: studentDoc.id,
         message: `Projekt ${sfDoc.data()?.title} byl schválen`,
       });
 

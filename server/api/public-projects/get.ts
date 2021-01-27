@@ -33,6 +33,8 @@ export default async (req: Request, res: Response) => {
   const limit = 10;
 
   try {
+    console.log(lastProjectId);
+
     const projects = await admin.firestore().runTransaction(async (transaction) => {
       if (!lastProjectId) {
         const projects = await transaction.get(admin.firestore().collection('projects').where('public', '==', true).orderBy('currentYear', 'desc').limit(limit));
