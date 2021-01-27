@@ -122,6 +122,12 @@ export default defineComponent({
 
           await docRef.set(proposal, { merge: true });
 
+          // set notification for teacher
+          await firebase.firestore().collection('notifications').doc().set({
+            userId: selectedTeacherId.value,
+            message: `Nové zadání projektu`,
+          });
+
           submitted.value = true;
           displaySnack.value = true;
           activeListener();

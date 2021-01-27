@@ -22,7 +22,7 @@ export default async (req: Request, res: Response) => {
   try {
     await admin.firestore().runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(proposalRef);
-      const userDoc = await transaction.get(admin.firestore().collection('users').doc(sfDoc.data()?.studentId));
+      const studentDoc = await transaction.get(admin.firestore().collection('users').doc(sfDoc.data()?.studentId));
 
       const projectRef = admin.firestore().collection('projects').doc();
 
@@ -33,7 +33,7 @@ export default async (req: Request, res: Response) => {
         studentId: sfDoc.data()?.studentId,
         teacherId: sfDoc.data()?.teacherId,
         opponentId: '',
-        currentYear: userDoc.data()?.currentYear,
+        currentYear: studentDoc.data()?.currentYear,
         public: false,
         submitted: false,
         submittedDate: null,
@@ -50,6 +50,12 @@ export default async (req: Request, res: Response) => {
       });
 
       transaction.delete(proposalRef);
+
+      // add notification for student
+      transaction.set(admin.firestore().collection('notifications').doc(), {
+        userId: studentDoc.data()?.displayName,
+        message: `Projekt ${sfDoc.data()?.title} byl schválen`,
+      });
 
       return transaction;
     });

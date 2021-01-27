@@ -102,6 +102,8 @@ export default defineComponent({
 
         const projects: Array<PublicProject> = response.data;
 
+        console.log(projects);
+
         lastProjectId.value = projects[projects.length - 1]?.id;
         publicProjects.value.push(...projects);
       } catch (e) {
@@ -111,6 +113,7 @@ export default defineComponent({
 
     // infinity scroll
     onMounted(() => {
+      lastProjectId.value = '';
       window.onscroll = lazyLoad;
     });
 
@@ -119,8 +122,6 @@ export default defineComponent({
 
       fetch();
     };
-
-    onBeforeUnmount(() => (lastProjectId.value = ''));
 
     return {
       yearModalDisplay,
