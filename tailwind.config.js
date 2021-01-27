@@ -42,6 +42,7 @@ module.exports = {
       lg: '0.5rem',
     },
     minHeight: {
+      screen: '100vh',
       52: '52px',
     },
     minWidth: {

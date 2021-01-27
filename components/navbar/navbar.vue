@@ -11,12 +11,6 @@
           span.user-role(v-else-if='mainStore.isAdmin && !mainStore.isTeacher') Admin
           span.user-role(v-else-if='mainStore.isTeacher && mainStore.isAdmin') Admin/Učitel
         .flex.items-center(v-else)
-          //- ps-btn(text, @click='loginWithMicrosoft', :disabled='awaitingLogin')
-          //-   template(#default)
-          //-     span.microsoft-btn microsoft login
-          //-   template(#icon-left)
-          //-     microsoft-logo(v-if='!awaitingLogin')/
-          //-     ps-microsoft-loader.mt-2(v-else)
           ps-btn(text, @click='loginModal = !loginModal') Přihlášení
             template(#icon-right)
               arrow-right/
@@ -30,9 +24,11 @@
             template(#icon-left)
               logout/
       .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeNotifications')
+        .notifications-number(@click='toggleNotifications')
+          span {{ notificationsLength }}
         bell.cursor-pointer.ml-1(@click='toggleNotifications')/
         ps-dropdown(:value='displayNotifications')
-          span.mx-auto.p-2 Nothing here :-O
+          ps-notifications-list(@update-notifications='updateNotifications')
   .menu-btn(v-if='!isDesktop', @click='toggleBurger')
     .burger(:class='{ active: burger }')
 </template>
@@ -167,7 +163,7 @@ export default defineComponent({
 
       try {
         await firebase.auth().signOut();
-        await mainStore.reset();
+        mainStore.reset();
 
         if (root.$route.path !== '/') root.$router.replace('/');
 
@@ -176,6 +172,11 @@ export default defineComponent({
     };
 
     const loginModal = ref(false);
+
+    const notificationsLength = ref(0);
+    const updateNotifications = (length: number) => {
+      notificationsLength.value = length;
+    };
 
     return {
       burger,
@@ -192,6 +193,8 @@ export default defineComponent({
       awaitingLogin,
       mainStore,
       loginModal,
+      updateNotifications,
+      notificationsLength,
     };
   },
 });

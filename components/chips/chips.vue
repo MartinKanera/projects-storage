@@ -4,9 +4,9 @@
   .chip-container
     .chip(v-for='(chip, index) in chips', :key='index')
       span {{ chip }}
-      .close-btn(@click='removeChip(index)')
+      .close-btn(v-if='edittable', @click='removeChip(index)')
         closeIcon(:size='18')/
-    input(v-model='currentInput', @keydown.enter='addChip', @keydown.tab.prevent='addChip', @keydown.delete='backspaceRemove')
+    input(v-if='edittable', v-model='currentInput', @keydown.enter='addChip', @keydown.tab.prevent='addChip', @keydown.delete='backspaceRemove')
   .mt-1.text-sm.text-ps-white.ml-auto.float-right Klíčové slovo potvrdíš tabem/enterem
 </template>
 
@@ -26,6 +26,10 @@ export default defineComponent({
     placeholder: {
       type: String,
       default: '',
+    },
+    edittable: {
+      type: Boolean,
+      default: true,
     },
   },
   setup(props, { emit }) {

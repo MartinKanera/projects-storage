@@ -1,6 +1,6 @@
 <template lang="pug">
 transition(name='dropdown')
-  .dropdown(v-if='display')
+  .dropdown(v-show='display')
     .dropdown-content
       slot
 </template>

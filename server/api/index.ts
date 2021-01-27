@@ -47,6 +47,9 @@ app.post('/project/:id', async (req, res) => (await import('./project/submit')).
 // project files
 app.delete('/project-file/:filePath', async (req, res) => (await import('./project-file/delete')).default(req, res));
 
+// public projects
+app.get('/public-projects', async (req, res) => (await import('./public-projects/get')).default(req, res));
+
 // system (deadlines)
 app.put('/system/deadlines', async (req, res) => (await import('./deadlines/update')).default(req, res));
 

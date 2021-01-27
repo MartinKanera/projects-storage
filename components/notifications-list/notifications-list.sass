@@ -1,0 +1,21 @@
+.notifications-list
+  @apply flex flex-col items-center
+
+  width: 300px
+
+  .notification
+    @apply py-2 px-3
+    @apply w-full
+    @apply flex items-center justify-between
+
+    .action
+      @apply rounded-full text-ps-green cursor-pointer
+
+      transition: all 250ms ease-in-out
+
+      &:hover
+        @apply bg-ps-primary text-ps-white
+
+  .notification:not(:first-child)
+    // @apply mt-1
+    @apply border-t-2 border-ps-primary border-solid
