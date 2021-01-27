@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, computed, useContext, useFetch, onMounted, ssrRef, onBeforeUnmount, watch } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watchEffect, computed, useContext, useFetch, onMounted } from '@nuxtjs/composition-api';
 import { useMainStore } from '@/store';
 
 import firebase from 'firebase/app';
@@ -89,7 +89,7 @@ export default defineComponent({
       btnLoading.value = false;
     };
 
-    const lastProjectId = ssrRef('');
+    const lastProjectId = ref('');
     const publicProjects = ref([] as Array<PublicProject>);
 
     const { fetch } = useFetch(async () => {
@@ -119,8 +119,6 @@ export default defineComponent({
 
       fetch();
     };
-
-    onBeforeUnmount(() => (lastProjectId.value = ''));
 
     return {
       yearModalDisplay,
