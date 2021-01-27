@@ -1,5 +1,5 @@
 <template lang="pug">
-.min-h-screen.flex.flex-col.justify-center.m-4(class='md:m-20')
+.flex.flex-col.justify-center.m-4(class='md:m-20')
   .self-start(v-if='proposals.length > 0')
     span.text-2xl.text-ps-white.font-medium Projekty ke schválení
   .flex.flex-col.mt-4.mb-8.flex-wrap.justify-between(v-if='proposals.length > 0', class='md:flex-row md:justify-start')

@@ -114,8 +114,6 @@ export default async (req: Request, res: Response) => {
 
         const projectFilesDoc = await transaction.get(projectFilesRef);
 
-        console.log(body.keywords);
-
         transaction.update(projectRef, {
           description: body.description.trim(),
           links: body.links,

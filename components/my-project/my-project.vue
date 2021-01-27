@@ -245,6 +245,7 @@ export default defineComponent({
         snackbar.value = true;
         message.value = 'Projekt odevzdán k hodnocení';
       } catch (e) {
+        console.error(e);
         if (e.response.status === 412) {
           snackbar.value = true;
           message.value = 'Chybí ti povinné soubory';

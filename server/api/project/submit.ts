@@ -55,6 +55,8 @@ export default async (req: Request, res: Response) => {
 
         const projectData = sfDoc.data();
 
+        const studentDoc = await transaction.get(admin.firestore().collection('users').doc(projectData?.studentId));
+
         if (projectData?.studentId !== userAuth.uid) throw new Error('403');
         if (projectData?.submitted) throw new Error('409');
 
@@ -83,6 +85,20 @@ export default async (req: Request, res: Response) => {
 
         const newSubmittedProjects = (statisticsDoc.data()?.currentSubmittedProjects ?? 0) + 1;
 
+        // add notification for teacher
+        transaction.set(admin.firestore().collection('notifications').doc(), {
+          userId: projectData.teacherId,
+          message: `Projekt studenta ${studentDoc.data()?.displayName} je připraven k hodnocení`,
+        });
+
+        // if opponent assigned, add notification
+        if (projectData.opponentId) {
+          transaction.set(admin.firestore().collection('notifications').doc(), {
+            userId: projectData.opponentId,
+            message: `Projekt studenta ${studentDoc.data()?.displayName} je připraven k hodnocení`,
+          });
+        }
+
         transaction.set(
           statisticsDoc.ref,
           {
@@ -98,6 +114,7 @@ export default async (req: Request, res: Response) => {
 
       return res.status(200).send();
     } catch (e) {
+      console.error(e);
       switch (e.toString()) {
         case 'Error: 403':
           return res.status(403).send('You do not own this project');

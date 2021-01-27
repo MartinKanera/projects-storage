@@ -1,5 +1,5 @@
 <template lang="pug">
-.min-h-screen.flex.flex-col.justify-center.m-4(class='md:m-20')
+.flex.flex-col.justify-center.m-4(class='md:m-20')
   .flex.flex-col(class='lg:flex-row')
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentProjects', :maxCount='statistics.currentMaxStudents') Žáci kteří mají zadání
     ps-admin-stats(:loading='statsLoading', :currentCount='statistics.currentSubmittedProjects', :maxCount='statistics.currentMaxStudents') Vložené práce
