@@ -4,7 +4,7 @@
     .user-wrap
       .avatar-wrap(v-if='mainStore.isLoggedIn')
         img.avatar(:src='mainStore.profilePicture')/
-      .user-info
+      .user-info.flex(@click='toggleSettings', v-on-clickaway='closeSettings')
         .user-text(v-if='mainStore.isLoggedIn')
           span.user-name {{ mainStore.displayName }}
           span.user-role(v-if='mainStore.isTeacher && !mainStore.isAdmin') Učitel
@@ -14,15 +14,12 @@
           ps-btn(text, @click='loginModal = !loginModal') Přihlášení
             template(#icon-right)
               arrow-right/
-          ps-modal(v-model='loginModal')
-            .flex.justify-center 
-              ps-login-form
-      .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeSettings')
-        drop-down.drop(:class='{ "active-drop": displaySettings }', @click='toggleSettings')/
-        ps-dropdown(:value='displaySettings')
-          ps-btn.text-ps-red(block, text, @click='logOut') Odhlásit
-            template(#icon-left)
-              logout/
+        .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn')
+          drop-down.drop(:class='{ "active-drop": displaySettings }')/
+          ps-dropdown(:value='displaySettings')
+            ps-btn.text-ps-red(block, text, @click='logOut') Odhlásit
+              template(#icon-left)
+                logout/
       .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeNotifications')
         .notifications-number(@click='toggleNotifications')
           span {{ notificationsLength }}
@@ -31,6 +28,9 @@
           ps-notifications-list(@update-notifications='updateNotifications')
   .menu-btn(v-if='!isDesktop', @click='toggleBurger')
     .burger(:class='{ active: burger }')
+  ps-modal(v-model='loginModal')
+    .flex.justify-center 
+      ps-login-form
 </template>
 
 <script lang="ts">

@@ -13,16 +13,16 @@ const formatProjectsData = async (projects: admin.firestore.QuerySnapshot<admin.
     transaction,
   );
 
-  return students.docs.map((student) => {
-    const currentProject = projects.docs.find((project) => project.data().studentId === student.id);
+  return projects.docs.map((project) => {
+    const currentStudent = students.docs.find((student) => project.data().studentId === student.id);
 
     return {
-      id: currentProject?.id,
-      title: currentProject?.data().title,
-      description: currentProject?.data().description,
-      displayName: student.data().displayName,
-      profilePicture: student.data().profilePicture,
-      year: (currentProject?.data()?.currentYear as admin.firestore.Timestamp).toDate().getFullYear(),
+      id: project.id,
+      title: project.data().title,
+      description: project.data().description,
+      displayName: currentStudent?.data().displayName,
+      profilePicture: currentStudent?.data().profilePicture,
+      year: (project.data()?.currentYear as admin.firestore.Timestamp).toDate().getFullYear(),
     };
   });
 };
@@ -33,8 +33,6 @@ export default async (req: Request, res: Response) => {
   const limit = 10;
 
   try {
-    console.log(lastProjectId);
-
     const projects = await admin.firestore().runTransaction(async (transaction) => {
       if (!lastProjectId) {
         const projects = await transaction.get(admin.firestore().collection('projects').where('public', '==', true).orderBy('currentYear', 'desc').limit(limit));
