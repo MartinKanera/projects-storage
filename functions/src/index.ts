@@ -39,6 +39,19 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
       return await db.runTransaction(async (transaction) => {
         const sfDoc = await transaction.get(statisticsRef)
 
+        if (newReviewsCount > oldReviewsCount) {
+          const oldFilePaths = snap.before.data()?.reviews.map((review: any) => review.filePath);
+
+          const newReviews = snap.after.data()?.reviews.filter((review: any) => {
+            return oldFilePaths.indexOf(review.filePath) === -1 && review.filePath.includes('.pdf');
+          });
+
+          if (newReviews.length > 0) transaction.set(db.collection('notifications').doc(), {
+            userId: snap.after.data()?.studentId,
+            message: `Nový posudek projektu`,
+          });
+        } 
+
         let reviewsCount = sfDoc.data()?.currentReviews;
 
         if (!reviewsCount) reviewsCount = 0;
@@ -61,7 +74,6 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
     }
   };
 
-  // TODO onUpdate project is submitted
   return;
 });
 
