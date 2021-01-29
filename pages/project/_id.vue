@@ -13,7 +13,7 @@
     .my-project-info
       .title {{ project.title }}
       ps-text-area.mt-2(v-model='project.description', placeholder='Popis projektu', name='project-description', :readonly='true')
-      .subtitle.mt-2 Povinné soubory
+      .subtitle.mt-2(v-if='!!project.mandatoryFiles.length') Povinné soubory
       .row(v-for='file in project.mandatoryFiles')
         a.flex.items-center(:href='file.url', target='_blank') 
           word-icon(v-if='file.extension == "docx"')
@@ -21,7 +21,7 @@
           zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
           file-icon(v-else)
           .ml-2.underline {{ file.fileName }}
-      .subtitle.mt-2 Soubory navíc
+      .subtitle.mt-2(v-if='!!project.optionalFiles.length') Soubory navíc
       .row(v-for='file in project.optionalFiles')
         a.flex.items-center(:href='file.url', target='_blank')
           word-icon(v-if='file.extension == "docx"')
