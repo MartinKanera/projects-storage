@@ -120,8 +120,8 @@ export default async (req: Request, res: Response) => {
           keywords: body.keywords,
         });
 
-        const mandatoryUploaded = projectFilesDoc.data()?.mandatory as [];
-        const optionalUploaded = projectFilesDoc.data()?.optional as [];
+        const mandatoryUploaded = Array.isArray(body.mandatoryOrder) && !!body.mandatoryOrder.length ? body.mandatoryOrder && body.mandatoryOrder : (projectFilesDoc.data()?.mandatory as []);
+        const optionalUploaded = Array.isArray(body.optionalOrder) && !!body.optionalOrder.length ? body.optionalOrder : (projectFilesDoc.data()?.optional as []);
 
         //  @ts-ignore
         (await uploadFiles(mandatoryFiles))?.forEach((uploadedFle) => mandatoryUploaded.push(uploadedFle));

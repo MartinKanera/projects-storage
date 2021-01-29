@@ -5,10 +5,13 @@
     ps-btn.rounded-full(v-if='editable', text)
       add-icon.text-ps-white(@click='openModal', :size='20')/
   .flex.flex-col.ml-2
-    .flex.justify-between.items-center(v-for='(link, index) in editableValue', :key='index')
-      a.break-all(:href='link.url', target='_blank') {{ link.placeholder }}
-      ps-btn.rounded-full(v-if='editable', text) 
-        bin-icon.text-ps-white(@click='removeLink(index)', :size='16')/
+    draggable
+      .flex.items-center.text-ps-white(v-for='(link, index) in editableValue', :key='index')
+        drag-icon.handle(v-if='editable')
+        .flex.w-full.justify-between.items-center
+          a.break-all(:href='link.url', target='_blank') {{ link.placeholder }}
+          ps-btn.rounded-full(v-if='editable', text) 
+            bin-icon.text-ps-white(@click='removeLink(index)', :size='16')/
   ps-modal(v-model='linksModal')
     .flex.flex-col.flex-wrap
       span.text-2xl.text-ps-white Přidat odkaz
@@ -22,6 +25,9 @@ import { defineComponent, ref, unref, watch } from '@nuxtjs/composition-api';
 
 import addIcon from 'vue-material-design-icons/Plus.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
+import dragIcon from 'vue-material-design-icons/DragVertical.vue';
+
+import draggable from 'vuedraggable';
 
 type Link = {
   url: String;
@@ -32,6 +38,8 @@ export default defineComponent({
   components: {
     addIcon,
     binIcon,
+    dragIcon,
+    draggable,
   },
   props: {
     value: {

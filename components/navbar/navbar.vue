@@ -11,7 +11,7 @@
           span.user-role(v-else-if='mainStore.isAdmin && !mainStore.isTeacher') Admin
           span.user-role(v-else-if='mainStore.isTeacher && mainStore.isAdmin') Admin/Učitel
         .flex.items-center(v-else)
-          ps-btn(text, @click='loginModal = !loginModal') Přihlášení
+          ps-btn(text, @click='loginModal = true') Přihlášení
             template(#icon-right)
               arrow-right/
         .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn')
@@ -30,13 +30,11 @@
     .burger(:class='{ active: burger }')
   ps-modal(v-model='loginModal')
     .flex.justify-center 
-      ps-login-form
+      ps-login-form(@login-complete='toggleLoginModal')
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed, watchEffect } from '@nuxtjs/composition-api';
-
-import axios from 'axios';
 
 import { useMainStore } from '@/store';
 
@@ -115,49 +113,6 @@ export default defineComponent({
 
     const closeNotifications = () => (displayNotifications.value = false);
 
-    const awaitingLogin = ref(false);
-
-    const loginWithMicrosoft = async () => {
-      await require('firebase/auth');
-
-      try {
-        awaitingLogin.value = true;
-
-        const provider = new firebase.auth.OAuthProvider('microsoft.com');
-
-        provider.setCustomParameters({
-          prompt: 'select_account',
-          tenant: process.env.TENANT,
-        });
-
-        const authUser = await firebase.auth().signInWithPopup(provider);
-
-        const userData = (
-          await axios.request({
-            url: '/api/user/create',
-            method: 'POST',
-            headers: {
-              authorization: `Bearer ${await authUser.user?.getIdToken()}`,
-            },
-
-            data: {
-              // @ts-ignore
-              accessToken: authUser.credential?.toJSON().oauthAccessToken,
-            },
-          })
-        ).data;
-
-        if (userData.user) {
-          userData.user.loggedIn = true;
-
-          mainStore.patch(userData);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      awaitingLogin.value = false;
-    };
-
     const logOut = async () => {
       await require('firebase/auth');
 
@@ -172,6 +127,10 @@ export default defineComponent({
     };
 
     const loginModal = ref(false);
+
+    const toggleLoginModal = (loginComplete: boolean) => {
+      loginModal.value = !loginComplete;
+    };
 
     const notificationsLength = ref(0);
     const updateNotifications = (length: number) => {
@@ -188,13 +147,12 @@ export default defineComponent({
       toggleNotifications,
       closeNotifications,
       isDesktop,
-      loginWithMicrosoft,
       logOut,
-      awaitingLogin,
       mainStore,
       loginModal,
       updateNotifications,
       notificationsLength,
+      toggleLoginModal,
     };
   },
 });

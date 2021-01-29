@@ -158,7 +158,6 @@ exports.newSchoolYear = functions.pubsub.schedule('0 0 25 5 *').timeZone('Europe
       currentYear: newSchoolYear,
     });
 
-    // TODO add properties for reviews and submitted projects
     await statisticsRef.set({
       currentMaxStudents: 0,
       currentProjects: 0,

@@ -84,6 +84,9 @@ module.exports = {
         '*:focus': {
           outline: 'none',
         },
+        '.handle': {
+          cursor: 'move',
+        },
       });
     }),
   ],

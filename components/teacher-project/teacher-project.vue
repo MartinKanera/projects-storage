@@ -24,7 +24,7 @@
       span.text-2xl.text-ps-white {{ projectTitle }}
       span.text-lg.text-ps-green {{ displayName }}
       span.mt-4.mb-1.text-ps-white Nahraj posudky
-      ps-drag-drop(v-model='reviewsFiles', tile, multiple, accept='.pdf,.xlsx', :disabled='pastDeadline || !unreviewed')
+      ps-drag-drop(v-model='reviewsFiles', tile, multiple, accept='.pdf,.xlsx', :disabled='pastDeadline || !unreviewed', :draggable='false')
       ps-btn.self-end(v-if='reviewsFiles.length > 0', @click='uploadReviews', :disabled='uploading', :loading='uploading') Odeslat posudek
       span.mt-8.text-ps-green Odevzdané posudky:
       .text-ps-white.flex.items-center.justify-between(v-for='review in uploadedReviews')
