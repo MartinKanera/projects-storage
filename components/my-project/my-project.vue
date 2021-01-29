@@ -17,32 +17,38 @@
     .my-project-info
       .title {{ titleRef }}
       ps-text-area.mt-2(v-model='descriptionRef', placeholder='Popis projektu', name='project-description', :readonly='!modificable')
-      .subtitle.mt-2 Povinné soubory
-      span.mb-1.text-ps-white.text-sm Dokumentace (docx, PDF), Projekt (zip/rar)
-      ps-drag-drop(v-model='mandatoryFilesUpload', tile, multiple, accept='.pdf,.docx,.zip,.rar', :disabled='!modificable')
-      .subtitle(v-if='mandatoryFilesRef.length > 0') Nahrané povinné soubory:
-      .row(v-for='file in mandatoryFilesRef')
-        a.flex.items-center(:href='file.url', target='_blank') 
-          word-icon(v-if='file.extension == "docx"')
-          pdf-icon(v-else-if='file.extension == "pdf"')
-          zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
-          file-icon(v-else)
-          .ml-2.underline {{ file.fileName }}
-        ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
-          bin-icon(:size='20')
-      .subtitle.mt-2 Soubory navíc
-      ps-drag-drop#optionalSelect(v-model='optionalFilesUpload', tile, multiple, :disabled='!modificable')
-      .subtitle(v-if='optionalFilesRef.length > 0') Nahrané soubory navíc:
-      .row(v-for='file in optionalFilesRef')
-        a.flex.items-center(:href='file.url', target='_blank')
-          word-icon(v-if='file.extension == "docx"')
-          pdf-icon(v-else-if='file.extension == "pdf"')
-          zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
-          image-icon(v-else-if='file.extension == "jpg" || file.extension == "jpeg" || file.extension == "png" || file.extension == "gif"')
-          file-icon(v-else)
-          .ml-2.underline {{ file.fileName }}
-        ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
-          bin-icon(:size='20')
+      .subtitle.mt-2(v-if='modificable') Povinné soubory
+      span.mb-1.text-ps-white.text-sm(v-if='modificable') Dokumentace (docx, PDF), Projekt (zip/rar)
+      ps-drag-drop(v-if='modificable', v-model='mandatoryFilesUpload', tile, multiple, accept='.pdf,.docx,.zip,.rar', :disabled='!modificable')
+      .subtitle.mt-2(v-if='mandatoryFilesRef.length > 0') Nahrané povinné soubory
+      draggable.mb-2(v-model='mandatoryFilesRef', handle='.handle')
+        .row(v-for='file in mandatoryFilesRef')
+          drag-icon.handle(v-if='modificable')
+          .row-items
+            a.flex.items-center(:href='file.url', target='_blank') 
+              word-icon(v-if='file.extension == "docx"')
+              pdf-icon(v-else-if='file.extension == "pdf"')
+              zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
+              file-icon(v-else)
+              .ml-2.underline {{ file.fileName }}
+            ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
+              bin-icon(:size='20')
+      .subtitle.mt-2(v-if='modificable') Soubory navíc
+      ps-drag-drop#optionalSelect(v-if='modificable', v-model='optionalFilesUpload', tile, multiple, :disabled='!modificable')
+      .subtitle(v-if='optionalFilesRef.length > 0') Nahrané soubory navíc
+      draggable.mb-2(v-model='optionalFilesRef', handle='.handle')
+        .row(v-for='file in optionalFilesRef')
+          drag-icon.handle(v-if='modificable')
+          .row-items
+            a.flex.items-center(:href='file.url', target='_blank')
+              word-icon(v-if='file.extension == "docx"')
+              pdf-icon(v-else-if='file.extension == "pdf"')
+              zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
+              image-icon(v-else-if='file.extension == "jpg" || file.extension == "jpeg" || file.extension == "png" || file.extension == "gif"')
+              file-icon(v-else)
+              .ml-2.underline {{ file.fileName }}
+            ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
+              bin-icon(:size='20')
       ps-chips(v-model='keywordsRef', :edittable='modificable', placeholder='Klíčová slova')
   .mt-8.w-full.flex.flex.justify-center
     ps-btn.mr-4(@click='saveChanges', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Uložit
@@ -73,9 +79,13 @@ import zipIcon from 'vue-material-design-icons/ZipBox.vue';
 import imageIcon from 'vue-material-design-icons/Image.vue';
 import fileIcon from 'vue-material-design-icons/File.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
+import dragIcon from 'vue-material-design-icons/DragVertical.vue';
+
+import draggable from 'vuedraggable';
 
 export default defineComponent({
   components: {
+    draggable,
     chevronRight,
     wordIcon,
     zipIcon,
@@ -83,6 +93,7 @@ export default defineComponent({
     imageIcon,
     fileIcon,
     binIcon,
+    dragIcon,
   },
   setup() {
     const mainStore = useMainStore();
@@ -163,6 +174,20 @@ export default defineComponent({
           description: descriptionRef.value,
           links: linksRef.value,
           keywords: keywordsRef.value,
+          mandatoryOrder: mandatoryFilesRef.value.map((file: any) => {
+            return {
+              fileName: file.fileName,
+              filePath: file.filePath,
+              uploaded: file.uploaded,
+            };
+          }),
+          optionalOrder: optionalFilesRef.value.map((file: any) => {
+            return {
+              fileName: file.fileName,
+              filePath: file.filePath,
+              uploaded: file.uploaded,
+            };
+          }),
         }),
       );
 

@@ -1,16 +1,19 @@
 <template lang="pug">
 .drag-drop(@dragover.prevent, @drop.prevent, @drop='handleFileDrop', :class='{ tile: tile }')
   .list-wrap.w-full.mb-4(:class='{ "mt-2": files.length > 0 }')
-    .text-ps-white.flex.justify-between(v-for='file in files')
-      .flex.items-center
-        word-icon(v-if='file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"')
-        pdf-icon(v-else-if='file.type == "application/pdf"')
-        zip-icon(v-else-if='file.type == "application/x-zip-compressed"')
-        image-icon(v-else-if='file.type.split("/")[0] == "image"')
-        file-icon(v-else)
-        span.ml-2 {{ file.name }}
-      ps-btn.justify-self-end(text, @click='removeFile(file.name)')
-        bin-icon(:size='20')
+    draggable(v-model='files', handle='.handle')
+      .text-ps-white.flex.items-center(v-for='file in files')
+        drag-icon.handle(v-if='draggable')
+        .flex.justify-between.w-full
+          .flex.items-center
+            word-icon(v-if='file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"')
+            pdf-icon(v-else-if='file.type == "application/pdf"')
+            zip-icon(v-else-if='file.type == "application/x-zip-compressed"')
+            image-icon(v-else-if='file.type.split("/")[0] == "image"')
+            file-icon(v-else)
+            span.ml-2 {{ file.name }}
+          ps-btn.justify-self-end(text, @click='removeFile(file.name)')
+            bin-icon(:size='20')
   .input-wrap
     ps-btn(@click='btnTrigger', :disabled='disabled') Vyber soubory
     span.ml-3.text-ps-white nebo je sem přetáhni
@@ -26,6 +29,9 @@ import zipIcon from 'vue-material-design-icons/ZipBox.vue';
 import imageIcon from 'vue-material-design-icons/Image.vue';
 import fileIcon from 'vue-material-design-icons/File.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
+import dragIcon from 'vue-material-design-icons/DragVertical.vue';
+
+import draggable from 'vuedraggable';
 
 export default defineComponent({
   components: {
@@ -35,6 +41,8 @@ export default defineComponent({
     imageIcon,
     fileIcon,
     binIcon,
+    dragIcon,
+    draggable,
   },
   props: {
     value: {
@@ -59,6 +67,10 @@ export default defineComponent({
     id: {
       type: String,
       default: 'chooseFiles',
+    },
+    draggable: {
+      type: Boolean,
+      default: true,
     },
   },
   setup(props, { emit }) {

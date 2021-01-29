@@ -26,7 +26,8 @@
     "short-uuid": "^4.1.0",
     "ts-debounce": "^2.1.0",
     "vue-clickaway": "2.2.2",
-    "vue-material-design-icons": "4.11.0"
+    "vue-material-design-icons": "4.11.0",
+    "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
     "@babel/core": "7.12.9",

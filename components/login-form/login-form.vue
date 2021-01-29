@@ -31,7 +31,7 @@ export default defineComponent({
   components: {
     microsoftLogo,
   },
-  setup() {
+  setup(_, { emit }) {
     const mainStore = useMainStore();
 
     const awaitingLogin = ref(false);
@@ -69,6 +69,8 @@ export default defineComponent({
 
           mainStore.patch(userData);
         }
+
+        emit('login-complete', true);
       } catch (e) {
         // TODO Error handling
         console.error(e);
@@ -103,6 +105,8 @@ export default defineComponent({
 
           mainStore.patch(userData);
         }
+
+        emit('login-complete', true);
       } catch (e) {
         switch (e.code) {
           case 'auth/invalid-email': {
