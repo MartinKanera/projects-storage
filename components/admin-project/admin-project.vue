@@ -32,7 +32,7 @@
       ps-select.mb-4(v-model='projectToUpdate.opponentId', placeholder='Oponent', :options='teachers')
       span.text-ps-green.text-lg Nastavení odevzdání
       ps-select.mb-4(v-model='deadlineSwitch', :options='deadlineOptions')
-      ps-text-field.mt-4.text-ps-white(v-if='displayPicker', v-model='projectToUpdate.deadlineDate', type='datetime-local', name='project-deadline', label='Termín odevzdání projektu')
+      ps-text-field.my-4.text-ps-white(v-if='displayPicker', v-model='projectToUpdate.deadlineDate', type='datetime-local', name='project-deadline', label='Termín odevzdání projektu')
       .flex.flex-col
         span.text-ps-green.text-lg(v-if='reviews.length > 0') Odevzdaná hodnocení
         span(v-for='review in reviewsView') {{ review.displayName }} -

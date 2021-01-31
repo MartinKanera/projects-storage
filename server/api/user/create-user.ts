@@ -83,7 +83,9 @@ const saveProfileImage = async (userId: string, accessToken: string) => {
     imageStream.write(photoBin);
     imageStream.end();
 
-    return `https://storage.googleapis.com/${bucketName}/${fileName}`;
+    imageStream.on('finish', () => {
+      return `https://storage.googleapis.com/${bucketName}/${fileName}`;
+    });
   } catch (_) {
     return 'https://storage.googleapis.com/ps-profile-pictures/empty.png';
   }
