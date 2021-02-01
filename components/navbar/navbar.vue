@@ -21,7 +21,7 @@
               template(#icon-left)
                 logout/
       .flex.justify-center.items-center.relative(v-if='mainStore.isLoggedIn', v-on-clickaway='closeNotifications')
-        .notifications-number(@click='toggleNotifications')
+        .notifications-number(v-if='notificationsLength > 0', @click='toggleNotifications')
           span {{ notificationsLength }}
         bell.cursor-pointer.ml-1(@click='toggleNotifications')/
         ps-dropdown(:value='displayNotifications')
