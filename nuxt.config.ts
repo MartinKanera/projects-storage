@@ -61,7 +61,7 @@ const config: NuxtConfig = {
   /*
    ** Nuxt.js dev-modules
    */
-  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'pinia/nuxt', '@/modules/firebase', '@nuxtjs/composition-api'],
+  buildModules: ['@nuxt/typescript-build', '@nuxtjs/tailwindcss', 'pinia/nuxt', '@/modules/firebase', '@nuxtjs/composition-api', '@nuxtjs/google-analytics'],
   /*
    ** Nuxt.js modules
    */
@@ -87,6 +87,11 @@ const config: NuxtConfig = {
    ** Build configuration
    ** See https://nuxtjs.org/api/configuration-build/
    */
+  publicRuntimeConfig: {
+    googleAnalytics: {
+      id: env.firebaseConfig.measurementId,
+    },
+  },
   build: {},
 };
 

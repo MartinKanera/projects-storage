@@ -153,29 +153,89 @@ exports.newSchoolYear = functions.pubsub.schedule('0 0 25 5 *').timeZone('Europe
 
   const statisticsRef = db.collection('system').doc('statistics');
 
-  try {
-    await db.collection('system').doc('schoolYear').set({
-      currentYear: newSchoolYear,
-    });
-
-    await statisticsRef.set({
-      currentMaxStudents: 0,
-      currentProjects: 0,
-      currentReviews: 0,
-      currentMaxReviews: 0,
-      currentSubmittedProjects: 0,
-    }, { merge: true })
-  } catch (_) {};
-
   const newCurrentUsers = db.collection('users').where('currentYear', '==', newSchoolYear);
 
-  return await db.runTransaction(async (transaction) => {
-    const currentUsers = await transaction.get(newCurrentUsers);
-
-    transaction.update(statisticsRef, { 
-      currentMaxStudents: currentUsers.docs.length
+  try {
+    await db.runTransaction(async (transaction) => {
+      const currentUsers = await transaction.get(newCurrentUsers);
+  
+      transaction.set(statisticsRef, { 
+        currentMaxStudents: currentUsers.docs.length,
+        currentProjects: 0,
+        currentReviews: 0,
+        currentMaxReviews: 0,
+        currentSubmittedProjects: 0,
+      }, { merge: true });
+  
+      transaction.update(db.collection('system').doc('schoolYear'), {
+        currentYear: newSchoolYear,
+        projectDeadlineTriggered: false,
+        reviewDeadlineTriggered: false,
+      });
+  
+      return transaction;
     });
+  } catch(e) {
+    functions.logger.error(e);
+  }
 
-    return transaction;
-  });
+  return;
+});
+
+exports.notifications = functions.pubsub.schedule('every 24 hours').timeZone('Europe/Prague').onRun(async () => {
+  const timeNow = new Date().getTime();
+  const schoolYear = (await db.collection('system').doc('schoolYear').get()).data();
+
+  // Check if is 14 days before project deadline
+  const projectDeadline = (schoolYear?.projectDeadline as admin.firestore.Timestamp).seconds * 1000;
+
+  if (projectDeadline - 14 * 24 * 3600 * 1000 <= timeNow && !schoolYear?.projectDeadlineTriggered) {
+    // add notifications
+    try {
+      const batch = db.batch();
+      const students = await db.collection('users').where('currentYear', '==', schoolYear?.currentYear).where('student', '==', true).get();
+
+      students.docs.map((student) => {
+        batch.set(db.collection('notifications').doc(), {
+          userId: student.id,
+          message: 'Zbývá méně, jak 14 dní do odevzdání projektu!'
+        })
+      });
+
+      batch.update(db.collection('system').doc('schoolYear'), {
+        projectDeadlineTriggered: true,
+      });
+
+      await batch.commit();
+    } catch(e) {
+      functions.logger.error(e);
+    }
+  }
+
+  const reviewDeadline = (schoolYear?.reviewDeadline as admin.firestore.Timestamp).seconds * 1000;
+
+  // Check if is 14 days before reviews deadline
+
+  if (reviewDeadline - 14 * 24 * 3600 * 1000 <= timeNow && !schoolYear?.reviewDeadlineTriggered) {
+    // add notifications
+    try {
+      const batch = db.batch();
+      const teachers = await db.collection('users').where('teacher', '==', true).get();
+
+      teachers.docs.map((teacher) => {
+        batch.set(db.collection('notifications').doc(), {
+          userId: teacher.id,
+          message: 'Zbývá méně, jak 14 dní do odevzdání posudků!'
+        })
+      });
+
+      batch.update(db.collection('system').doc('schoolYear'), {
+        reviewDeadlineTriggered: true,
+      });
+
+      await batch.commit();
+    } catch(e) {
+      functions.logger.error(e);
+    }
+  }
 });
