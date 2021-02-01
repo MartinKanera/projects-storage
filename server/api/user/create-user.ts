@@ -55,6 +55,7 @@ export default async (req: Request, res: Response) => {
 
     return res.status(200).send(responseData);
   } catch (e) {
+    console.error(e);
     return res.status(400).send('Bad request');
   }
 };
@@ -83,8 +84,9 @@ const saveProfileImage = async (userId: string, accessToken: string) => {
     imageStream.write(photoBin);
     imageStream.end();
 
-    imageStream.on('finish', () => {
-      return `https://storage.googleapis.com/${bucketName}/${fileName}`;
+    return await new Promise((resolve, reject) => {
+      imageStream.on('finish', () => resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`));
+      imageStream.on('error', (e) => reject(e));
     });
   } catch (_) {
     return 'https://storage.googleapis.com/ps-profile-pictures/empty.png';
