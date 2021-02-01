@@ -87,10 +87,8 @@ const config: NuxtConfig = {
    ** Build configuration
    ** See https://nuxtjs.org/api/configuration-build/
    */
-  publicRuntimeConfig: {
-    googleAnalytics: {
-      id: env.firebaseConfig.measurementId,
-    },
+  googleAnalytics: {
+    id: 'UA-165458035-1',
   },
   build: {},
 };
