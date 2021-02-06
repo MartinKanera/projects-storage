@@ -8,13 +8,14 @@ export default async (req: Request, res: Response) => {
 
   const proposalRef = admin.firestore().collection('proposals').doc(req.params.id);
 
+  let user: any;
+
   try {
-    const user = await admin.auth().verifyIdToken(idToken);
+    user = await admin.auth().verifyIdToken(idToken);
 
     const userData = (await admin.firestore().collection('users').doc(user.uid).get()).data();
 
-    if (!(userData?.teacher || userData?.admin)) return res.status(403).send('Forbidden');
-    if (userData?.teacher && !((await proposalRef.get()).data()?.teacherId === user.uid)) return res.status(403).send();
+    if (!userData?.teacher) return res.status(403).send('User is not teacher');
   } catch {
     return res.status(401).send('Unauthorized');
   }
@@ -23,6 +24,9 @@ export default async (req: Request, res: Response) => {
     await admin.firestore().runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(proposalRef);
       const studentDoc = await transaction.get(admin.firestore().collection('users').doc(sfDoc.data()?.studentId));
+
+      if (!sfDoc.exists) throw new Error('404');
+      if (sfDoc.data()?.teacherId !== user.uid) throw new Error('403');
 
       const projectRef = admin.firestore().collection('projects').doc();
 
@@ -60,7 +64,14 @@ export default async (req: Request, res: Response) => {
       return transaction;
     });
   } catch (e) {
-    return res.status(500).send(e);
+    switch (e.toString()) {
+      case 'Error: 403':
+        return res.status(403).send('Proposal is not assigned to user');
+      case 'Error: 404':
+        return res.status(404).send('Proposal does not exist');
+      default:
+        return res.status(500).send(e);
+    }
   }
 
   return res.status(200).send('Proposal accepted');

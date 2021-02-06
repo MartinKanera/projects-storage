@@ -43,6 +43,7 @@ app.get('/project/:id', async (req, res) => (await import('./project/get')).defa
 app.put('/project/:id', async (req, res) => (await import('./project/update')).default(req, res));
 app.put('/student-project/:id', uploader.fields([{ name: 'mandatory' }, { name: 'optional' }]), async (req, res) => (await import('./project/student-update')).default(req, res));
 app.post('/project/:id', async (req, res) => (await import('./project/submit')).default(req, res));
+app.post('/project/return/:id', async (req, res) => (await import('./project/return')).default(req, res));
 
 // project files
 app.delete('/project-file/:filePath', async (req, res) => (await import('./project-file/delete')).default(req, res));

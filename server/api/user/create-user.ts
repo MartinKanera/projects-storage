@@ -7,8 +7,6 @@ import * as admin from 'firebase-admin';
 export default async (req: Request, res: Response) => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
 
-  // TODO implement req.body premade teachor account
-
   const usersCollection = admin.firestore().collection('users');
 
   try {
@@ -48,7 +46,6 @@ export default async (req: Request, res: Response) => {
       Object.assign(responseData, {
         project: {
           id: project.id,
-          ...project.data(),
         },
       });
     } catch (_) {}
@@ -56,7 +53,7 @@ export default async (req: Request, res: Response) => {
     return res.status(200).send(responseData);
   } catch (e) {
     console.error(e);
-    return res.status(400).send('Bad request');
+    return res.status(401).send();
   }
 };
 

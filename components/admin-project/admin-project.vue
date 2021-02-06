@@ -32,12 +32,14 @@
       ps-select.mb-4(v-model='projectToUpdate.opponentId', placeholder='Oponent', :options='teachers')
       span.text-ps-green.text-lg Nastavení odevzdání
       ps-select.mb-4(v-model='deadlineSwitch', :options='deadlineOptions')
-      ps-text-field.my-4.text-ps-white(v-if='displayPicker', v-model='projectToUpdate.deadlineDate', type='datetime-local', name='project-deadline', label='Termín odevzdání projektu')
+      ps-text-field.mt-4.text-ps-white(v-if='displayPicker', v-model='projectToUpdate.deadlineDate', type='datetime-local', name='project-deadline', label='Termín odevzdání projektu')
       .flex.flex-col
         span.text-ps-green.text-lg(v-if='reviews.length > 0') Odevzdaná hodnocení
         span(v-for='review in reviewsView') {{ review.displayName }} -
           a.ml-1(:href='review.publicUrl') {{ review.fileName }}
-      ps-btn.self-end(@click='updateProject', :loading='btnLoading', :disabled='btnLoading') Uložit změny
+      .flex.justify-between.mt-4
+        ps-btn(error, @click='returnProject', :loading='returnBtnLoading', :disabled='returnBtnLoading || !submittedDate') Vrátit projekt
+        ps-btn(@click='updateProject', :loading='btnLoading', :disabled='btnLoading') Uložit změny
 </template>
 
 <script lang="ts">
@@ -196,6 +198,28 @@ export default defineComponent({
       { placeholder: 'Speciální termín', value: 'true' },
     ];
 
+    const returnBtnLoading = ref(false);
+
+    const returnProject = async () => {
+      returnBtnLoading.value = true;
+
+      try {
+        await axios.post(
+          `/api/project/return/${projectId}`,
+          {},
+          {
+            headers: {
+              Authorization: await firebase.auth().currentUser?.getIdToken(),
+            },
+          },
+        );
+      } catch (e) {
+        console.error(e);
+      }
+
+      returnBtnLoading.value = false;
+    };
+
     return {
       getDate,
       detailsModal,
@@ -209,6 +233,8 @@ export default defineComponent({
       deadlineOptions,
       deadlineSwitch,
       displayPicker,
+      returnBtnLoading,
+      returnProject,
     };
   },
 });
