@@ -21,6 +21,7 @@ if (!admin.apps.length)
 // user
 app.post('/user/create', async (req, res) => (await import('./user/create-user')).default(req, res));
 app.put('/user/year', async (req, res) => (await import('./user/update-year')).default(req, res));
+app.patch('/user/picture', uploader.single('avatar'), async (req, res) => (await import('./user/profile-picture')).default(req, res));
 
 // proposal
 app.put('/proposal/accept/:id', async (req, res) => (await import('./proposal/accept')).default(req, res));

@@ -87,7 +87,7 @@
 
       .avatar-wrap
         @apply bg-ps-primary relative rounded-full
-        @apply w-54 h-54 mr-2
+        @apply w-54 h-54 mr-2 cursor-pointer
 
         @screen md
           @apply h-72 w-72
@@ -98,6 +98,17 @@
 
           @screen md
             @apply h-66 w-66
+
+        .change-wrap
+          @apply absolute w-full bg-ps-white rounded-full
+          @apply w-48 h-48 ps-center-absolute opacity-50
+          @apply flex items-center justify-center
+
+          @screen md
+            @apply h-66 w-66
+
+          .icon
+            @apply opacity-100
 
       .user-info
         @screen md
@@ -119,3 +130,25 @@
 
         .microsoft-btn
           border-bottom: 1px solid black
+
+.picture-modal-wrapper
+  @apply text-ps-white
+
+  .title
+    @apply text-ps-green text-2xl
+
+  .placeholder
+    @apply my-6 mx-auto
+    @apply flex items-center justify-center
+
+    img
+      @apply rounded-full
+      @apply border-solid border-4 border-ps-green
+
+      width: 100px
+      height: 100px
+
+      object-fit: cover
+
+  .actions
+    @apply flex justify-end
