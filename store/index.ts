@@ -16,6 +16,7 @@ type State = {
   };
   project: {
     id: String;
+    url: String;
   };
 };
 
@@ -36,6 +37,7 @@ export const useMainStore = createStore({
     },
     project: {
       id: '',
+      url: '',
     },
   }),
   getters: {

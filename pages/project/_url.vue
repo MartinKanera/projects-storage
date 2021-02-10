@@ -9,7 +9,7 @@
           .display-name {{ project.studentDisplayName }}
           .text-ps-green.text-sm {{ project.currentYear }}
       ps-project-links(v-model='project.links', :editable='false')
-      ps-reviews-list.mt-2(:projectId='project.id')
+      ps-reviews-list.mt-2(v-if='!loading', :projectId='project.id')
     .my-project-info
       .title {{ project.title }}
       ps-text-area.mt-2(v-model='project.description', placeholder='Popis projektu', name='project-description', :readonly='true')
@@ -66,7 +66,7 @@ export default defineComponent({
     const store = useMainStore();
 
     try {
-      await ctx.app.$axios.get(`/api/project/${ctx.params.id}`, {
+      await ctx.app.$axios.get(`/api/project/${ctx.params.url}`, {
         headers: {
           Authorization: `Bearer ${store.state.user.idToken}`,
         },
@@ -99,7 +99,7 @@ export default defineComponent({
     };
 
     const project = ssrRef({
-      id: ctx.params.value.id,
+      id: '',
       title: '',
       description: '',
       links: [],
@@ -144,14 +144,15 @@ export default defineComponent({
 
     useFetch(async () => {
       try {
-        const response = await ctx.app.$axios.get(`/api/project/${ctx.params.value.id}`, {
+        const response = await ctx.app.$axios.get(`/api/project/${ctx.params.value.url}`, {
           headers: {
             Authorization: `Bearer ${mainStore.state.user.idToken}`,
           },
         });
 
-        const { title, description, links, currentYear, mandatoryFiles, optionalFiles, studentProfilePicture, studentDisplayName, keywords } = response.data;
+        const { id, title, description, links, currentYear, mandatoryFiles, optionalFiles, studentProfilePicture, studentDisplayName, keywords } = response.data;
 
+        project.value.id = id;
         project.value.title = title;
         project.value.description = description;
         project.value.links = links;

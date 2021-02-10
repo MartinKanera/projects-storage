@@ -2,8 +2,10 @@
 .navbar
   .user
     .user-wrap
-      .avatar-wrap(v-if='mainStore.isLoggedIn')
+      .avatar-wrap(v-if='mainStore.isLoggedIn', @click='pictureModal = !pictureModal', @mouseover='pictureHover = true', @mouseleave='pictureHover = false')
         img.avatar(:src='mainStore.profilePicture')/
+        .change-wrap(v-if='pictureHover')
+          edit-icon.icon
       .user-info.flex(@click='toggleSettings', v-on-clickaway='closeSettings')
         .user-text(v-if='mainStore.isLoggedIn')
           span.user-name {{ mainStore.displayName }}
@@ -29,12 +31,20 @@
   .menu-btn(v-if='!isDesktop', @click='toggleBurger')
     .burger(:class='{ active: burger }')
   ps-modal(v-model='loginModal')
-    .flex.justify-center 
+    .flex.justify-center
       ps-login-form(@login-complete='toggleLoginModal')
+  ps-modal(v-model='pictureModal')
+    .picture-modal-wrapper
+      span.title Změna profilového obrázku
+      .placeholder
+        img(:src='placeholderImage')
+      ps-drag-drop(tile, :draggable='false', accept='.jpg,.jpeg,.gif,.png', v-model='selectedPicture', @input='changePlaceholder', :disabled='uploading')
+      .actions
+        ps-btn(@click='uploadPicture', :disabled='uploading', :loading='uploading') nahrát
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed, watchEffect } from '@nuxtjs/composition-api';
+import { defineComponent, ref, onMounted, computed, watchEffect, unref } from '@nuxtjs/composition-api';
 
 import { useMainStore } from '@/store';
 
@@ -44,10 +54,13 @@ import user from 'vue-material-design-icons/Account.vue';
 import logout from 'vue-material-design-icons/Logout.vue';
 import microsoftLogo from 'vue-material-design-icons/Microsoft.vue';
 import arrowRight from 'vue-material-design-icons/ChevronRight.vue';
+import editIcon from 'vue-material-design-icons/ImageEdit.vue';
 
 import { directive as onClickaway } from 'vue-clickaway';
 
-import * as firebase from 'firebase/app';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import axios from 'axios';
 
 type Props = {
   value: boolean;
@@ -61,6 +74,7 @@ export default defineComponent({
     logout,
     microsoftLogo,
     arrowRight,
+    editIcon,
   },
 
   // @ts-ignore
@@ -114,8 +128,6 @@ export default defineComponent({
     const closeNotifications = () => (displayNotifications.value = false);
 
     const logOut = async () => {
-      await require('firebase/auth');
-
       try {
         await firebase.auth().signOut();
         mainStore.reset();
@@ -137,6 +149,51 @@ export default defineComponent({
       notificationsLength.value = length;
     };
 
+    const pictureHover = ref(false);
+    const pictureModal = ref(false);
+    const selectedPicture = ref([]);
+
+    const placeholderImage = ref(unref(mainStore.state.user.profilePicture));
+    const uploading = ref(false);
+
+    const uploadPicture = async () => {
+      uploading.value = true;
+      const fd = new FormData();
+
+      fd.append('avatar', selectedPicture.value[0]);
+
+      try {
+        const response = await axios.patch('/api/user/picture', fd, {
+          headers: {
+            authorization: `Bearer ${await firebase.auth().currentUser?.getIdToken()}`,
+          },
+        });
+
+        mainStore.patch({ user: { profilePicture: response.data } });
+      } catch (e) {
+        console.error(e);
+      }
+
+      uploading.value = false;
+      pictureModal.value = false;
+    };
+
+    const changePlaceholder = () => {
+      if (!selectedPicture.value.length) {
+        placeholderImage.value = unref(mainStore.state.user.profilePicture);
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        // @ts-ignore
+        placeholderImage.value = e.target?.result;
+      };
+
+      reader.readAsDataURL(selectedPicture.value[0]);
+    };
+
     return {
       burger,
       toggleBurger,
@@ -153,6 +210,13 @@ export default defineComponent({
       updateNotifications,
       notificationsLength,
       toggleLoginModal,
+      pictureModal,
+      uploadPicture,
+      pictureHover,
+      selectedPicture,
+      changePlaceholder,
+      placeholderImage,
+      uploading,
     };
   },
 });

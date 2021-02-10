@@ -6,7 +6,7 @@
       span.text-ps-green.font-bold.block {{ displayName }}
       span.text-ps-white {{ projectTitle }}
   .actions.justify-self-end
-    nuxt-link(:to='`/project/${projectId}`')
+    nuxt-link(:to='`/project/${url}`')
       ps-btn.text-ps-white(text) Projekt
         template(#icon-right)
           arrow-right.text-ps-white(:size='32')/
@@ -110,6 +110,10 @@ export default defineComponent({
     submitted: {
       type: Boolean,
       default: false,
+    },
+    url: {
+      type: String,
+      required: true,
     },
   },
   setup(props) {

@@ -1,9 +1,10 @@
 <template lang="pug">
 .notifications-list
-  .notification(v-for='(notification, i) in notifications', :key='i')
-    .message {{ notification.message }}
-    .action
-      close-icon(:size='18', @click='removeNotification(notification.id)')
+  .wrapper
+    .notification(v-for='(notification, i) in notifications', :key='i')
+      .message {{ notification.message }}
+      .action
+        close-icon(:size='18', @click='removeNotification(notification.id)')
 </template>
 
 <script lang="ts">

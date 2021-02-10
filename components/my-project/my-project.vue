@@ -132,7 +132,7 @@ export default defineComponent({
     const fetch = async () => {
       try {
         // @ts-ignore
-        const response = await axios.get(`/api/project/${mainStore.state.project.id}`, {
+        const response = await axios.get(`/api/project/${mainStore.state.project.url}`, {
           headers: {
             authorization: `Bearer ${mainStore.state.user.idToken}`,
           },

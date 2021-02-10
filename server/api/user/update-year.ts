@@ -6,10 +6,12 @@ export default async (req: Request, res: Response) => {
 
   try {
     const user = await admin.auth().verifyIdToken(idToken);
+    const userData = (await admin.firestore().collection('users').doc(user.uid).get()).data();
 
     const yearTolerance = 4;
     const year = req.body?.year;
 
+    if (!userData?.student && !userData?.currentYear) return res.status(403).send();
     if (!year && year <= new Date().getFullYear() + yearTolerance) return res.status(400).send('Missing parameters');
 
     const currentYearTimestamp = admin.firestore.Timestamp.fromDate(new Date(Date.UTC(year, 4, 25)));

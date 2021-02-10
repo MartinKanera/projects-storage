@@ -31,7 +31,8 @@
         :displayName='project.displayName',
         :profilePicture='project.profilePicture',
         :teachers='teachers',
-        :deadlineDate='project.deadlineDate'
+        :deadlineDate='project.deadlineDate',
+        :url='project.url'
       )
     ps-tab(:active='selectedTab == "ostatní projekty"')
       span.text-ps-white.text-xl.mt-2 Ostatní projekty
@@ -49,7 +50,8 @@
         :title='project.title',
         :displayName='project.displayName',
         :profilePicture='project.profilePicture',
-        :teachers='teachers'
+        :teachers='teachers',
+        :url='project.url'
       )
     ps-tab(:active='selectedTab == "žáci"')
       ps-student.mt-4(
@@ -105,7 +107,8 @@
         :title='project.title',
         :displayName='project.displayName',
         :profilePicture='project.profilePicture',
-        :teachers='teachers'
+        :teachers='teachers',
+        :url='project.url'
       )
   ps-snackbar(v-model='displaySnack', :delay='5000') {{ message }}
 </template>
@@ -137,6 +140,7 @@ type Project = {
   displayName: String;
   profilePicture: String;
   deadlineDate: String | null;
+  url: String;
 };
 
 type Teacher = {
@@ -225,6 +229,7 @@ export default defineComponent({
           displayName: userData?.displayName,
           profilePicture: userData?.profilePicture,
           deadlineDate: formatDate(projectData?.deadlineDate),
+          url: projectData?.url,
         };
       });
     };

@@ -21,6 +21,7 @@ if (!admin.apps.length)
 // user
 app.post('/user/create', async (req, res) => (await import('./user/create-user')).default(req, res));
 app.put('/user/year', async (req, res) => (await import('./user/update-year')).default(req, res));
+app.patch('/user/picture', uploader.single('avatar'), async (req, res) => (await import('./user/profile-picture')).default(req, res));
 
 // proposal
 app.put('/proposal/accept/:id', async (req, res) => (await import('./proposal/accept')).default(req, res));
@@ -39,10 +40,11 @@ app.post('/review/delete/:filePath', async (req, res) => (await import('./review
 app.put('/student/update/:id', async (req, res) => (await import('./student/update')).default(req, res));
 
 // project
-app.get('/project/:id', async (req, res) => (await import('./project/get')).default(req, res));
+app.get('/project/:url', async (req, res) => (await import('./project/get')).default(req, res));
 app.put('/project/:id', async (req, res) => (await import('./project/update')).default(req, res));
 app.put('/student-project/:id', uploader.fields([{ name: 'mandatory' }, { name: 'optional' }]), async (req, res) => (await import('./project/student-update')).default(req, res));
 app.post('/project/:id', async (req, res) => (await import('./project/submit')).default(req, res));
+app.post('/project/return/:id', async (req, res) => (await import('./project/return')).default(req, res));
 
 // project files
 app.delete('/project-file/:filePath', async (req, res) => (await import('./project-file/delete')).default(req, res));

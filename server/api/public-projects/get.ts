@@ -23,6 +23,7 @@ const formatProjectsData = async (projects: admin.firestore.QuerySnapshot<admin.
       displayName: currentStudent?.data().displayName,
       profilePicture: currentStudent?.data().profilePicture,
       year: (project.data()?.currentYear as admin.firestore.Timestamp).toDate().getFullYear(),
+      url: project.data()?.url,
     };
   });
 };

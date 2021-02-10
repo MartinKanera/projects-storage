@@ -26,17 +26,18 @@ const getFiles = async (files: any) => {
 
 export default async (req: Request, res: Response) => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
-  const projectId = req.params.id;
+  const projectUrl = req.params.url;
 
-  if (!projectId) return res.status(400).send('Missing parameters');
+  if (!projectUrl) return res.status(400).send('Missing parameters');
 
   try {
-    const projectRef = admin.firestore().collection('projects').doc(projectId);
-    const project = await projectRef.get();
+    const queriedProjects = admin.firestore().collection('projects').where('url', '==', projectUrl);
+    const project = (await queriedProjects.get()).docs[0];
+    const projectRef = project.ref;
 
     const projectData = project.data();
 
-    if (!project.exists) return res.status(404).send('Project does not exist');
+    if (!project?.exists) return res.status(404).send('Project does not exist');
 
     if (!projectData?.public) {
       const userAuth = !idToken ? { uid: 'public' } : await admin.auth().verifyIdToken(idToken);
@@ -57,6 +58,7 @@ export default async (req: Request, res: Response) => {
     const projectFiles = (await admin.firestore().collection('projectFiles').where('projectId', '==', projectRef.id).get()).docs[0];
 
     return res.status(200).send({
+      id: project.id,
       title: projectData?.title,
       description: projectData?.description,
       links: projectData?.links,
