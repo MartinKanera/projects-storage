@@ -25,6 +25,25 @@ export default async (req: Request, res: Response) => {
       const sfDoc = await transaction.get(proposalRef);
       const studentDoc = await transaction.get(admin.firestore().collection('users').doc(sfDoc.data()?.studentId));
 
+      let projectUrl: string = sfDoc
+        .data()
+        ?.title.trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036F]/g, '')
+        .replace(' ', '-')
+        .replace(/ /g, '-');
+
+      const matchingProjects = await transaction.get(admin.firestore().collection('projects').where('url', '==', projectUrl));
+
+      if (matchingProjects.docs[0]?.exists)
+        projectUrl = `${projectUrl}-${studentDoc
+          .data()
+          ?.displayName.toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036F]/g, '')
+          .replace(/ /g, '')}`;
+
       if (!sfDoc.exists) throw new Error('404');
       if (sfDoc.data()?.teacherId !== user.uid) throw new Error('403');
 
@@ -45,6 +64,7 @@ export default async (req: Request, res: Response) => {
         links: [],
         deadlineDate: null,
         keywords: [],
+        url: projectUrl,
       });
 
       transaction.set(admin.firestore().collection('projectFiles').doc(), {
@@ -64,6 +84,7 @@ export default async (req: Request, res: Response) => {
       return transaction;
     });
   } catch (e) {
+    console.error(e);
     switch (e.toString()) {
       case 'Error: 403':
         return res.status(403).send('Proposal is not assigned to user');

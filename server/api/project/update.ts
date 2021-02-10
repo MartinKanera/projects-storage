@@ -50,6 +50,27 @@ export default async (req: Request, res: Response) => {
     await admin.firestore().runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(projectRef);
 
+      let projectUrl: string = updatedProject.title
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036F]/g, '')
+        .replace(' ', '-')
+        .replace(/ /g, '-');
+
+      if (updatedProject.title !== sfDoc.data()?.title) {
+        const matchingProjects = await transaction.get(admin.firestore().collection('projects').where('url', '==', projectUrl));
+
+        if (matchingProjects.docs[0]?.exists) {
+          projectUrl = `${projectUrl}-${(await transaction.get(admin.firestore().collection('users').doc(sfDoc.data()?.studentId)))
+            .data()
+            ?.displayName.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036F]/g, '')
+            .replace(/ /g, '')}`;
+        }
+      }
+
       let projectToUpload = {
         opponentId: updatedProject.opponentId,
         public: updatedProject.public,
@@ -57,6 +78,7 @@ export default async (req: Request, res: Response) => {
         title: updatedProject.title,
         titleLower: updatedProject.title.toLowerCase(),
         deadlineDate: updatedProject.deadlineDate === null ? null : admin.firestore.Timestamp.fromDate(new Date(updatedProject.deadlineDate)),
+        url: projectUrl,
       };
 
       if (sfDoc.data()?.teacherId !== updatedProject.teacherId && sfDoc.data()?.reviews) {
