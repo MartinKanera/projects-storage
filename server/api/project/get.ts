@@ -58,6 +58,7 @@ export default async (req: Request, res: Response) => {
     const projectFiles = (await admin.firestore().collection('projectFiles').where('projectId', '==', projectRef.id).get()).docs[0];
 
     return res.status(200).send({
+      id: project.id,
       title: projectData?.title,
       description: projectData?.description,
       links: projectData?.links,

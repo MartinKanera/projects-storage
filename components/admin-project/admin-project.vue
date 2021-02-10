@@ -12,7 +12,7 @@
         span(v-if='submittedDate') {{ getDate(submittedDate) }}
         span(v-else) není odevzdán
   .actions
-    nuxt-link(:to='`/project/${projectId}`')
+    nuxt-link(:to='`/project/${url}`')
       ps-btn.self-start(text) projekt
         template(#icon-right)
           chevron-icon(:size='18')/
@@ -110,6 +110,10 @@ export default defineComponent({
     deadlineDate: {
       type: String || null,
       default: undefined,
+    },
+    url: {
+      type: String,
+      required: true,
     },
   },
   // { projectId, currentYear, opponentId, publicProject, reviews, studentId, submittedDate, teacherId, title, displayName, profilePicture, teachers }

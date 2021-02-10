@@ -1,5 +1,5 @@
 <template lang="pug">
-nuxt-link.public-project(:to='`/project/${id}`')
+nuxt-link.public-project(:to='`/project/${url}`')
   .wrapper(@mouseover='hover = true', @mouseleave='hover = false')
     .title {{ title }}
     .info
@@ -42,6 +42,10 @@ export default defineComponent({
     },
     year: {
       type: Number,
+      required: true,
+    },
+    url: {
+      type: String,
       required: true,
     },
   },

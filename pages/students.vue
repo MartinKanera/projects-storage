@@ -27,7 +27,8 @@
           :reviews='project.reviews',
           :pastDeadline='pastDeadline',
           :teacher='project.teacher',
-          :opponent='project.opponent'
+          :opponent='project.opponent',
+          :url='project.url'
         )
       .flex.justify-between.mt-2(v-if='submittedProjects.length > 0')
         span.text-2xl.text-ps-white.font-medium Projekty k hodnocení
@@ -43,7 +44,8 @@
           :pastDeadline='pastDeadline',
           :teacher='project.teacher',
           :opponent='project.opponent',
-          :submitted='true'
+          :submitted='true',
+          :url='project.url'
         )
     ps-tab(v-if='!extern', :active='selectedTab == "předpřipravené zadání"')
       .flex.flex-col.justify-between(class='md:flex-row')
@@ -101,6 +103,7 @@ type Project = {
   reviews: [];
   teacher: Boolean;
   opponent: Boolean;
+  url: String;
 };
 
 type PremadeProject = {
@@ -234,6 +237,7 @@ export default defineComponent({
                   reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
                   teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
                   opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+                  url: projectDoc.data()?.url,
                 };
               });
             }),
@@ -270,6 +274,7 @@ export default defineComponent({
                   reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
                   teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
                   opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+                  url: projectDoc.data()?.url,
                 };
               });
             }),
@@ -328,6 +333,7 @@ export default defineComponent({
                   reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
                   teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
                   opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+                  url: projectDoc.data()?.url,
                 };
               });
             }),

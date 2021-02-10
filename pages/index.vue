@@ -9,7 +9,8 @@
       :description='project.description',
       :displayName='project.displayName',
       :profilePicture='project.profilePicture',
-      :year='project.year'
+      :year='project.year',
+      :url='project.url'
     )
   ps-modal(:value='yearModalDisplay', :disabled='true')
     span.text-ps-white.text-2xl Kdy maturuješ?
@@ -36,6 +37,7 @@ type PublicProject = {
   displayName: string;
   profilePicture: string;
   year: number;
+  url: string;
 };
 
 export default defineComponent({

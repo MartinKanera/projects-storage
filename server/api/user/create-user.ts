@@ -46,6 +46,7 @@ export default async (req: Request, res: Response) => {
       Object.assign(responseData, {
         project: {
           id: project.id,
+          url: project.data()?.url,
         },
       });
     } catch (_) {}
