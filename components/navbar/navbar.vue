@@ -27,7 +27,7 @@
           span {{ notificationsLength }}
         bell.cursor-pointer.ml-1(@click='toggleNotifications')/
         ps-dropdown(:value='displayNotifications')
-          ps-notifications-list(@update-notifications='updateNotifications')
+          ps-notifications-list(@update-notifications='updateNotifications', v-show='notificationsLength > 0')
   .menu-btn(v-if='!isDesktop', @click='toggleBurger')
     .burger(:class='{ active: burger }')
   ps-modal(v-model='loginModal')
