@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import admin from 'firebase-admin';
 
+import Jimp from 'jimp';
 import short from 'short-uuid';
 
 export default async (req: Request, res: Response) => {
@@ -23,6 +24,10 @@ export default async (req: Request, res: Response) => {
       const userRef = admin.firestore().collection('users').doc(userAuth.uid);
 
       const fileName = `${short().new()}.${extension}`;
+
+      // Resize uploaded image
+      const resizedImage = (await Jimp.read(avatarImg.buffer)).cover(256, 256);
+      const resizedImageBuffer = await resizedImage.getBufferAsync(avatarImg.mimetype);
 
       const uploadedUrl = await new Promise((resolve, reject) => {
         const blob = bucket.file(fileName);
@@ -61,7 +66,7 @@ export default async (req: Request, res: Response) => {
           reject(e);
         });
 
-        blobStream.end(avatarImg.buffer);
+        blobStream.end(resizedImageBuffer);
       });
 
       return res.status(200).send(uploadedUrl);

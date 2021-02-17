@@ -12,7 +12,7 @@
       :profilePicture='proposal.profilePicture',
       :proposalRef='proposal.proposalRef'
     )
-  ps-tabs(:tabs='extern ? ["oponent"] : ["studenti", "předpřipravené zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
+  ps-tabs(:tabs='extern ? ["oponent"] : ["studenti", "předpřipravená zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
     ps-tab(v-if='!extern', :active='selectedTab == "studenti"')
       .flex.justify-between(v-if='projects.length > 0')
         span.text-2xl.text-ps-white.font-medium Moji studenti
@@ -47,7 +47,7 @@
           :submitted='true',
           :url='project.url'
         )
-    ps-tab(v-if='!extern', :active='selectedTab == "předpřipravené zadání"')
+    ps-tab(v-if='!extern', :active='selectedTab == "předpřipravená zadání"')
       .flex.flex-col.justify-between(class='md:flex-row')
         span.text-2xl.text-ps-white.font-medium Předpřipravené projekty
         ps-btn.self-start(@click='projectModal', class='md:self-center') Přidat zadání

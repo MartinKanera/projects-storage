@@ -61,7 +61,7 @@
       ps-btn.mt-4(@click='submitProject', :disabled='awaiting', :loading='awaiting') Odevzdat projekt
         template(#icon-right)
           chevron-right/
-  ps-snackbar(v-model='snackbar') {{ message }}
+  ps-snackbar(v-model='snackbar', :delay='6000') {{ message }}
 </template>
 
 <script lang="ts">
@@ -252,9 +252,10 @@ export default defineComponent({
     const checkModal = () => (submitCheck.value = !submitCheck.value);
 
     const submitProject = async () => {
-      awaiting.value = true;
-
       try {
+        await saveChanges();
+        awaiting.value = true;
+
         await axios.post(
           `/api/project/${mainStore.state.project.id}`,
           {},
@@ -274,6 +275,9 @@ export default defineComponent({
         if (e.response.status === 412) {
           snackbar.value = true;
           message.value = 'Chybí ti povinné soubory';
+        } else {
+          snackbar.value = true;
+          message.value = 'Nastala chyba';
         }
       }
 
