@@ -1,5 +1,11 @@
 .drag-drop
-  @apply flex justify-between items-start flex-col-reverse
+  @apply flex justify-between items-start flex-col-reverse p-2 rounded-lg
+  @apply bg-ps-primary
+
+  min-height: 100px
+
+  &.tile
+    @apply border-b-2 border-ps-green border-solid
 
   &:not(.tile)
     @apply bg-ps-secondary shadow rounded-lg p-4

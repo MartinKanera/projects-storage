@@ -30,6 +30,9 @@ export default async (req: Request, res: Response) => {
       if (sfDoc.exists) throw new Error('User document already exists');
 
       transaction.set(userRef, {
+        admin: false,
+        currentYear: null,
+        student: false,
         teacher: true,
         extern: true,
         profilePicture: 'https://storage.googleapis.com/ps-profile-pictures/empty.png',

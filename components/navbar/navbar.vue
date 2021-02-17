@@ -38,7 +38,7 @@
       span.title Změna profilového obrázku
       .placeholder
         img(:src='placeholderImage')
-      ps-drag-drop(tile, :draggable='false', accept='.jpg,.jpeg,.gif,.png', v-model='selectedPicture', @input='changePlaceholder', :disabled='uploading')
+      ps-drag-drop.mb-4(tile, :draggable='false', accept='.jpg,.jpeg,.gif,.png', v-model='selectedPicture', @input='changePlaceholder', :disabled='uploading')
       .actions
         ps-btn(@click='uploadPicture', :disabled='uploading', :loading='uploading') nahrát
 </template>
