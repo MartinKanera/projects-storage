@@ -40,11 +40,15 @@ export default async (req: Request, res: Response) => {
     if (!project?.exists) return res.status(404).send('Project does not exist');
 
     if (!projectData?.public) {
-      const userAuth = !idToken ? { uid: 'public' } : await admin.auth().verifyIdToken(idToken);
-      const user = await admin.firestore().collection('users').doc(userAuth.uid).get();
+      try {
+        const userAuth = await admin.auth().verifyIdToken(idToken);
+        const user = await admin.firestore().collection('users').doc(userAuth.uid).get();
 
-      if (!user.data()?.admin && !(projectData?.studentId === userAuth.uid) && !(projectData?.teacherId === userAuth.uid) && !(projectData?.opponentId === userAuth.uid))
+        if (!user.data()?.admin && !(projectData?.studentId === userAuth.uid) && !(projectData?.teacherId === userAuth.uid) && !(projectData?.opponentId === userAuth.uid))
+          return res.status(403).send();
+      } catch (_) {
         return res.status(403).send();
+      }
     }
 
     let deadlineDate = projectData?.deadlineDate;

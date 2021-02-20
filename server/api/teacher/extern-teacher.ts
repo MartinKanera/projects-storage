@@ -45,6 +45,6 @@ export default async (req: Request, res: Response) => {
 
     return res.status(200).send();
   } catch (e) {
-    res.status(500).send(e);
+    return res.status(500).send(e);
   }
 };

@@ -18,8 +18,6 @@ export default async (req: Request, res: Response) => {
     const user = await admin.auth().verifyIdToken(idToken);
 
     if (!(await admin.firestore().collection('users').doc(user.uid).get()).data()?.admin) return res.status(403).send('Only admin can update student');
-
-    // if (!(await admin.firestore().collection('users').doc(studentId).get()).data()?.student) return res.status(404).send('No student with this id found');
   } catch (_) {
     return res.status(401).send('Unauthorized');
   }

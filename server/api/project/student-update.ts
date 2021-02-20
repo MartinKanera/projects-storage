@@ -59,9 +59,19 @@ export default async (req: Request, res: Response) => {
 
   const body = JSON.parse(req.body.projectData);
 
-  // TODO check mandatory files match type
-
-  if (!(typeof body.description === 'string' && Array.isArray(body.links) && req.params.id && checkLinks(body.links) && Array.isArray(body.keywords))) return res.status(400).send();
+  if (
+    !(
+      typeof body.description === 'string' &&
+      body.description.length <= 250 &&
+      Array.isArray(body.links) &&
+      req.params.id &&
+      checkLinks(body.links) &&
+      Array.isArray(body.keywords) &&
+      Array.isArray(body.mandatoryOrder) &&
+      Array.isArray(body.optionalOrder)
+    )
+  )
+    return res.status(400).send();
 
   // @ts-ignore
   const mandatoryFiles = req.files.mandatory;
@@ -116,7 +126,12 @@ export default async (req: Request, res: Response) => {
 
         transaction.update(projectRef, {
           description: body.description.trim(),
-          links: body.links,
+          links: body.links.map((link: any) => {
+            return {
+              placeholder: link.placeholder,
+              url: link.url,
+            };
+          }),
           keywords: body.keywords,
         });
 

@@ -42,7 +42,7 @@ export default async (req: Request, res: Response) => {
         case 'Error: 403':
           return res.status(403).send('Only admin can update deadlines');
         default:
-          return res.status(500).send();
+          return res.status(500).send(e);
       }
     }
   } catch (_) {

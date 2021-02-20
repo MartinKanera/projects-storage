@@ -29,7 +29,7 @@ export default async (req: Request, res: Response) => {
   const idToken = req.headers.authorization?.split(' ')[1] ?? '';
   const projectId = req.params.id;
 
-  if (!projectId) return res.status(401).send('Missing params');
+  if (!projectId) return res.status(400).send('Missing params');
 
   try {
     const project = await admin.firestore().collection('projects').doc(projectId).get();
@@ -38,6 +38,9 @@ export default async (req: Request, res: Response) => {
 
     const projectData = project.data();
 
+    if (!projectData?.public && idToken === 'undefined') return res.status(403).send();
+    if (projectData?.public && idToken === 'undefined') return res.status(200).send(await getReviewsUrls(projectData?.reviews));
+
     try {
       // Check auth
       const userAuth = await admin.auth().verifyIdToken(idToken);
@@ -45,7 +48,7 @@ export default async (req: Request, res: Response) => {
 
       return res.send(await getReviewsUrls(projectData?.reviews, userData?.admin || projectData?.teacherId === userAuth.uid || projectData?.opponentId === userAuth.uid));
     } catch (_) {
-      return res.send(await getReviewsUrls(projectData?.reviews));
+      return res.status(401).send('Project is not public');
     }
   } catch (_) {
     return res.status(500).send();
