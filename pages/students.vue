@@ -12,8 +12,8 @@
       :profilePicture='proposal.profilePicture',
       :proposalRef='proposal.proposalRef'
     )
-  ps-tabs(:tabs='extern ? ["oponent"] : ["studenti", "předpřipravená zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
-    ps-tab(v-if='!extern', :active='selectedTab == "studenti"')
+  ps-tabs(:tabs='extern ? ["oponent"] : ["aktuální projekty", "ostatní projekty", "předpřipravená zadání", "oponent"]', :selected='selectedTab', @selected='setTab')
+    ps-tab(v-if='!extern', :active='selectedTab == "aktuální projekty"')
       .flex.justify-between(v-if='projects.length > 0')
         span.text-2xl.text-ps-white.font-medium Moji studenti
       .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
@@ -46,6 +46,22 @@
           :opponent='project.opponent',
           :submitted='true',
           :url='project.url'
+        )
+    ps-tab(v-if='!extern', :active='selectedTab == "ostatní projekty"')
+      .flex.flex-col.mt-4.flex-wrap.justify-between(class='lg:flex-row')
+        ps-teacher-project(
+          v-for='project in otherProjects',
+          :key='project.projectId',
+          :projectId='project.projectId',
+          :projectTitle='project.projectTitle',
+          :displayName='project.displayName',
+          :profilePicture='project.profilePicture',
+          :reviews='project.reviews',
+          :pastDeadline='pastDeadline',
+          :teacher='project.teacher',
+          :opponent='project.opponent',
+          :url='project.url',
+          :year='project.year'
         )
     ps-tab(v-if='!extern', :active='selectedTab == "předpřipravená zadání"')
       .flex.flex-col.justify-between(class='md:flex-row')
@@ -104,6 +120,7 @@ type Project = {
   teacher: Boolean;
   opponent: Boolean;
   url: String;
+  year: String;
 };
 
 type PremadeProject = {
@@ -119,10 +136,13 @@ export default defineComponent({
   setup() {
     const mainStore = useMainStore();
 
-    const selectedTab = ref(mainStore.state.user.extern ? 'oponent' : 'studenti');
+    const selectedTab = ref(mainStore.state.user.extern ? 'oponent' : 'aktuální projekty');
 
     const setTab = (tab: string) => {
       selectedTab.value = tab;
+      if (tab === 'ostatní projekty') {
+        window.onscroll = otherLazyLoad;
+      }
     };
 
     const listeners: Array<Function> = [];
@@ -238,10 +258,13 @@ export default defineComponent({
                   teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
                   opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
                   url: projectDoc.data()?.url,
+                  year: '',
                 };
               });
             }),
         );
+
+        fetchOtherProjects();
       } catch (_) {}
 
       // add snapshot listener for submitted projects
@@ -275,6 +298,7 @@ export default defineComponent({
                   teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
                   opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
                   url: projectDoc.data()?.url,
+                  year: '',
                 };
               });
             }),
@@ -334,6 +358,7 @@ export default defineComponent({
                   teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
                   opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
                   url: projectDoc.data()?.url,
+                  year: '',
                 };
               });
             }),
@@ -377,6 +402,95 @@ export default defineComponent({
       projectModal();
     };
 
+    // add snapshot listener for other projects
+    const otherProjects = ref([] as Array<Project>);
+    let lastOther: any = null;
+
+    const fetchOtherProjects = () => {
+      listeners.push(
+        firebase
+          .firestore()
+          .collection('projects')
+          .where('teacherId', '==', mainStore.state.user.id)
+          .where('currentYear', '!=', currentYear.value)
+          .orderBy('currentYear', 'desc')
+          .limit(10)
+          .onSnapshot(async (snapshots) => {
+            const projectDocs = snapshots.docs;
+            const studentIds = snapshots.docs.map((projectDoc) => projectDoc.data().studentId);
+
+            const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
+            lastOther = projectDocs[projectDocs.length - 1];
+
+            const projects = projectDocs.map((projectDoc) => {
+              const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
+
+              return {
+                projectId: projectDoc.id,
+                projectTitle: projectDoc.data().title,
+                displayName: currentStudent?.data().displayName,
+                profilePicture: currentStudent?.data().profilePicture,
+                reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+                url: projectDoc.data()?.url,
+                year: (projectDoc.data()?.currentYear as firebase.firestore.Timestamp).toDate().getFullYear(),
+              };
+            });
+
+            projects.forEach((project: any) => {
+              otherProjects.value = otherProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
+              otherProjects.value.push(project);
+            });
+          }),
+      );
+    };
+
+    const otherLazyLoad = () => {
+      if (!(window.innerHeight + Math.ceil(window.pageYOffset) >= document.body.offsetHeight) || !lastOther) return;
+
+      console.log('Bottom of other projects');
+
+      listeners.push(
+        firebase
+          .firestore()
+          .collection('projects')
+          .where('teacherId', '==', mainStore.state.user.id)
+          .where('currentYear', '!=', currentYear.value)
+          .orderBy('currentYear', 'desc')
+          .startAfter(lastOther)
+          .limit(10)
+          .onSnapshot(async (snapshots) => {
+            const projectDocs = snapshots.docs;
+            const studentIds = snapshots.docs.map((projectDoc) => projectDoc.data().studentId);
+
+            const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
+            lastOther = projectDocs[projectDocs.length - 1];
+
+            const projects = projectDocs.map((projectDoc) => {
+              const currentStudent = studentsColection.find((studentDoc) => studentDoc.id === projectDoc.data().studentId);
+
+              return {
+                projectId: projectDoc.id,
+                projectTitle: projectDoc.data().title,
+                displayName: currentStudent?.data().displayName,
+                profilePicture: currentStudent?.data().profilePicture,
+                reviews: (projectDoc.data()?.reviews ?? []).filter((review: any) => review.teacherId === mainStore.state.user.id),
+                teacher: projectDoc.data()?.teacherId === mainStore.state.user.id,
+                opponent: projectDoc.data()?.opponentId === mainStore.state.user.id,
+                url: projectDoc.data()?.url,
+                year: (projectDoc.data()?.currentYear as firebase.firestore.Timestamp).toDate().getFullYear(),
+              };
+            });
+
+            projects.forEach((project: any) => {
+              otherProjects.value = otherProjects.value.filter((currentProject) => currentProject.projectId !== project.projectId);
+              otherProjects.value.push(project);
+            });
+          }),
+      );
+    };
+
     // Unsubscribe all snapshot listeners
     onBeforeUnmount(() => {
       listeners.forEach((listener) => listener());
@@ -398,6 +512,7 @@ export default defineComponent({
       opponentProjects,
       pastDeadline,
       extern: mainStore.state.user.extern,
+      otherProjects,
     };
   },
 });

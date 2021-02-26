@@ -51,7 +51,9 @@
         :displayName='project.displayName',
         :profilePicture='project.profilePicture',
         :teachers='teachers',
-        :url='project.url'
+        :deadlineDate='project.deadlineDate',
+        :url='project.url',
+        :year='project.year'
       )
     ps-tab(:active='selectedTab == "žáci"')
       ps-student.mt-4(
@@ -141,6 +143,7 @@ type Project = {
   profilePicture: String;
   deadlineDate: String | null;
   url: String;
+  year: String;
 };
 
 type Teacher = {
@@ -230,6 +233,7 @@ export default defineComponent({
           profilePicture: userData?.profilePicture,
           deadlineDate: formatDate(projectData?.deadlineDate),
           url: projectData?.url,
+          year: (projectData?.currentYear as firebase.firestore.Timestamp).toDate().getFullYear(),
         };
       });
     };
@@ -378,7 +382,7 @@ export default defineComponent({
         firebase
           .firestore()
           .collection('projects')
-          .where('currentYear', '<', currentSchoolYear.value)
+          .where('currentYear', '!=', currentSchoolYear.value)
           .orderBy('currentYear', 'desc')
           .limit(10)
           .onSnapshot(async (snapshots) => {
@@ -407,7 +411,7 @@ export default defineComponent({
         firebase
           .firestore()
           .collection('projects')
-          .where('currentYear', '<', currentSchoolYear.value)
+          .where('currentYear', '!=', currentSchoolYear.value)
           .orderBy('currentYear', 'desc')
           .startAfter(lastOfAll)
           .limit(10)

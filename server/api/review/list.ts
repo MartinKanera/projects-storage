@@ -1,11 +1,24 @@
 import { Request, Response } from 'express';
 import admin from 'firebase-admin';
 
-const getReviewsUrls = async (reviews: any, authorized = false) => {
+const getReviewsUrls = async (projectData: any, authorized = false) => {
+  const reviews = projectData?.reviews;
+
   const storage = admin.app().storage().bucket('ps-reviews');
   const expires = Date.now() + 3600 * 1000;
 
-  if (!reviews) return [];
+  const result = [
+    {
+      teacherId: projectData?.teacherId,
+      reviews: [],
+    },
+    {
+      teacherId: projectData?.opponentId,
+      reviews: [],
+    },
+  ];
+
+  if (!reviews) return result;
 
   const response: any = await Promise.all(
     reviews.map(async (review: any) => {
@@ -22,7 +35,18 @@ const getReviewsUrls = async (reviews: any, authorized = false) => {
       };
     }),
   );
-  return response.filter((el: any) => el != null);
+
+  const strippedReviews: Array<any> = response.filter((el: any) => el != null);
+  const nigger = result.map((teacher) => {
+    return {
+      ...teacher,
+      reviews: strippedReviews.filter((review) => review.teacherId === teacher.teacherId),
+    };
+  });
+
+  console.log(nigger);
+
+  return nigger;
 };
 
 export default async (req: Request, res: Response) => {
@@ -39,14 +63,14 @@ export default async (req: Request, res: Response) => {
     const projectData = project.data();
 
     if (!projectData?.public && idToken === 'undefined') return res.status(403).send();
-    if (projectData?.public && idToken === 'undefined') return res.status(200).send(await getReviewsUrls(projectData?.reviews));
+    if (projectData?.public && idToken === 'undefined') return res.status(200).send(await getReviewsUrls(projectData));
 
     try {
       // Check auth
       const userAuth = await admin.auth().verifyIdToken(idToken);
       const userData = (await admin.firestore().collection('users').doc(userAuth.uid).get()).data();
 
-      return res.send(await getReviewsUrls(projectData?.reviews, userData?.admin || projectData?.teacherId === userAuth.uid || projectData?.opponentId === userAuth.uid));
+      return res.send(await getReviewsUrls(projectData, userData?.admin || projectData?.teacherId === userAuth.uid || projectData?.opponentId === userAuth.uid));
     } catch (_) {
       return res.status(401).send('Project is not public');
     }

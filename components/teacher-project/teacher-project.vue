@@ -3,7 +3,7 @@
   .flex.items-center
     img.border-2.border-solid.border-ps-green.rounded-full(:src='profilePicture', width='48')
     .ml-2
-      span.text-ps-green.font-bold.block {{ displayName }}
+      span.text-ps-green.font-bold.block {{ displayName }}{{ year === 0 ? "" : ` - ${year}` }}
       span.text-ps-white {{ projectTitle }}
   .actions.justify-self-end
     nuxt-link(:to='`/project/${url}`')
@@ -25,7 +25,7 @@
       span.text-lg.text-ps-green {{ displayName }}
       span.mt-4.mb-1.text-ps-white Nahraj posudky
       ps-drag-drop(v-model='reviewsFiles', tile, multiple, accept='.pdf,.xlsx', :disabled='pastDeadline || !unreviewed', :draggable='false')
-      ps-btn.self-end(v-if='reviewsFiles.length > 0', @click='uploadReviews', :disabled='uploading', :loading='uploading') Odeslat posudek
+      ps-btn.mt-2.self-end(v-if='reviewsFiles.length > 0', @click='uploadReviews', :disabled='uploading', :loading='uploading') Odeslat posudek
       span.mt-8.text-ps-green Odevzdané posudky:
       .text-ps-white.flex.items-center.justify-between(v-for='review in uploadedReviews')
         .flex
@@ -114,6 +114,10 @@ export default defineComponent({
     url: {
       type: String,
       required: true,
+    },
+    year: {
+      type: Number,
+      default: 0,
     },
   },
   setup(props) {
