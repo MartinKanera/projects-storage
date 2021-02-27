@@ -18,19 +18,25 @@ export default async (req: Request, res: Response) => {
     const user = await admin.auth().verifyIdToken(idToken);
 
     if (!(await admin.firestore().collection('users').doc(user.uid).get()).data()?.admin) return res.status(403).send('Only admin can update student');
-
-    // if (!(await admin.firestore().collection('users').doc(studentId).get()).data()?.student) return res.status(404).send('No student with this id found');
   } catch (_) {
     return res.status(401).send('Unauthorized');
   }
 
   const studentRef = admin.firestore().collection('users').doc(studentId);
+  const projectRef = admin.firestore().collection('projects').where('studentId', '==', studentId).limit(1);
 
   try {
     await admin.firestore().runTransaction(async (transaction) => {
       const sfDoc = await transaction.get(studentRef);
+      const project = await transaction.get(projectRef);
 
       if (!sfDoc.data()?.student) return res.status(404).send('No student with this id found');
+
+      if (project.docs[0]?.exists) {
+        transaction.update(project.docs[0].ref, {
+          currentYear,
+        });
+      }
 
       transaction.update(studentRef, {
         displayName,
@@ -42,6 +48,7 @@ export default async (req: Request, res: Response) => {
 
     return res.status(200).send();
   } catch (e) {
+    console.log(e);
     return res.status(500).send(e);
   }
 };

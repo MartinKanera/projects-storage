@@ -59,9 +59,19 @@ export default async (req: Request, res: Response) => {
 
   const body = JSON.parse(req.body.projectData);
 
-  // TODO check mandatory files match type
-
-  if (!(typeof body.description === 'string' && Array.isArray(body.links) && req.params.id && checkLinks(body.links) && Array.isArray(body.keywords))) return res.status(400).send();
+  if (
+    !(
+      typeof body.description === 'string' &&
+      body.description.length <= 250 &&
+      Array.isArray(body.links) &&
+      req.params.id &&
+      checkLinks(body.links) &&
+      Array.isArray(body.keywords) &&
+      Array.isArray(body.mandatoryOrder) &&
+      Array.isArray(body.optionalOrder)
+    )
+  )
+    return res.status(400).send();
 
   // @ts-ignore
   const mandatoryFiles = req.files.mandatory;
@@ -95,20 +105,17 @@ export default async (req: Request, res: Response) => {
 
       await admin.firestore().runTransaction(async (transaction) => {
         const sfDoc = await transaction.get(projectRef);
+        const system = await transaction.get(admin.firestore().collection('system').doc('schoolYear'));
 
         if (!sfDoc.exists) throw new Error('404');
-
         if (sfDoc.data()?.studentId !== authUser.uid) throw new Error('403');
-
         if (sfDoc.data()?.submitted) throw new Error('409');
 
-        if (sfDoc.data()?.deadlineDate != null) {
-          if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
-        } else {
-          const system = await transaction.get(admin.firestore().collection('system').doc('schoolYear'));
-
-          if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
-        }
+        if ((sfDoc.data()?.currentYear as admin.firestore.Timestamp).isEqual(system.data()?.currentYear)) {
+          if (sfDoc.data()?.deadlineDate != null) {
+            if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
+          } else if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
+        } else if (sfDoc.data()?.currentYear < system.data()?.currentYear) throw new Error('403');
 
         const projectFilesRef = (await admin.firestore().collection('projectFiles').where('projectId', '==', sfDoc.id).get()).docs[0].ref;
 
@@ -116,7 +123,12 @@ export default async (req: Request, res: Response) => {
 
         transaction.update(projectRef, {
           description: body.description.trim(),
-          links: body.links,
+          links: body.links.map((link: any) => {
+            return {
+              placeholder: link.placeholder,
+              url: link.url,
+            };
+          }),
           keywords: body.keywords,
         });
 

@@ -1,6 +1,6 @@
 <template lang="pug">
 .reviews-list(v-if='reviews.length > 0')
-  span.text-ps-green.text-lg Posudky
+  span.text-ps-green.text-lg Učitelé
   .my-1.flex.items-center(v-for='(teacher, index) in reviews', :key='index')
     img.profile-picture(:src='teacher.profilePicture', :width='52')
     .teacher-review-info
@@ -17,10 +17,12 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 
 type ReviewRaw = {
-  filePath: String;
-  fileName: String;
-  publicUrl: String;
-  teacherId: String;
+  teacherId: string;
+  reviews: Array<{
+    filePath: String;
+    fileName: String;
+    publicUrl: String;
+  }>;
 };
 
 type ReviewDisplay = {
@@ -51,18 +53,19 @@ export default defineComponent({
 
         const reviewsRaw = response.data;
 
-        if (reviewsRaw.length === 0) return;
+        const teachersIds = [...new Set(reviewsRaw.map((review: ReviewRaw) => review.teacherId).filter((teacherId: string) => teacherId !== ''))];
 
-        const teachersIds = reviewsRaw.map((review: ReviewRaw) => review.teacherId);
         const teachersDocs = (await firebase.firestore().collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', teachersIds).get()).docs;
 
-        reviews.value = teachersDocs.map((teacher) => {
-          const currentReviews: Array<ReviewRaw> = reviewsRaw.filter((review: ReviewRaw) => review.teacherId === teacher.id);
+        // @ts-ignore
+        reviews.value = teachersIds.map((teacherId) => {
+          const currentReviews: ReviewRaw = reviewsRaw.find((review: ReviewRaw) => review.teacherId === teacherId);
+          const teacherDoc = teachersDocs.find((doc) => doc.id === teacherId);
 
           return {
-            displayName: teacher.data()?.displayName,
-            profilePicture: teacher.data()?.profilePicture,
-            reviews: currentReviews,
+            displayName: teacherDoc?.data().displayName,
+            profilePicture: teacherDoc?.data().profilePicture,
+            reviews: currentReviews.reviews,
           };
         });
       } catch (e) {

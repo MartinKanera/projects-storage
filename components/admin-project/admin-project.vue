@@ -4,7 +4,7 @@
     img.profile-picture(:src='profilePicture', width='48')
     .flex.justify-between.flex-1(class='lg:justify-between')
       .flex.flex-col.justify-center
-        span.text-ps-green.font-bold.text-lg {{ displayName }}
+        span.text-ps-green.font-bold.text-lg {{ displayName }}{{ year === 0 ? "" : ` - ${year}` }}
         span.text-ps-white {{ title }}
       .flex.flex-col.text-ps-white.items-end(class='lg:flex-row lg:mr-4 lg:items-center')
         span(class='lg:mr-4') posudky: {{ reviews.length }}/
@@ -35,8 +35,10 @@
       ps-text-field.mt-4.text-ps-white(v-if='displayPicker', v-model='projectToUpdate.deadlineDate', type='datetime-local', name='project-deadline', label='Termín odevzdání projektu')
       .flex.flex-col
         span.text-ps-green.text-lg(v-if='reviews.length > 0') Odevzdaná hodnocení
-        span(v-for='review in reviewsView') {{ review.displayName }} -
-          a.ml-1(:href='review.publicUrl') {{ review.fileName }}
+        .flex.flex-col(v-for='reviews in reviewsView')
+          span {{ reviews.displayName }}
+          span(v-for='review in reviews.reviews')
+            a.ml-1(:href='review.publicUrl') {{ review.fileName }}
       .flex.justify-between.mt-4
         ps-btn(error, @click='returnProject', :loading='returnBtnLoading', :disabled='returnBtnLoading || !submittedDate') Vrátit projekt
         ps-btn(@click='updateProject', :loading='btnLoading', :disabled='btnLoading') Uložit změny
@@ -115,6 +117,10 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    year: {
+      type: Number,
+      default: 0,
+    },
   },
   // { projectId, currentYear, opponentId, publicProject, reviews, studentId, submittedDate, teacherId, title, displayName, profilePicture, teachers }
   setup({ projectId, opponentId, publicProject, teacherId, title, teachers, reviews, deadlineDate }) {
@@ -179,14 +185,19 @@ export default defineComponent({
           })
         ).data;
 
+        console.log(reviewsData);
+
+        const strippedReviews = reviewsData.filter((reviews: any) => reviews.teacherId !== '');
+
         // @ts-ignore
-        reviewsView.value = reviewsData.map((review) => {
+        reviewsView.value = strippedReviews.map((review) => {
           return {
             ...review,
             // @ts-ignore
             displayName: teachers.find((teacher) => review.teacherId === teacher.id || review.opponentId === teacher.id)?.data()?.displayName,
           };
         });
+        console.log(reviewsView.value);
       } catch (e) {
         console.error(e);
       }

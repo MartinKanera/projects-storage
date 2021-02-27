@@ -46,9 +46,10 @@ export default defineComponent({
     };
 
     const addChip = () => {
-      if (currentInput.value === '') return;
+      const inputValue = currentInput.value.trim();
+      if (inputValue === '') return;
 
-      chips.value.push(currentInput.value.trim());
+      chips.value.push(inputValue);
       currentInput.value = '';
       emit('input', chips.value);
     };

@@ -60,13 +60,13 @@ export default async (req: Request, res: Response) => {
         if (projectData?.studentId !== userAuth.uid) throw new Error('403');
         if (projectData?.submitted) throw new Error('409');
 
+        const system = await transaction.get(systemRef.doc('schoolYear'));
+
+        if ((projectData?.currentYear as admin.firestore.Timestamp).isEqual(system.data()?.projectDeadline)) throw new Error('409/2');
+
         if (sfDoc.data()?.deadlineDate != null) {
           if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
-        } else {
-          const system = await transaction.get(systemRef.doc('schoolYear'));
-
-          if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
-        }
+        } else if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
 
         const statisticsDoc = await transaction.get(systemRef.doc('statistics'));
 
@@ -122,12 +122,14 @@ export default async (req: Request, res: Response) => {
           return res.status(404).send('Project does not exist');
         case 'Error: 409':
           return res.status(409).send('Project already submitted');
+        case 'Error: 409/2':
+          return res.status(409).send('You can submit project during your graduation year');
         case 'Error: 412':
           return res.status(412).send('Missing mandatory files (docx, pdf, zip/rar)');
         case 'Error: 423':
           return res.status(423).send('Past deadline');
         default:
-          return res.status(500).send();
+          return res.status(500).send(e);
       }
     }
   } catch (_) {

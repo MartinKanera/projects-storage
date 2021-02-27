@@ -40,17 +40,28 @@ export default async (req: Request, res: Response) => {
     if (!project?.exists) return res.status(404).send('Project does not exist');
 
     if (!projectData?.public) {
-      const userAuth = !idToken ? { uid: 'public' } : await admin.auth().verifyIdToken(idToken);
-      const user = await admin.firestore().collection('users').doc(userAuth.uid).get();
+      try {
+        const userAuth = await admin.auth().verifyIdToken(idToken);
+        const user = await admin.firestore().collection('users').doc(userAuth.uid).get();
 
-      if (!user.data()?.admin && !(projectData?.studentId === userAuth.uid) && !(projectData?.teacherId === userAuth.uid) && !(projectData?.opponentId === userAuth.uid))
+        if (!user.data()?.admin && !(projectData?.studentId === userAuth.uid) && !(projectData?.teacherId === userAuth.uid) && !(projectData?.opponentId === userAuth.uid))
+          return res.status(403).send();
+      } catch (_) {
         return res.status(403).send();
+      }
     }
 
     let deadlineDate = projectData?.deadlineDate;
+    let thisSchoolYear = false;
 
-    if (deadlineDate == null) {
-      deadlineDate = (await admin.firestore().collection('system').doc('schoolYear').get())?.data()?.projectDeadline;
+    const schoolYear = (await admin.firestore().collection('system').doc('schoolYear').get())?.data();
+
+    if ((projectData?.currentYear as admin.firestore.Timestamp).isEqual(schoolYear?.currentYear)) {
+      deadlineDate = deadlineDate ?? schoolYear?.projectDeadline;
+      thisSchoolYear = true;
+    } else {
+      deadlineDate = null;
+      thisSchoolYear = false;
     }
 
     const studentData = (await admin.firestore().collection('users').doc(projectData?.studentId).get()).data();
@@ -67,6 +78,7 @@ export default async (req: Request, res: Response) => {
       optionalFiles: await getFiles(projectFiles.data()?.optional),
       submitted: projectData?.submitted,
       deadlineDate,
+      thisSchoolYear,
       studentProfilePicture: studentData?.profilePicture,
       studentDisplayName: studentData?.displayName,
       keywords: projectData?.keywords,

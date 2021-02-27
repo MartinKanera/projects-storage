@@ -43,6 +43,7 @@ export default async (req: Request, res: Response) => {
         return formatProjectsData(projects, transaction);
       } else if (typeof lastProjectId === 'string') {
         const lastDoc = await transaction.get(admin.firestore().collection('projects').doc(lastProjectId));
+        if (!lastDoc.exists) throw new Error('404');
         const projects = await transaction.get(admin.firestore().collection('projects').where('public', '==', true).orderBy('currentYear', 'desc').startAfter(lastDoc).limit(limit));
 
         if (!projects.docs.length) return [];
@@ -53,7 +54,11 @@ export default async (req: Request, res: Response) => {
 
     return res.send(projects);
   } catch (e) {
-    console.error(e);
-    return res.status(500).send();
+    switch (e.toString()) {
+      case 'Error: 404':
+        return res.status(404).send('Project with provided ID does not exist');
+      default:
+        return res.status(500).send(e);
+    }
   }
 };

@@ -3,12 +3,10 @@
   .flex.items-center.flex-1
     img.border-2.border-solid.border-ps-green.rounded-full(:src='profilePicture', width='48')
     .flex.flex-col.ml-2.leading-4
-      span.text-ps-green.font-bold.block {{ displayName }}
+      span.text-ps-green.font-bold.block {{ displayName }} - {{ schoolYear === year ? "aktuální" : year }}
   .actions
     ps-btn.text-ps-white(text, @click='settingsModal = !settingsModal')
       settings-icon(:size='20')/
-    //- ps-btn.text-ps-white(text) 
-    //-   bin-icon(:size='20')/
   ps-modal(v-model='settingsModal')
     span.text-ps-green.text-lg {{ studentToUpdate.displayName }}
     ps-text-field.mt-8.mb-4(v-model='studentToUpdate.displayName', name='displayName', label='Jméno')
@@ -47,6 +45,14 @@ export default defineComponent({
     },
     currentYear: {
       type: firebase.firestore.Timestamp,
+      required: true,
+    },
+    year: {
+      type: Number,
+      required: true,
+    },
+    schoolYear: {
+      type: Number,
       required: true,
     },
   },

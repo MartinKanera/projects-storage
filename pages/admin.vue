@@ -51,7 +51,9 @@
         :displayName='project.displayName',
         :profilePicture='project.profilePicture',
         :teachers='teachers',
-        :url='project.url'
+        :deadlineDate='project.deadlineDate',
+        :url='project.url',
+        :year='project.year'
       )
     ps-tab(:active='selectedTab == "žáci"')
       ps-student.mt-4(
@@ -60,7 +62,9 @@
         :studentId='student.id',
         :displayName='student.displayName',
         :profilePicture='student.profilePicture',
-        :currentYear='student.currentYear'
+        :currentYear='student.currentYear',
+        :year='student.year',
+        :schoolYear='currentSchoolYear.toDate().getFullYear()'
       )
     ps-tab(:active='selectedTab == "učitelé"')
       ps-teacher.mt-4(
@@ -141,6 +145,7 @@ type Project = {
   profilePicture: String;
   deadlineDate: String | null;
   url: String;
+  year: String;
 };
 
 type Teacher = {
@@ -155,6 +160,7 @@ type Student = {
   displayName: String;
   profilePicture: String;
   currentYear: firebase.firestore.Timestamp;
+  year: Number;
 };
 
 export default defineComponent({
@@ -230,6 +236,7 @@ export default defineComponent({
           profilePicture: userData?.profilePicture,
           deadlineDate: formatDate(projectData?.deadlineDate),
           url: projectData?.url,
+          year: (projectData?.currentYear as firebase.firestore.Timestamp).toDate().getFullYear(),
         };
       });
     };
@@ -378,7 +385,7 @@ export default defineComponent({
         firebase
           .firestore()
           .collection('projects')
-          .where('currentYear', '<', currentSchoolYear.value)
+          .where('currentYear', '!=', currentSchoolYear.value)
           .orderBy('currentYear', 'desc')
           .limit(10)
           .onSnapshot(async (snapshots) => {
@@ -407,7 +414,7 @@ export default defineComponent({
         firebase
           .firestore()
           .collection('projects')
-          .where('currentYear', '<', currentSchoolYear.value)
+          .where('currentYear', '!=', currentSchoolYear.value)
           .orderBy('currentYear', 'desc')
           .startAfter(lastOfAll)
           .limit(10)
@@ -527,7 +534,7 @@ export default defineComponent({
           .firestore()
           .collection('users')
           .where('student', '==', true)
-          .where('currentYear', '==', currentSchoolYear.value)
+          .orderBy('currentYear', 'desc')
           .limit(10)
           .onSnapshot((snapshots) => {
             const studentsDocs = snapshots.docs;
@@ -540,6 +547,7 @@ export default defineComponent({
                 displayName: studentDoc.data()?.displayName,
                 profilePicture: studentDoc.data()?.profilePicture,
                 currentYear: studentDoc.data()?.currentYear,
+                year: (studentDoc.data()?.currentYear as firebase.firestore.Timestamp).toDate().getFullYear(),
               };
             });
 
@@ -575,6 +583,7 @@ export default defineComponent({
                 displayName: studentDoc.data()?.displayName,
                 profilePicture: studentDoc.data()?.profilePicture,
                 currentYear: studentDoc.data()?.currentYear,
+                year: (studentDoc.data()?.currentYear as firebase.firestore.Timestamp).toDate().getFullYear(),
               };
             });
 
@@ -648,6 +657,7 @@ export default defineComponent({
       updatingDeadline,
       query,
       searchedProjects,
+      currentSchoolYear,
     };
   },
 });

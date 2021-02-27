@@ -38,7 +38,7 @@ export default defineComponent({
         // @ts-ignore
         const response = await ctx.root.$nuxt.$axios.get('/api/teachers/list', {
           headers: {
-            authorization: mainStore.state.user.id,
+            authorization: `Bearer ${mainStore.state.user.idToken}`,
           },
         });
 
