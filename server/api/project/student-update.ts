@@ -105,20 +105,17 @@ export default async (req: Request, res: Response) => {
 
       await admin.firestore().runTransaction(async (transaction) => {
         const sfDoc = await transaction.get(projectRef);
+        const system = await transaction.get(admin.firestore().collection('system').doc('schoolYear'));
 
         if (!sfDoc.exists) throw new Error('404');
-
         if (sfDoc.data()?.studentId !== authUser.uid) throw new Error('403');
-
         if (sfDoc.data()?.submitted) throw new Error('409');
 
-        if (sfDoc.data()?.deadlineDate != null) {
-          if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
-        } else {
-          const system = await transaction.get(admin.firestore().collection('system').doc('schoolYear'));
-
-          if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
-        }
+        if ((sfDoc.data()?.currentYear as admin.firestore.Timestamp).isEqual(system.data()?.currentYear)) {
+          if (sfDoc.data()?.deadlineDate != null) {
+            if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
+          } else if (admin.firestore.Timestamp.now() > system.data()?.projectDeadline) throw new Error('423');
+        } else if (sfDoc.data()?.currentYear < system.data()?.currentYear) throw new Error('403');
 
         const projectFilesRef = (await admin.firestore().collection('projectFiles').where('projectId', '==', sfDoc.id).get()).docs[0].ref;
 

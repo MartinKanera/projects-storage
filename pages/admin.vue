@@ -583,6 +583,7 @@ export default defineComponent({
                 displayName: studentDoc.data()?.displayName,
                 profilePicture: studentDoc.data()?.profilePicture,
                 currentYear: studentDoc.data()?.currentYear,
+                year: (studentDoc.data()?.currentYear as firebase.firestore.Timestamp).toDate().getFullYear(),
               };
             });
 

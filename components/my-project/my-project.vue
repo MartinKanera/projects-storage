@@ -1,10 +1,10 @@
 <template lang="pug">
 .h-auto.m-4(class='md:mx-12')
   ps-loader(:value='loading')
-  .flex.justify-center.mb-4
+  .flex.justify-center.mb-4(v-if='thisSchoolYearRef')
     .rounded-lg.shadow.bg-ps-secondary.flex.px-2
       .text-ps-white.mr-2 Termín odevzdání:
-      .text-ps-green.text-lg {{ `${deadlineFormatted}` }}
+      .text-ps-green.text-lg {{ deadlineFormatted }}
   .flex.flex-col.justify-between.items-stretch(class='lg:flex-row-reverse lg:items-start')
     .my-project-user
       .user-info
@@ -52,7 +52,7 @@
       ps-chips(v-model='keywordsRef', :edittable='modificable', placeholder='Klíčová slova')
   .mt-8.w-full.flex.flex.justify-center
     ps-btn.mr-4(@click='saveChanges', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Uložit
-    ps-btn.ml-4(@click='checkModal', :disabled='awaiting || submittedRef || !modificable', :loading='awaiting') Odevzdat
+    ps-btn.ml-4(@click='checkModal', :disabled='awaiting || submittedRef || !modificable || !thisSchoolYearRef', :loading='awaiting') Odevzdat
       template(#icon-right)
         chevron-right/
   ps-modal(v-model='submitCheck', :disabled='awaiting')
@@ -112,6 +112,7 @@ export default defineComponent({
     const submittedRef = ref(false);
     const deadlineDateRef = ref(new firebase.firestore.Timestamp(0, 0));
     const keywordsRef = ref([]);
+    const thisSchoolYearRef = ref(false);
 
     const mandatoryFilesUpload = ref([]);
     const optionalFilesUpload = ref([]);
@@ -138,7 +139,7 @@ export default defineComponent({
           },
         });
 
-        const { title, description, links, mandatoryFiles, optionalFiles, submitted, deadlineDate, keywords } = response.data;
+        const { title, description, links, mandatoryFiles, optionalFiles, submitted, deadlineDate, keywords, thisSchoolYear } = response.data;
 
         titleRef.value = title;
         descriptionRef.value = description;
@@ -148,8 +149,9 @@ export default defineComponent({
         // @ts-ignore
         optionalFilesRef.value = getExtensions(optionalFiles);
         submittedRef.value = submitted;
-        deadlineDateRef.value = new firebase.firestore.Timestamp(deadlineDate._seconds, 0);
+        deadlineDateRef.value = deadlineDate == null ? new firebase.firestore.Timestamp(0, 0) : new firebase.firestore.Timestamp(deadlineDate._seconds, 0);
         keywordsRef.value = keywords;
+        thisSchoolYearRef.value = thisSchoolYear;
       } catch (e) {
         console.error(e);
       }
@@ -285,9 +287,9 @@ export default defineComponent({
       awaiting.value = false;
     };
 
-    const deadlineFormatted = computed(() => deadlineDateRef.value.toDate().toLocaleDateString('cs-CZ'));
+    const deadlineFormatted = computed(() => `${deadlineDateRef.value.toDate().toLocaleDateString('cs-CZ')} ${deadlineDateRef.value.toDate().toLocaleTimeString('cs-CZ').substr(0, 5)}`);
 
-    const modificable = computed(() => !submittedRef.value && deadlineDateRef.value > firebase.firestore.Timestamp.now());
+    const modificable = computed(() => (!submittedRef.value && deadlineDateRef.value > firebase.firestore.Timestamp.now()) || !thisSchoolYearRef.value);
 
     return {
       displayName: mainStore.state.user.displayName,
@@ -316,6 +318,7 @@ export default defineComponent({
       modificable,
       loading,
       keywordsRef,
+      thisSchoolYearRef,
     };
   },
 });
