@@ -37,16 +37,12 @@ const getReviewsUrls = async (projectData: any, authorized = false) => {
   );
 
   const strippedReviews: Array<any> = response.filter((el: any) => el != null);
-  const nigger = result.map((teacher) => {
+  return result.map((teacher) => {
     return {
       ...teacher,
       reviews: strippedReviews.filter((review) => review.teacherId === teacher.teacherId),
     };
   });
-
-  console.log(nigger);
-
-  return nigger;
 };
 
 export default async (req: Request, res: Response) => {

@@ -8,6 +8,7 @@ const db = admin.firestore();
 
 exports.projectsHooks = functions.firestore.document('projects/{projectId}').onWrite(async (snap, context) => {
   const statisticsRef = db.collection('system').doc('statistics');
+  const currentYearRef = db.collection('system').doc('schoolYear');
 
   const runTransaction = async (difference: number) => {
     return await db.runTransaction(async (transaction) => {
@@ -27,7 +28,11 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
     });
   }
 
-  if (!snap.before.data() && snap.after.data()) return await runTransaction(1);
+  if (!snap.before.data() && snap.after.data()) {
+    const yearInfo = await currentYearRef.get();
+    if (!(snap.after.data()?.currentYear as admin.firestore.Timestamp).isEqual(yearInfo.data()?.currentYear)) return;
+    return await runTransaction(1);
+  };
   if (!snap.after.data()) return await runTransaction(-1);
 
   if (snap.before.data() && snap.after.data()) {
@@ -71,6 +76,12 @@ exports.projectsHooks = functions.firestore.document('projects/{projectId}').onW
       if (currentSchoolYear.isEqual(snap.after.data()?.currentYear)) await runTransaction(1);
 
       if (!currentSchoolYear.isEqual(snap.after.data()?.currentYear)) await runTransaction(-1)
+    }
+
+    if(snap.before.data() && !snap.after.data()) {
+      const yearInfo = await currentYearRef.get();
+      if (!(snap.after.data()?.currentYear as admin.firestore.Timestamp).isEqual(yearInfo.data()?.currentYear)) return;
+      return await runTransaction(-1);
     }
   };
 

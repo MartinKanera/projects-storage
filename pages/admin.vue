@@ -62,7 +62,9 @@
         :studentId='student.id',
         :displayName='student.displayName',
         :profilePicture='student.profilePicture',
-        :currentYear='student.currentYear'
+        :currentYear='student.currentYear',
+        :year='student.year',
+        :schoolYear='currentSchoolYear.toDate().getFullYear()'
       )
     ps-tab(:active='selectedTab == "učitelé"')
       ps-teacher.mt-4(
@@ -158,6 +160,7 @@ type Student = {
   displayName: String;
   profilePicture: String;
   currentYear: firebase.firestore.Timestamp;
+  year: Number;
 };
 
 export default defineComponent({
@@ -531,7 +534,7 @@ export default defineComponent({
           .firestore()
           .collection('users')
           .where('student', '==', true)
-          .where('currentYear', '==', currentSchoolYear.value)
+          .orderBy('currentYear', 'desc')
           .limit(10)
           .onSnapshot((snapshots) => {
             const studentsDocs = snapshots.docs;
@@ -544,6 +547,7 @@ export default defineComponent({
                 displayName: studentDoc.data()?.displayName,
                 profilePicture: studentDoc.data()?.profilePicture,
                 currentYear: studentDoc.data()?.currentYear,
+                year: (studentDoc.data()?.currentYear as firebase.firestore.Timestamp).toDate().getFullYear(),
               };
             });
 
@@ -652,6 +656,7 @@ export default defineComponent({
       updatingDeadline,
       query,
       searchedProjects,
+      currentSchoolYear,
     };
   },
 });
