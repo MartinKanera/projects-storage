@@ -4,7 +4,7 @@
   .flex.justify-center.mb-4(v-if='thisSchoolYearRef')
     .rounded-lg.shadow.bg-ps-secondary.flex.px-2
       .text-ps-white.mr-2 Termín odevzdání:
-      .text-ps-green.text-lg {{ deadlineFormatted }}
+      .text-ps-green.text-lg {{ deadlineFormatted[deadlineFormatted.length - 1] === ":" ? deadlineFormatted.substr(0, deadlineFormatted.length - 1) : deadlineFormatted }}
   .flex.flex-col.justify-between.items-stretch(class='lg:flex-row-reverse lg:items-start')
     .my-project-user
       .user-info
