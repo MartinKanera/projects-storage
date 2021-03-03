@@ -1,5 +1,9 @@
 <template lang="pug">
-.flex.flex-col.justify-center.m-4(class='md:m-20')
+.flex.flex-col.justify-center.m-4(class='md:m-20 md:mt-8')
+  .flex.justify-center.mb-4
+    .rounded-lg.shadow.bg-ps-secondary.flex.px-2
+      .text-ps-white.mr-2 Termín odevzdání:
+      .text-ps-green.text-lg {{ deadlineFormatted[deadlineFormatted.length - 1] === ":" ? deadlineFormatted.substr(0, deadlineFormatted.length - 1) : deadlineFormatted }}
   .self-start(v-if='proposals.length > 0')
     span.text-2xl.text-ps-white.font-medium Projekty ke schválení
   .flex.flex-col.mt-4.mb-8.flex-wrap.justify-between(v-if='proposals.length > 0', class='md:flex-row md:justify-start')
@@ -95,7 +99,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, onMounted, onBeforeUnmount } from '@nuxtjs/composition-api';
+import { defineComponent, ref, watchEffect, onMounted, onBeforeUnmount, computed } from '@nuxtjs/composition-api';
 
 import { useMainStore } from '@/store';
 import firebase from 'firebase/app';
@@ -180,10 +184,16 @@ export default defineComponent({
     const pastDeadline = ref(true);
     const currentYear = ref(new firebase.firestore.Timestamp(0, 0));
 
+    const reviewsDeadline = ref(new firebase.firestore.Timestamp(0, 0));
+    const deadlineFormatted = computed(() => `${reviewsDeadline.value.toDate().toLocaleDateString('cs-CZ')} ${reviewsDeadline.value.toDate().toLocaleTimeString('cs-CZ').substr(0, 5)}`);
+
     onMounted(async () => {
       // get system values - schoolYear and reviewsDeadline
       try {
         const systemData = (await firebase.firestore().collection('system').doc('schoolYear').get()).data();
+
+        reviewsDeadline.value = systemData?.reviewDeadline;
+
         pastDeadline.value = firebase.firestore.Timestamp.now() > systemData?.reviewDeadline;
         currentYear.value = systemData?.currentYear;
       } catch (_) {
@@ -419,6 +429,8 @@ export default defineComponent({
             const projectDocs = snapshots.docs;
             const studentIds = snapshots.docs.map((projectDoc) => projectDoc.data().studentId);
 
+            if (!studentIds.length) return;
+
             const studentsColection = await inArray(firebase.firestore().collection('users'), studentIds);
             lastOther = projectDocs[projectDocs.length - 1];
 
@@ -513,6 +525,7 @@ export default defineComponent({
       pastDeadline,
       extern: mainStore.state.user.extern,
       otherProjects,
+      deadlineFormatted,
     };
   },
 });
