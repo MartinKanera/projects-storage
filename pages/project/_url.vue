@@ -21,7 +21,7 @@
           zip-icon(v-else-if='file.extension == "zip" || file.extension == "rar"')
           file-icon(v-else)
           .ml-2.underline {{ file.fileName }}
-      .subtitle.mt-2(v-if='!!project.optionalFiles.length') Soubory navíc
+      .subtitle.mt-2(v-if='!!project.optionalFiles.length') Další soubory
       .row(v-for='file in project.optionalFiles')
         a.flex.items-center(:href='file.url', target='_blank')
           word-icon(v-if='file.extension == "docx"')

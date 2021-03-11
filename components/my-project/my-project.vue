@@ -12,11 +12,11 @@
         .flex.flex-col
           .display-name {{ displayName }}
           .text-ps-green.text-sm {{ year }}
-      ps-project-links(v-model='linksRef', :editable='modificable')
       ps-reviews-list.mt-2(:projectId='projectId')
     .my-project-info
       .title {{ titleRef }}
       ps-text-area.mt-2(v-model='descriptionRef', placeholder='Popis projektu', name='project-description', :readonly='!modificable')
+      ps-project-links.mt-2(v-model='linksRef', :editable='modificable')
       .subtitle.mt-2(v-if='modificable') Povinné soubory
       span.mb-1.text-ps-white.text-sm(v-if='modificable') Dokumentace (docx, PDF), Projekt (zip/rar)
       ps-drag-drop(v-if='modificable', v-model='mandatoryFilesUpload', tile, multiple, accept='.pdf,.docx,.zip,.rar', :disabled='!modificable')
@@ -33,9 +33,9 @@
               .ml-2.underline {{ file.fileName }}
             ps-btn(v-if='modificable', text, @click='removeFile(file.filePath)', :disabled='removing', :loading='removing')
               bin-icon(:size='20')
-      .subtitle.mt-2(v-if='modificable') Soubory navíc
+      .subtitle.mt-2(v-if='modificable') Další soubory
       ps-drag-drop#optionalSelect(v-if='modificable', v-model='optionalFilesUpload', tile, multiple, :disabled='!modificable')
-      .subtitle(v-if='optionalFilesRef.length > 0') Nahrané soubory navíc
+      .subtitle(v-if='optionalFilesRef.length > 0') Další nahrané soubory
       draggable.mb-2(v-model='optionalFilesRef', handle='.handle')
         .row(v-for='file in optionalFilesRef')
           drag-icon.handle(v-if='modificable')

@@ -1,8 +1,9 @@
 <template lang="pug">
-transition(name='popup')
+transition(name='fade', @after-enter='showContent = true')
   .wrapper(v-if='display', @click.self='closeModal')
-    .modal
-      slot
+    transition(name='popup')
+      .modal(v-if='showContent')
+        slot
 </template>
 
 <script lang="ts">
@@ -21,6 +22,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const display = ref(false);
+    const showContent = ref(false);
 
     watchEffect(() => {
       display.value = props.value;
@@ -38,11 +40,13 @@ export default defineComponent({
     const closeModal = () => {
       if (props.disabled) return;
       display.value = false;
+      showContent.value = false;
       emit('input', display.value);
     };
 
     return {
       display,
+      showContent,
       closeModal,
     };
   },

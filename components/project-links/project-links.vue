@@ -3,15 +3,15 @@
   .flex.items-center.justify-between
     span.text-ps-green.text-lg Externí odkazy
     ps-btn.rounded-full(v-if='editable', text)
-      add-icon.text-ps-white(@click='openModal', :size='20')/
-  .flex.flex-col.ml-2
-    draggable
+      add-icon.text-ps-white(@click='openModal')/
+  .flex.flex-col
+    draggable(v-model='editableValue')
       .flex.items-center.text-ps-white(v-for='(link, index) in editableValue', :key='index')
         drag-icon.handle(v-if='editable')
         .flex.w-full.justify-between.items-center
           a.break-all(:href='link.url', target='_blank') {{ link.placeholder }}
           ps-btn.rounded-full(v-if='editable', text) 
-            bin-icon.text-ps-white(@click='removeLink(index)', :size='16')/
+            bin-icon.text-ps-white(@click='removeLink(index)', :size='20')/
   ps-modal(v-model='linksModal')
     .flex.flex-col.flex-wrap
       span.text-2xl.text-ps-white Přidat odkaz
@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, unref, watch } from '@nuxtjs/composition-api';
+import { defineComponent, ref, unref, watch, watchEffect } from '@nuxtjs/composition-api';
 
 import addIcon from 'vue-material-design-icons/Plus.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
@@ -53,6 +53,10 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const editableValue = ref(unref(props.value));
+
+    watch(editableValue, (newLinks) => {
+      emit('input', newLinks);
+    });
 
     watch(props, (newProps) => {
       // @ts-ignore
