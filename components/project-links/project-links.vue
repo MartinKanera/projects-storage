@@ -5,7 +5,7 @@
     ps-btn.rounded-full(v-if='editable', text)
       add-icon.text-ps-white(@click='openModal')/
   .flex.flex-col
-    draggable
+    draggable(v-model='editableValue')
       .flex.items-center.text-ps-white(v-for='(link, index) in editableValue', :key='index')
         drag-icon.handle(v-if='editable')
         .flex.w-full.justify-between.items-center
@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, unref, watch } from '@nuxtjs/composition-api';
+import { defineComponent, ref, unref, watch, watchEffect } from '@nuxtjs/composition-api';
 
 import addIcon from 'vue-material-design-icons/Plus.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
@@ -53,6 +53,10 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const editableValue = ref(unref(props.value));
+
+    watch(editableValue, (newLinks) => {
+      emit('input', newLinks);
+    });
 
     watch(props, (newProps) => {
       // @ts-ignore
