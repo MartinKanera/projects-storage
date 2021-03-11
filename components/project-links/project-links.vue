@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, unref, watch, watchEffect } from '@nuxtjs/composition-api';
+import { defineComponent, ref, unref, watch } from '@nuxtjs/composition-api';
 
 import addIcon from 'vue-material-design-icons/Plus.vue';
 import binIcon from 'vue-material-design-icons/Delete.vue';
