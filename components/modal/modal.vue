@@ -1,5 +1,5 @@
 <template lang="pug">
-transition(name='fade', @after-enter='showContent = true')
+transition(name='fade', @before-enter='showContent = true')
   .wrapper(v-if='display', @click.self='closeModal')
     transition(name='popup')
       .modal(v-if='showContent')
