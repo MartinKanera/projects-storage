@@ -2,12 +2,13 @@
 .wrapper
   .placeholder {{ placeholder }}
   .chip-container
-    .chip(v-for='(chip, index) in chips', :key='index')
+    .chip(v-for='(chip, index) in chips', :key='index', :class='{ edittable: edittable }')
       span {{ chip }}
-      .close-btn(v-if='edittable', @click='removeChip(index)')
-        closeIcon(:size='18')/
+      .btn-wrap
+        .close-btn(v-if='edittable', @click='removeChip(index)')
+          closeIcon(:size='18')/
     input(v-if='edittable', v-model='currentInput', @keydown.enter='addChip', @keydown.tab.prevent='addChip', @keydown.delete='backspaceRemove')
-  .mt-1.text-sm.text-ps-white.ml-auto.float-right Klíčové slovo potvrdíš tabem/enterem
+  .mt-1.text-sm.text-ps-white.ml-auto.float-right(v-if='edittable') Klíčové slovo potvrdíš tabem/enterem
 </template>
 
 <script lang="ts">

@@ -5,7 +5,7 @@
     ps-btn.rounded-full(v-if='editable', text)
       add-icon.text-ps-white(@click='openModal')/
   .flex.flex-col
-    draggable(v-model='editableValue')
+    draggable(v-model='editableValue', handle='.handle')
       .flex.items-center.text-ps-white(v-for='(link, index) in editableValue', :key='index')
         drag-icon.handle(v-if='editable')
         .flex.w-full.justify-between.items-center
