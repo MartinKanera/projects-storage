@@ -8,11 +8,11 @@
         .flex.flex-col
           .display-name {{ project.studentDisplayName }}
           .text-ps-green.text-sm {{ project.currentYear }}
-      ps-project-links(v-model='project.links', :editable='false')
       ps-reviews-list.mt-2(v-if='!loading', :projectId='project.id')
     .my-project-info
       .title {{ project.title }}
       ps-text-area.mt-2(v-model='project.description', placeholder='Popis projektu', name='project-description', :readonly='true')
+      ps-project-links.mt-2(v-model='project.links', :editable='false')
       .subtitle.mt-2(v-if='!!project.mandatoryFiles.length') Povinné soubory
       .row(v-for='file in project.mandatoryFiles')
         a.flex.items-center(:href='file.url', target='_blank') 
@@ -30,6 +30,7 @@
           image-icon(v-else-if='file.extension == "jpg" || file.extension == "jpeg" || file.extension == "png" || file.extension == "gif"')
           file-icon(v-else)
           .ml-2.underline {{ file.fileName }}
+      ps-chips.mt-2(v-model='project.keywords', :edittable='false', placeholder='Klíčová slova')
 </template>
 
 <script lang="ts">
@@ -196,7 +197,8 @@ export default defineComponent({
   @screen lg
     @apply m-0
 
-    flex: 0 1 64%
+    flex: 0 1 66%
+    max-width: 66%
 
   .subtitle
     @apply text-ps-green text-lg
