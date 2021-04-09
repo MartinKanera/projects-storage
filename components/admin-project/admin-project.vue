@@ -122,7 +122,7 @@ export default defineComponent({
       default: 0,
     },
   },
-  // { projectId, currentYear, opponentId, publicProject, reviews, studentId, submittedDate, teacherId, title, displayName, profilePicture, teachers }
+
   setup({ projectId, opponentId, publicProject, teacherId, title, teachers, reviews, deadlineDate }) {
     const projectToUpdate = ref({ opponentId, publicProject: publicProject.toString(), teacherId, title, deadlineDate });
 
