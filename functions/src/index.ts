@@ -144,6 +144,8 @@ exports.usersHooks = functions.firestore.document('users/{userId}').onWrite(asyn
 // proposals
 exports.proposalsHooks = functions.firestore.document('proposals/{proposalId}').onWrite(async (snap, context) => {
   if ((!snap.before.data() && snap.after.data()) || (snap.before.data() && snap.after.data())) {
+    if (snap.after.data()?.studentId === '') return;
+
     await db.runTransaction(async (transaction) => {
       transaction.set(db.collection('notifications').doc(), {
         userId: snap.after.data()?.teacherId,

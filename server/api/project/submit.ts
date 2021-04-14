@@ -62,7 +62,7 @@ export default async (req: Request, res: Response) => {
 
         const system = await transaction.get(systemRef.doc('schoolYear'));
 
-        if ((projectData?.currentYear as admin.firestore.Timestamp).isEqual(system.data()?.projectDeadline)) throw new Error('409/2');
+        if (!(projectData?.currentYear as admin.firestore.Timestamp).isEqual(system.data()?.currentYear)) throw new Error('409/2');
 
         if (sfDoc.data()?.deadlineDate != null) {
           if (admin.firestore.Timestamp.now() > sfDoc.data()?.deadlineDate) throw new Error('423');
