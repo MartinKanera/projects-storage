@@ -409,6 +409,7 @@ export default defineComponent({
       }
 
       submitting.value = false;
+      projectTitle.value = '';
       projectModal();
     };
 
