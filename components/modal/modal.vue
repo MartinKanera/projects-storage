@@ -26,6 +26,7 @@ export default defineComponent({
 
     watchEffect(() => {
       display.value = props.value;
+      showContent.value = props.value;
     });
 
     watchEffect(() => {
