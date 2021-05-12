@@ -15,7 +15,7 @@
     "@nuxt/typescript-runtime": "2.0.0",
     "@nuxtjs/axios": "5.12.2",
     "@nuxtjs/composition-api": "0.13.0",
-    "@nuxtjs/pwa": "3.3.2",
+    "@nuxtjs/pwa": "3.3.5",
     "@types/vue-clickaway": "2.2.0",
     "dotenv": "8.2.0",
     "firebase": "7.24.0",
