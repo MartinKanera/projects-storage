@@ -252,3 +252,40 @@ exports.notifications = functions.pubsub.schedule('every 24 hours').timeZone('Eu
     }
   }
 });
+
+exports.deleteUserData = functions.auth.user().onDelete(async (user) => {
+  const userRef = db.collection('users').doc(user.uid);
+  const projectRef = db.collection('projects').where('studentId', '==', user.uid).limit(1);
+  const proposalRef = db.collection('proposals').where('studentId', '==', user.uid).limit(1);
+  
+  try {
+    await db.runTransaction(async (transaction) => {
+      const userDoc = await transaction.get(userRef);
+      const projectDoc = (await transaction.get(projectRef)).docs[0];
+      const proposalDoc = (await transaction.get(proposalRef)).docs[0];
+      const projectFilesDoc = ((await transaction.get(db.collection('projectFiles').where('projectId', '==', projectDoc.id).limit(1))).docs[0]);
+
+      if (userDoc?.exists) transaction.delete(userRef);
+      if (projectDoc?.exists) transaction.delete(projectDoc.ref);
+      if (proposalDoc?.exists) transaction.delete(proposalDoc.ref);
+      if (projectFilesDoc?.exists) {
+        const storage = admin.storage();
+        const bucket = storage.bucket('ps-project-files');
+
+        const filesData = projectFilesDoc.data();
+        await Promise.all([
+          ...filesData?.mandatory.map((file: any) => bucket.file(file.filePath).delete()),
+          ...filesData?.optional.map((file: any) => bucket.file(file.filePath).delete())
+        ]);
+
+        transaction.delete(projectFilesDoc.ref);
+      }
+
+      return transaction;
+    });
+  } catch(e) {
+    functions.logger.error(e);
+  }
+
+  return;
+});
