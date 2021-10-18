@@ -22,7 +22,7 @@
     "firebase-admin": "9.4.1",
     "jimp": "^0.16.1",
     "multer": "1.4.2",
-    "nuxt": "2.14.6",
+    "nuxt": "2.15.8",
     "pinia": "0.1.0",
     "short-uuid": "^4.1.0",
     "ts-debounce": "^2.1.0",
@@ -33,7 +33,7 @@
   "devDependencies": {
     "@babel/core": "7.12.9",
     "@babel/preset-env": "7.12.7",
-    "@nuxt/types": "2.14.3",
+    "@nuxt/types": "2.15.8",
     "@nuxt/typescript-build": "2.0.3",
     "@nuxtjs/eslint-config-typescript": "5.0.0",
     "@nuxtjs/google-analytics": "^2.4.0",
