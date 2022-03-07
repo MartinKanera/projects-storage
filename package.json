@@ -11,7 +11,7 @@
     "serve": "nuxt-ts serve"
   },
   "dependencies": {
-    "@google-cloud/storage": "5.4.0",
+    "@google-cloud/storage": "5.18.2",
     "@nuxt/typescript-runtime": "2.0.0",
     "@nuxtjs/axios": "5.12.2",
     "@nuxtjs/composition-api": "0.13.0",
